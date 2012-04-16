@@ -1,0 +1,32 @@
+<!DOCTYPE module PUBLIC "//gwt-module/" "http://google-web-toolkit.googlecode.com/svn/tags/1.6.2/distro-source/core/src/gwt-module.dtd">
+<module rename-to="ProjectTracker">
+
+      <!-- Inherit the core Web Toolkit stuff.                        -->
+      <inherits name='com.google.gwt.user.User'/>
+	
+      <!--inherits name="org.slim3.gwt.emul.S3Emulation" /-->
+      <inherits name='com.allen_sauer.gwt.dnd.gwt-dnd' />
+        
+      <!--  inherit css based theme -->
+      <inherits name='com.google.gwt.user.theme.standard.StandardResources'/>
+
+      <!--  inherit gilead to use hibernate entities on the client side -->
+      <!--inherits name='net.sf.gilead.Adapter4Gwt15'/-->
+    
+      <inherits name="com.google.gwt.http.HTTP"/>
+
+      <!-- inherit the new rpc system that is available since version 2.0 -->
+      <!--In version 2.01, the new rpc system is still experimental, contains a lot of bugs and should not be used-->
+      <!--inherits name="com.google.gwt.rpc.RPC"/-->
+
+
+      <!-- Specify the app entry point class.                         -->
+      <entry-point class="de.cismet.projecttracker.client.ProjectTrackerEntryPoint"/>
+
+      <!-- Specify the application specific style sheet.              -->
+      <stylesheet src='bootstrap.css' />
+      <stylesheet src='app.css' />
+      <!--stylesheet src='docs.css' />
+      <stylesheet src='gwt.css' /-->
+
+</module>

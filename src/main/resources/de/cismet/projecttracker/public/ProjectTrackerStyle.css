@@ -1,0 +1,573 @@
+/*
+    Document   : ProjectTrackerStyle
+    Created on : Jul 2, 2009, 3:04:33 PM
+    Author     : therter
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+
+root {
+    display: block;
+}
+
+.Lock {
+    z-index:100;
+    left: 0px;
+    top: 0px;
+    position: absolute;
+    /*the following two lines are IE specific*/
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: alpha(opacity=0);
+    zoom: 1;
+    -moz-opacity:0.0;
+    opacity: 0.0;
+}
+
+.ProjectCategoryFilter {
+    margin-left: 10px;
+}
+
+.LoadingImage {
+    z-index:110;
+    left: 0px;
+    top: 0px;
+    position: absolute;
+}
+
+form {
+    margin-bottom: 0px;
+}
+
+.DummyStyle {
+    border-right-style: none;
+    border-left-style: none;
+    border-bottom-style: none;
+    border-top-style: none;
+}
+
+div:focus {
+    outline-style:none;
+}
+
+body {
+    background-color:#1c449c;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 12px;
+    text-align: center;
+}
+
+.MenuButton, .MenuButtonMO, .MenuButtonDeact {
+    background-image: url(images/button.png);
+    width: 132px;
+    height: 22px;
+    cursor: pointer;
+    text-align: center;
+    vertical-align: middle;
+    color: white;
+}
+
+.MenuButtonMO {
+    background-image: url(images/buttonHL.png);
+    font-weight: bold;
+}
+
+.MenuButtonDeact {
+    background-image: url(images/buttonDeactivated.png);
+    font-weight: bold;
+    cursor: default;
+}
+
+
+.TopPanel {
+    background-color: #ffffff;
+    height: 50px;
+    padding-top: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.StatusBar {
+    background-color: #FFFFFF;
+    height: 30px;
+}
+
+.MenuPanel {
+    width: 180px;
+    background-color: #FBAB4B;
+    height: 33px;
+    padding-top: 7px;
+    padding-left: 10px;
+}
+
+.MainPanel {
+    background-color: #ffffff;
+}
+
+.LeftBorder {
+    background-color: #1c449c;
+}
+
+.ProjectSelectorHeader {
+    cursor: pointer;
+    background-image: url(images/gradient.png);
+    background-repeat: repeat-x;
+    color: white;
+    font-weight: bold;
+    width: 100%;
+}
+
+.activeObject {
+    background-color: #FBAB4B;
+}
+
+.mouseOverListElement {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.listElement, .Button, .InputButton {
+    cursor: pointer;
+    display: block;
+}
+
+.listElement {
+    width: 240px;
+}
+
+.gwt-TabBarItem, .gwt-TabBarItem-selected {
+    color: white;
+    font-weight: normal;
+    background-color: #1c449c;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 2px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
+    cursor: pointer;
+}
+
+.gwt-TabPanel, .LeftBordered {
+    border-left-color: #1c449c;
+    border-left-style: solid;
+    border-left-width: 1px;
+    height: 100%;
+}
+
+.gwt-TreeItem, .gwt-TreeItem-Selected, .SelectedListItem, .ListItem {
+    cursor: pointer;
+    width: 100%;
+    display: block;
+}
+
+.gwt-TreeItem-Selected, .SelectedListItem {
+    background: #FBAB4B;
+    color: white;
+}
+
+
+.TabContentPanel {
+    border-top-color: #1c449c;
+    border-top-style: solid;
+    border-top-width: 1px;
+}
+
+.gwt-TabBarItem-selected {
+    font-weight: bold;
+    margin-bottom: 0px;
+    padding-bottom:4px;
+}
+
+.StdLabel, .StdInput, .StdButton, .ProjectInfoDropDown, .InputSmall, .StdLabelSmall, .InputButton {
+    margin-top: 15px;
+}
+
+.InputSmall {
+    margin-right: 5px;
+}
+
+.InputButton {
+    margin-left: 13px;
+}
+
+.StdLabel, .StdButton {
+    width: 170px;
+}
+
+StdButton {
+    cursor: pointer;
+}
+
+.StdLabelSmall {
+    width: 100px;
+}
+
+
+.stackPanel {
+    border-right-style: solid;
+    border-right-width: 1px;
+    border-right-color: #1c449c;
+    margin-right: 6px;
+}
+.StaffButtonPanel {
+    width: 100%;
+    text-align: center;
+}
+
+.SingleButtonPanel {
+    padding-top: 50px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.ContractPanel, .OverheadPanel, .ProjectsPanel, .ContractButtonPanel {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.ContractButtonPanel {
+    width: 100%;
+}
+
+.CompanyDataPanel,.ProjectBodyDataPanel
+{}
+
+.InputSmall {
+    width: 250px;
+}
+
+.ButtonSmall {
+    width: 115px;
+    margin-top: 15px;
+}
+
+.CompanyDataPanel, .ProjectBodyDataPanel, .StaffPanel, .CompanyPanel, .ProjectBodyPanel {
+    margin-bottom: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.StdList {
+    width: 250px;
+    height: 200px;
+    margin-right: 20px;
+    margin-left: 20px;
+}
+
+.ListSmall {
+    width: 200px;
+    height: 150px;
+    margin-right: 20px;
+    margin-left: 20px;
+}
+
+.StdInput {
+    width: 400px;
+}
+
+.ProjectInfoDateInput, .CheckboxInput {
+    width: 185px;
+}
+
+.CheckboxInput {
+    display: block;
+    text-align: center;
+}
+
+.HorizontalSeparator {
+    background-image: url(images/gradientSmall.png);
+    background-repeat: repeat-x;
+    height: 25px;
+    color: white;
+    text-align: center;
+    width: 100%;
+}
+
+.SeparatorStatus-clickable {
+    cursor: pointer;
+}
+
+.ProjectInfoGUIPanel, .ProjectDeliverDatePanel {
+    margin-left: 10px;
+    text-align: left;
+}
+
+.ProjectInfoDatePanel, .ProjectDeliverDatePanel {
+    margin-bottom: 15px;
+    width: 570px;
+}
+
+.StdButtonPanel {
+    width: 570px;
+}
+
+.ProjectInfoDropDown {
+    width: 240px;
+    margin-right: 10px;
+}
+
+
+.ListBoxLab {
+    padding-top:5px;
+    text-align: center;
+}
+
+.ProjectWTree {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.ChangeableTreeButton {
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-top: 2px;
+}
+
+.ChangeableTree, .ChangeableList, .CustomList {
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    border-right-style: solid;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: black;
+    border-bottom-color: black;
+    border-left-color: black;
+    border-right-color: black;
+}
+
+.ReportPopup {
+    background-color: #ffffff;
+
+    border-right-style: solid;
+    border-left-style: solid;
+    border-bottom-style: solid;
+    border-top-style: solid;
+    border-right-width: 2px;
+    border-left-width: 2px;
+    border-bottom-width: 2px;
+    border-top-width: 2px;
+    border-right-color: #1c449c;
+    border-left-color: #1c449c;
+    border-bottom-color: #1c449c;
+    border-top-color: #1c449c;
+}
+
+.PopupConfirmationText {
+    text-align: center;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+.PopupInfoText {
+    
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+.PopupButtons {
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    
+    text-align: center;
+}
+
+.SignOut {
+    color: #1c449c;
+    cursor: pointer;
+    width: 90px;
+}
+
+.Login {
+    font-weight: bolder;
+    text-align: center;
+}
+
+.CommonCheckboxItem {
+    width: 200px;
+    display: block;
+}
+
+.CheckboxField {
+    width: 400px;
+    min-height: 20px;
+}
+
+/*---------------------------- Activity Panel -------------------------------*/
+
+.ActivityScollPanel {
+    border-top-style: solid;
+    border-bottom-style: solid;
+    margin-bottom: 5px;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-top-color: #1c449c;
+    border-bottom-color: #1c449c;
+}
+
+.ActivityHeadLab {
+    text-align: center;
+    font-weight: bold;
+}
+
+.ActivityDay, .ActivityHours {
+    width: 60px;
+}
+
+.ActivityCommitted {
+    width: 40px;
+}
+
+.ActivityStdCombo {
+    width: 100px;
+}
+
+.ActivityDayLong {
+    width: 120px;
+}
+
+.ActivityWorkpackage, .ActivityProjects, .ActivityButton, .ActivityCategory {
+    width: 145px;
+}
+
+.ActivityKindOfHoliday {
+    width: 280px;
+}
+
+.ActivityWorkpackage, .ActivityProjects, .ActivityCategory, .ActivityDay, .ActivityDayLong, .ActionTime {
+    cursor: pointer;
+}
+
+.ActivityDeleteButton {
+    width: 30px;
+    height: 20px;
+    margin-top: 2px;
+}
+
+.ActivityDescription {
+    width: 400px;
+}
+
+.ControlPanel, .ActivityHeadPanel {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.ActivityPanel {
+    width: 100%;
+}
+
+.ActivityButtonPanel {
+    width: 50%;
+    margin-bottom:10px;
+}
+
+.SingleActivityPanel {
+    margin-top: 5px;
+}
+
+.ActivityControl {
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+.ActivityLab {
+    margin-left: 5px;
+    margin-right: 5px;
+    padding-top: 5px;
+}
+
+.HolidayActivityPanel {
+    margin-left: 5px;
+    margin-right: 5px;
+    text-align: left;
+}
+
+.firstActivityForDay {
+    margin-top: 10px;
+}
+
+.Width100 {
+    width: 100%;    
+}
+
+.ActionTime {
+    width: 100%;    
+}
+
+/*----------------------------- Ende Activity Panel --------------------------*/
+
+
+/*---------------------------- Popup Calendar --------------------------------*/
+.gwt-PopupPanel {
+    border: none;
+}
+
+.PopupCalendarTopPanel {
+    background-color: #1c449c;
+    color: white;
+    width: 100%
+}
+
+.PopupCalendarPanel {
+    background-color: white;
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    border-right-style: solid;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: #1c449c;
+    border-bottom-color: #1c449c;
+    border-left-color: #1c449c;
+    border-right-color: #1c449c;
+}
+
+.CurrentDate {
+    background-color: #1c44cc;
+    color: white;
+}
+
+.InvalidDay {
+    color: gray;
+    background-color: white;
+}
+
+.DaysOfWeek {
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+}
+
+.MonthButton, .YearButton, .ValidDay {
+    cursor: pointer;
+}
+
+.YearButton {
+    font-weight: bold;
+}
+
+.DaysOfWeek {
+    background-color: #7e96ff;
+}
+
+.Weekend {
+    background-color: #b0d1ff;
+}
+/*----------------------------------------------------------------------------*/
+

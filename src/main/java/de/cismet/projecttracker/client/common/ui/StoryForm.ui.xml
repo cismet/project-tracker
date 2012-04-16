@@ -1,0 +1,33 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		.input-component {
+			width: 100%;
+		}
+	</ui:style>
+	<g:HTMLPanel>
+		<div
+			style="position: relative; top: auto; left: auto; margin: 0 auto; z-index: 1"
+			class="modal">
+			<div class="modal-header">
+        <h3>Activity</h3>
+				<!--a class="close" href="">×</a-->
+			</div>
+			<div class="modal-body">
+                            <div>Project:</div>
+                            <g:ListBox ui:field="project" styleName="{style.input-component}" />
+                            <div>Workpackage:</div>
+                            <g:ListBox ui:field="workpackage" styleName="{style.input-component}" />
+                            <div>Description:</div>
+                            <g:TextBox ui:field="description" styleName="{style.input-component}" />
+                            <div>Duration (Example: 4:30):</div>
+                            <g:TextBox ui:field="duration" styleName="{style.input-component}" />
+			</div>
+			<div class="modal-footer">
+				<g:Button styleName="btn primary" text="Cancel" ui:field="cancelButton" />
+				<g:Button styleName="btn primary" text="Create" ui:field="button" />
+			</div>
+		</div>
+	</g:HTMLPanel>
+</ui:UiBinder>

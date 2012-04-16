@@ -1,0 +1,317 @@
+/* Override some defaults */
+html, body {
+    background-color: #eee; 
+
+}
+body {
+    padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
+}
+.container > footer p {
+    text-align: center; /* center align it with the container */
+}
+.container {
+    width: 820px; /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
+}
+
+/* The white background content wrapper */
+.container > .content {
+    background-color: #fff;
+    opacity: 1;
+    padding: 20px;
+    margin: 0 -20px; /* negative indent the amount of the padding to maintain the grid system */
+    -webkit-border-radius: 0 0 6px 6px;
+    -moz-border-radius: 0 0 6px 6px;
+    border-radius: 0 0 6px 6px;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+
+/* Page header tweaks */
+.page-header {
+    background-color: #f5f5f5;
+    padding: 20px 20px 10px;
+    margin: -20px -20px 0px;
+}
+
+.white {
+        color: #FFFFFF;
+        font-size: 15px;
+}
+
+.span1V2 {
+  width: 90px;
+}
+
+/* Give a quick and non-cross-browser friendly divider */
+.content .span4 {
+    margin-left: 0;
+    padding-left: 19px;
+    border-left: 1px solid #eee;
+}
+
+.topbar .btn {
+    border: 0;
+}
+
+.pull-center {
+    text-align: center;
+}
+
+
+.loginPanel {
+  margin: 5px 0 0 0;
+  position: relative;
+  -khtml-opacity: 1;
+  opacity: 1;
+  display: block;
+}
+
+.input-small {
+    margin-right: 5px;
+    height: 27px;
+    width: 110px;
+}
+
+.user-data {
+    display: inline;
+    height: 27px;
+    width: 220px;
+    margin-right: 10px;
+    color: #FFFFFF;
+    font-size: 15px;
+}
+
+.dateBoxPopup {
+	z-index: 2;
+}
+
+.normal-text {
+	color: #404040;
+}
+
+.topbar {
+        text-align: center;
+        opacity:0.8;
+}
+.LabelLink {
+        display: inline;
+        width: 80px;
+        height: 40px;
+        float: left;
+        line-height: 40px;
+        text-decoration: none;
+        color: #a2a2a2;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+        text-align: center;
+        vertical-align: middle;
+}
+
+.formLabel {
+    display: inline;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+.closeButton {
+    font-size: 12px !important;
+    cursor: pointer !important;
+    margin-top: -5px !important;
+}
+
+.verticalScroller {
+        overflow-y: auto !important;
+        overflow-x: hidden;
+}
+
+.noxoverflow {
+        overflow-x: hidden;
+}
+
+.recent-tasks {
+    margin-top: 57px !important;
+    margin-right: 10px !important;
+    margin-left: -260px !important;
+    overflow-y: hidden;
+}
+
+.my-recent-tasks {
+    margin-top: 57px !important;
+    margin-right: 10px !important;
+    margin-left: -140px !important;
+    overflow-y: hidden;
+}
+
+.fav-tasks {
+    margin-top: 57px !important;
+    margin-left: 10px !important;
+    margin-right: -140px !important;
+    margin-bottom: 30px;
+}
+
+.inlineComponent {
+    display: inline !important;
+}
+
+.controlPanel {
+    text-align: right; 
+    
+    border-right-style: solid;
+    border-left-style: solid;
+    border-bottom-style: solid;
+    border-bottom-color: rgba(0, 0, 0, 0.15);
+    border-left-color: rgba(0, 0, 0, 0.15);
+    border-right-color: rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    margin-right: 20px;
+    margin-top: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    width: 818px;
+}
+
+.LabelLink-active {
+        background-color: #171717;
+        color: #FFFFFF;
+}
+
+.LabelLink:hover {
+        text-decoration: none;
+        color: #FFFFFF;
+        cursor: pointer;
+}
+
+.topbar {
+    background-color: #2e2e2e;    
+}
+
+.innertopbar {
+    background-color: #2e2e2e;
+}
+
+.TimeHeader {
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: bold;
+    color: #404040;
+    cursor: pointer;
+}
+
+.timebox {
+    padding: 3px !important;
+    margin-bottom: 5px;
+}
+
+.time-input {
+    font-size: 11px;
+    width: 36px;
+    padding: 0px;
+}
+
+.rowheader::after {
+    clear: none !important;
+    margin-bottom: 30px;
+}
+
+.pre {
+  font-weight: normal;
+  font-style: normal;
+  /*font-family: Monaco, Andale Mono, Courier New, monospace;*/
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  background-color: #f5f5f5;
+  display: block;
+  padding: 8.5px;
+  margin: 0 0 0px;
+  line-height: 14px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  white-space: normal;
+  word-wrap: break-word;    
+}
+
+.proj1 {
+       background-color: rgba(0,160,176,0.5) !important; 
+}
+
+.proj2 {
+       background-color: rgba(106,74,60,0.5) !important; 
+}
+
+.proj3 {
+       background-color: rgba(204,51,63,0.5) !important; 
+}
+
+.proj4 {
+       background-color: rgba(235,104,65,0.5) !important; 
+}
+
+.proj5 {
+       background-color: rgba(237,201,81,0.5) !important; 
+}
+
+.proj6 {
+       background-color: rgba(143,190,00,0.5) !important; 
+}
+
+.proj7 {
+       background-color: rgba(205,215,182,0.5) !important; 
+}
+
+.red-border {
+    border-color: #FF0000 !important;
+}
+
+.contentNode {
+    overflow-y: none;
+    margin: 10px 20px 0px 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.timerow {
+    line-height: 10px;
+}
+
+.gravatar-image {
+    margin-right: 20px;    
+}
+
+
+.row {
+  zoom: 1;
+<!--  margin-left: -20px;-->
+  margin-left: 0px;
+}
+
+.cismet-logo {
+    margin-left: 6px;
+    margin-right: 10px;
+    margin-top: 8px;
+    float: left;
+    background-color: #ffffff;
+}
+
+.times-panel {
+    margin-top: 10px;
+    margin-right: 20px;
+    width: 802px;
+}
+
+.userList {
+    margin-top: 6px;
+    margin-left: 8px;
+}
+
+.totalLab {
+    margin-left: 10px;
+}

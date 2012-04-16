@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-debug</actionName>
+            <displayName>debug</displayName>
+            <goals>
+                <goal>gwt:debug</goal>
+            </goals>
+            <properties>
+                <runTarget>http://localhost:8080/ProjectTracker/ProjectTracker/ProjectTracker.html</runTarget>
+            </properties>
+        </action>
+        <action>
+            <actionName>CUSTOM-gwt-debug</actionName>
+            <displayName>gwt-debug</displayName>
+            <goals>
+                <goal>gwt:debug</goal>
+            </goals>
+        </action>
+    </actions>

@@ -1,0 +1,54 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui"
+	xmlns:t="urn:import:de.cismet.projecttracker.client.common.ui">
+	<ui:style>
+		.taskboard {
+			width: 100%;
+                        text-align: center;
+		}
+                
+                .hourPanel {
+                    margin-top: 10px;
+                    margin-right: 20px;
+                    width: 822px;
+                }
+	</ui:style>
+	<g:HTMLPanel>
+		<g:AbsolutePanel ui:field="boundaryPanel" styleName="{style.hourPanel}">
+			<g:HTMLPanel>
+                            <div class="pre prettyprint">
+			  <div class="row">
+					<div class="span1V2 columns">
+						<g:HTML ui:field="monday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:HTML ui:field="tuesday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:HTML ui:field="wednesday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:HTML ui:field="thursday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:HTML ui:field="friday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:HTML ui:field="saturday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:HTML ui:field="sunday" styleName="{style.taskboard}" />
+					</div>
+				</div>
+                                </div>
+			</g:HTMLPanel>
+		</g:AbsolutePanel>
+	</g:HTMLPanel>
+</ui:UiBinder>

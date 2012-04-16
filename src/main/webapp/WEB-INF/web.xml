@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"-->
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <display-name>GWT-Maven-Archetype</display-name>
+    <session-config>
+        <session-timeout>-1</session-timeout>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+    <servlet>
+        <servlet-name>ProjectService</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.ProjectServiceImpl</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ReportDownload</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.ReportDownload</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DocumentUpload</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.DocumentUpload</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DocumentDownload</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.DocumentDownload</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DocumentDownload</servlet-name>
+        <url-pattern>/ProjectTracker/DocumentDownload/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DocumentUpload</servlet-name>
+        <url-pattern>/ProjectTracker/DocumentUpload</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ReportDownload</servlet-name>
+        <url-pattern>/ProjectTracker/ReportDownload/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProjectService</servlet-name>
+        <url-pattern>/ProjectTracker/ProjectService</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/ProjectTracker/LoginServlet</url-pattern>
+    </servlet-mapping>
+</web-app>
