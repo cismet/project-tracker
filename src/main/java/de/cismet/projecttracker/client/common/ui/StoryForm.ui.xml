@@ -5,6 +5,14 @@
 		.input-component {
 			width: 100%;
 		}
+                
+		.input-component-left {
+			float:left;
+                        width:440px;
+		}
+		.input-component-margin {
+			margin-left: 20px;
+		}
 	</ui:style>
 	<g:HTMLPanel>
 		<div
@@ -22,7 +30,9 @@
                             <div>Description:</div>
                             <g:TextBox ui:field="description" styleName="{style.input-component}" />
                             <div>Duration (Example: 4:30):</div>
-                            <g:TextBox ui:field="duration" styleName="{style.input-component}" />
+                            <g:TextBox ui:field="duration" styleName="{style.input-component-left}" />
+                            <span class="TravelLab">Travel:</span>
+                            <g:CheckBox ui:field="travel" styleName="{style.input-component-margin}" />
 			</div>
 			<div class="modal-footer">
 				<g:Button styleName="btn primary" text="Cancel" ui:field="cancelButton" />

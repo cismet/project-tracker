@@ -56,7 +56,11 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
         mainPanel.add(startTime);
         mainPanel.add(endTime);
         startTime.setText(DateHelper.formatTime(start.getDay()));
-        endTime.setText(DateHelper.formatTime(end.getDay()));
+        if (end != null) {
+            endTime.setText(DateHelper.formatTime(end.getDay()));
+        } else {
+            endTime.setText("");
+        }
         
         startTime.addChangeHandler(this);
         endTime.addChangeHandler(this);
@@ -68,6 +72,7 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
         ActivityDTO activityToSave = null;
         String newDate = null;
         boolean endAtNextDay = false;
+        boolean createNewActivity = false;
         
         if (event.getSource() == startTime) {
             activityToSave = start;
@@ -76,35 +81,80 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
             activityToSave = end;
             newDate = endTime.getText();
             
-            try {
-                Date endDate = DateHelper.parseString(newDate, DateTimeFormat.getFormat("HH:mm"));
-                Date startDate = DateHelper.parseString(startTime.getText(), DateTimeFormat.getFormat("HH:mm"));
-                
-                if (endDate.before(startDate)) {
-                    if (endDate.getHours() > 3) {
-                        ProjectTrackerEntryPoint.outputBox("The end time must not be after 3:59 a.m. at the next day.");
-                        ((TextBox)event.getSource()).setText(DateHelper.formatTime( activityToSave.getDay() ) );
-                        
-                        return;
+            if (!endTime.getText().equals("")) {
+                try {
+                    Date endDate = DateHelper.parseString(newDate, DateTimeFormat.getFormat("HH:mm"));
+                    Date startDate = DateHelper.parseString(startTime.getText(), DateTimeFormat.getFormat("HH:mm"));
+
+                    if (endDate.before(startDate)) {
+                        if (endDate.getHours() > 3) {
+                            ProjectTrackerEntryPoint.outputBox("The end time must not be after 3:59 a.m. at the next day.");
+                            ((TextBox)event.getSource()).setText(DateHelper.formatTime( activityToSave.getDay() ) );
+
+                            return;
+                        }
+                        endAtNextDay = true;
                     }
-                    endAtNextDay = true;
+                    
+                    if (activityToSave == null) {
+                        end = new ActivityDTO();
+                        end.setKindofactivity(ActivityDTO.END_OF_DAY);
+                        end.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
+                        end.setDay((Date)start.getDay().clone());
+                        activityToSave = end;
+                        createNewActivity = true;
+                    }
+                } catch (IllegalArgumentException e) {
+                    ((TextBox)event.getSource()).setText(DateHelper.formatTime( activityToSave.getDay() ) );
+                    return;
                 }
-            } catch (IllegalArgumentException e) {
-                ((TextBox)event.getSource()).setText(DateHelper.formatTime( activityToSave.getDay() ) );
-                return;
+            } else {
+                activityToSave = null;
             }
         }
+        BasicRollbackCallback<ActivityDTO> callback = null;
+        BasicAsyncCallback<Long> createCallback = null;
         
-        BasicRollbackCallback<ActivityDTO> callback = new BasicRollbackCallback<ActivityDTO>(activityToSave) {
+        if (!createNewActivity) {
+            if (activityToSave == null) {
+                if (end != null) {
+                    BasicAsyncCallback<Void> deleteCallback = new BasicAsyncCallback<Void>() {
 
-            @Override
-            protected void afterExecution(ActivityDTO result, boolean operationFailed) {
-                if (!operationFailed) {
-
+                        @Override
+                        protected void afterExecution(Void result, boolean operationFailed) {
+                            if (!operationFailed) {
+                                end = null;
+                            }
+                        }
+                    };
+                            
+                    ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(end, deleteCallback);
+                    return;
                 }
-            }
+            } else {
+                callback = new BasicRollbackCallback<ActivityDTO>(activityToSave) {
 
-        };
+                    @Override
+                    protected void afterExecution(ActivityDTO result, boolean operationFailed) {
+                        if (!operationFailed) {
+
+                        }
+                    }
+
+                };
+            }
+        } else {
+            createCallback = new BasicAsyncCallback<Long>() {
+
+                @Override
+                protected void afterExecution(Long result, boolean operationFailed) {
+                    if (!operationFailed) {
+                        end.setId(result);
+                    }
+                }
+
+            };
+        }
         
         try {
             Date time = DateHelper.parseString(newDate, DateTimeFormat.getFormat("HH:mm"));
@@ -120,8 +170,11 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
             }
             time = DateHelper.createDateObject(dayOfActivity, time);
             activityToSave.setDay(time);
-            ProjectTrackerEntryPoint.getProjectService(true).saveActivity(activityToSave, callback);
-
+            if (!createNewActivity) {
+                ProjectTrackerEntryPoint.getProjectService(true).saveActivity(activityToSave, callback);
+            } else {
+                ProjectTrackerEntryPoint.getProjectService(true).createActivity(activityToSave, createCallback);
+            }
             fireTimeChanged();
         } catch (IllegalArgumentException e) {
             ((TextBox)event.getSource()).setText(DateHelper.formatTime( activityToSave.getDay() ) );
@@ -137,25 +190,27 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
                 @Override
                 protected void afterExecution(Void result, boolean operationFailed) {
                     if (!operationFailed) {
-                    } else {
-                    }
-                }
-            };
-
-            ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(start, callback);
-
-            BasicAsyncCallback<Void> endCallback = new BasicAsyncCallback<Void>() {
-
-                @Override
-                protected void afterExecution(Void result, boolean operationFailed) {
-                    if (!operationFailed) {
                         fireActivityDelete();
                     } else {
                     }
                 }
             };
+            
+            BasicAsyncCallback<Void> endCallback = new BasicAsyncCallback<Void>() {
 
-            ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(end, endCallback);
+                @Override
+                protected void afterExecution(Void result, boolean operationFailed) {
+                    if (!operationFailed) {
+                    } 
+                }
+            };
+
+            if (end != null) {
+                ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(end, endCallback);
+            }
+            ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(start, callback);
+
+
         }
     }
     
@@ -176,7 +231,11 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
     }
     
     public double getHours() {
-        return DateHelper.substract(start.getDay(), end.getDay());
+        if (end != null) {
+            return DateHelper.substract(start.getDay(), end.getDay());
+        } else {
+            return 0.0;
+        }
     }
 
     private void fireActivityDelete() {

@@ -10,6 +10,8 @@ package de.cismet.projecttracker.client.dto;
  * @author therter
  */
 public class WorkCategoryDTO extends BasicDTO<WorkCategoryDTO> {
+    public static final long WORK = 3;
+    public static final long TRAVEL = 4;
     private String name;
     private boolean workpackagerelated = true;
 

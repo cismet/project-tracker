@@ -98,10 +98,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final Logger logger = Logger.getLogger(ProjectServiceImpl.class);
     private static final String RECENT_ACTIVITIES_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid = %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
-            + "order by max(id) desc limit 10;";
+            + "order by max(id) desc limit 30;";
     private static final String RECENT_ACTIVITIES_EX_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid <> %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
-            + "order by max(id) desc limit 10;";
+            + "order by max(id) desc limit 30;";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
     private static boolean initialised = false;
@@ -1674,6 +1674,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 throw new DataRetrievalException(LanguageBundle.ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT);
             }
             
+            if (act.getWorkCategory() == null) {
+                act.setWorkCategory((WorkCategory)dbManager.getObject(WorkCategory.class, WorkCategoryDTO.WORK));
+            }
             List<Activity> actList = checkForMultiActivity(act.getDescription(), act);
             
             for (Activity tmp : actList) {
@@ -1712,6 +1715,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                         newAct.setKindofactivity(act.getKindofactivity());
                         newAct.setWorkPackage(act.getWorkPackage());
                         newAct.setWorkinghours(act.getWorkinghours());
+                        newAct.setWorkCategory(act.getWorkCategory());
                         newAct.setStaff(s);
                         
                         acts.add(newAct);
@@ -1773,6 +1777,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 //            activityHib.setWorkCategory((WorkCategory)dtoManager.merge( getWorkCategories().get(0)));
             String actText = act.toString();
             activityHib.setReports(act.getReports());
+            if (activityHib.getWorkCategory() == null) {
+                activityHib.setWorkCategory((WorkCategory)dbManager.getObject(WorkCategory.class, WorkCategoryDTO.WORK));
+            }
+            
             dbManager.closeSession();
             dbManager = new DBManagerWrapper();
             dbManager.saveObject( activityHib );
@@ -2011,7 +2019,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
      */
     @Override
     public ArrayList<WorkCategoryDTO> getWorkCategories() throws InvalidInputValuesException, DataRetrievalException, NoSessionException {
-        logger.debug("get work category");
+        logger.debug("get work categories");
         checkSession();
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
@@ -2019,13 +2027,29 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             List<WorkCategory> result = (List<WorkCategory>)dbManager.getAllObjects(WorkCategory.class);
             logger.debug( result.size() + " work categories found");
 
-            // convert the server version of the Project type to the client version of the Project type
+            // convert the server version of the WorkCategory types to the client version of the WorkCategory types
             return (ArrayList<WorkCategoryDTO>)dtoManager.clone(result);
         } finally {
             dbManager.closeSession();
         }
     }
 
+    @Override
+    public WorkCategoryDTO getWorkCategory(long id) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException {
+        logger.debug("get work category");
+        checkSession();
+        DBManagerWrapper dbManager = new DBManagerWrapper();
+
+        try {
+            WorkCategory result = (WorkCategory)dbManager.getObject(WorkCategory.class, id);
+
+            // convert the server version of the WorkCategory type to the client version of the WorkCategory type
+            return (WorkCategoryDTO)dtoManager.clone(result);
+        } finally {
+            dbManager.closeSession();
+        }
+    }
+    
 
     /**
      * {@inheritDoc}

@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
@@ -26,6 +27,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
 
     private static TaskFormUiBinder uiBinder = GWT
         .create(TaskFormUiBinder.class);
+    private static WorkCategoryDTO travelCatagory = null;
 
     @UiField
     TextBox description;
@@ -39,6 +41,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     ListBox project;
     @UiField
     ListBox workpackage;
+    @UiField
+    CheckBox travel;
     
     private DialogBox form;
     private TaskStory caller;
@@ -76,6 +80,12 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         initWidget(uiBinder.createAndBindUi(this));
         init();
         description.setText(tn.getActivity().getDescription());
+        if (tn.getActivity().getWorkCategory() != null && 
+                tn.getActivity().getWorkCategory().getId() == WorkCategoryDTO.TRAVEL) {
+            travel.setValue(true);
+        } else {
+            travel.setValue(false);
+        }
         duration.setText(DateHelper.doubleToHours(tn.getActivity().getWorkinghours()));
         setProjectById(tn.getActivity().getWorkPackage().getProject().getId());
         initWorkpackage();
@@ -96,6 +106,22 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     
     @UiHandler("button")
     void onButtonClick(ClickEvent event) {
+        if (travel.getValue() && travelCatagory == null) {
+            BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
+                @Override
+                protected void afterExecution(WorkCategoryDTO result, boolean operationFailed) {
+                    if (!operationFailed) {
+                        if (travelCatagory == null) {
+                            travelCatagory = result;
+                            save();
+                        }
+                    }
+                }
+            };
+
+            ProjectTrackerEntryPoint.getProjectService(true).getWorkCategory(WorkCategoryDTO.TRAVEL, callback);
+            return;
+        }
         save();
     }
 
@@ -116,6 +142,11 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         newActivity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
         newActivity.setKindofactivity(ActivityDTO.ACTIVITY);
         newActivity.setWorkinghours(workinghours);
+        if (travel.getValue()) {
+            newActivity.setWorkCategory(travelCatagory);
+        } else {
+            newActivity.setWorkCategory(null);
+        }
         
         if (modification) {
             BasicAsyncCallback<ActivityDTO> callback = new BasicAsyncCallback<ActivityDTO>() {
@@ -154,7 +185,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     
     private void init() {
         List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
-        
+//        travel.setText("Travel: ");
         if (result == null) {
             BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
                 @Override

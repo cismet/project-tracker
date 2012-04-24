@@ -611,6 +611,15 @@ public interface ProjectService extends RemoteService {
     public ArrayList<WorkCategoryDTO> getWorkCategories() throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
     
     /**
+     * @param workCategory this object should contain the values of the new work category, but it should not contain an ID.
+     * @return the work category with the given id
+     * @throws DataRetrievalException
+     * @throws PermissionDenyException
+     * @throws NoSessionException
+     */
+    public WorkCategoryDTO getWorkCategory(long id) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
+    
+    /**
      * Creates a new project costs.
      * @param projectCosts this object should contain the values of the new project costs, but it should not contain an ID.
      * @return

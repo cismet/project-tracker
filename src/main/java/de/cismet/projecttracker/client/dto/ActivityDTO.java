@@ -27,6 +27,7 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
     public static final int SPECIAL_HOLIDAY_ID = 411;
     private StaffDTO staff;
     private WorkPackageDTO workPackage;
+    private WorkCategoryDTO workCategory;
     private double workinghours;
     private String description;
     private Date day;
@@ -39,10 +40,11 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
 
     
 
-    public ActivityDTO(long id, StaffDTO staff, WorkPackageDTO workPackage, double workinghours, String description, Date day, boolean committed, int kindofactivity) {
+    public ActivityDTO(long id, StaffDTO staff, WorkPackageDTO workPackage, WorkCategoryDTO workCategory, double workinghours, String description, Date day, boolean committed, int kindofactivity) {
         this.id = id;
         this.staff = staff;
         this.workPackage = workPackage;
+        this.workCategory = workCategory;
         this.workinghours = workinghours;
         this.description = description;
         this.day = day;
@@ -77,6 +79,20 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
      */
     public void setWorkPackage(WorkPackageDTO workPackage) {
         this.workPackage = workPackage;
+    }
+
+    /**
+     * @return the workCategory
+     */
+    public WorkCategoryDTO getWorkCategory() {
+        return workCategory;
+    }
+
+    /**
+     * @param workCategory the workCategory to set
+     */
+    public void setWorkCategory(WorkCategoryDTO workCategory) {
+        this.workCategory = workCategory;
     }
 
     /**
@@ -151,7 +167,7 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
 
     @Override
     public ActivityDTO createCopy() {
-        return new ActivityDTO(id, staff, workPackage, workinghours, description, day, committed, kindofactivity);
+        return new ActivityDTO(id, staff, workPackage, workCategory, workinghours, description, day, committed, kindofactivity);
     }
 
     @Override
@@ -159,6 +175,7 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
         this.id = obj.id;
         this.staff = obj.staff;
         this.workPackage = obj.workPackage;
+        this.workCategory = obj.workCategory;
         this.workinghours = obj.workinghours;
         this.description = obj.description;
         this.day = obj.day;
@@ -200,7 +217,7 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
             ActivityDTO other = (ActivityDTO)obj;
             if (this.id == other.id &&
                    isSameDTOEntity(this.workPackage , other.workPackage) && isSameDTOEntity(this.staff, other.staff) &&
-                   this.workinghours == other.workinghours && this.kindofactivity == other.kindofactivity &&
+                   isSameDTOEntity(this.workCategory, other.workCategory) && this.workinghours == other.workinghours && this.kindofactivity == other.kindofactivity &&
                    isSame(this.description, other.description) && isSame(this.day, other.day) && this.committed == other.committed) {
                 return true;
             }

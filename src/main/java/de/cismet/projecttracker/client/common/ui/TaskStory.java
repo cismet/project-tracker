@@ -303,7 +303,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 
         for (HolidayType tmp : holidays) {
             int type = tmp.isHalfHoliday() ? ActivityDTO.HALF_HOLIDAY : ActivityDTO.HOLIDAY;
-            addTask(new ActivityDTO(0, null, null, tmp.getHours(), tmp.getName(), tmp.getDate(), true, type));
+            addTask(new ActivityDTO(0, null, null, null, tmp.getHours(), tmp.getName(), tmp.getDate(), true, type));
         }
     }
     

@@ -200,7 +200,8 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
                 end = tmp;
             }
         }
-        if (begin != null && end != null) {
+//        if (begin != null && end != null) {
+        if (begin != null) {
             addTask(day.getDay(), begin, end);
         }
     }
