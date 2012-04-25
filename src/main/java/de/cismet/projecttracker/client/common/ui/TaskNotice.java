@@ -13,6 +13,7 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskDeleteListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskNoticeListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
+import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.listener.BasicRollbackCallback;
@@ -123,7 +124,14 @@ public class TaskNotice extends Composite implements ClickHandler {
     
     protected String getTextFromActivity() {
         String desc = getDesccription(activity.getDescription());
-        StringBuilder text = new StringBuilder(activity.getWorkPackage().getAbbreviation());
+        StringBuilder text = new StringBuilder();
+        
+        if (activity.getWorkCategory() != null && activity.getWorkCategory().getId() == WorkCategoryDTO.TRAVEL) {
+            text.append("Travel: ").append(activity.getWorkPackage().getAbbreviation());
+        } else {
+            text.append(activity.getWorkPackage().getAbbreviation());
+        }
+        
         double hours = Math.round( activity.getWorkinghours() * 100 ) / 100.0;
         text.append("<br />").append(desc);
 
