@@ -26,6 +26,7 @@
       <maven.compiler.source>1.6</maven.compiler.source>
       <maven.compiler.target>1.6</maven.compiler.target>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
   </properties>
 
   <dependencies>
@@ -159,7 +160,7 @@
         </configuration>
       </plugin-->
 
-        <plugin>
+        <!--plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
@@ -170,7 +171,6 @@
                         <goal>copy</goal>
                     </goals>
                     <configuration>
-                        <!-- find out if regex can be used-->
                         <artifactItems>
                             <artifactItem>
                                 <groupId>de.cismet.web</groupId>
@@ -198,7 +198,7 @@
                     </configuration>
                 </execution>
             </executions>
-        </plugin>
+        </plugin-->
     </plugins>
     <finalName>ProjectTracker</finalName>
   </build>

@@ -32,7 +32,9 @@ import java.util.List;
  * @author therter
  */
 public class SheetsPanel extends Composite implements ResizeHandler, ClickHandler, ChangeHandler, TaskStoryListener, TimeStoryListener, MenuListener {
+
     private static final String WEEKLY_HOURS_OF_WORK = "Total: ";
+    private static final String ACCOUNT_BALANCE = "Account Balance: ";
     private FlowPanel mainPanel = new FlowPanel();
     private FlowPanel pageHeaderPanel = new FlowPanel();
     private FlowPanel contentNodeParentPanel = new FlowPanel();
@@ -52,6 +54,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private ExtendedRecentTaskStory allRecent = new ExtendedRecentTaskStory();
     private DailyHoursOfWork dailyHours = new DailyHoursOfWork();
     private Label weekHoursLab = new Label(WEEKLY_HOURS_OF_WORK);
+    private Label accountBalanceLab = new Label(ACCOUNT_BALANCE);
 
     public SheetsPanel() {
         init();
@@ -60,12 +63,11 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         tasks.addTaskStoryListener(this);
         times.addTimeStoryListener(this);
     }
-    
-    
+
     private void init() {
         Label yearLab = new Label("Year:");
         Label weekLab = new Label("Week:");
-        
+
         pageHeaderPanel.setStyleName("page-header");
         contentNodeParentPanel.setStyleName("span16");
         recent.setStyleName("my-recent-tasks pull-left pre prettyprint noxoverflow");
@@ -89,7 +91,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         yearLab.setStyleName("formLabel");
         weekLab.setStyleName("formLabel");
         weekHoursLab.setStyleName("formLabel totalLab");
-        
+        accountBalanceLab.setStyleName("formLabel accountBalanceLab");
         prevWeek.addStyleName("btn primary pull-left span3");
         nextWeek.addStyleName("btn info pull-right span3");
         controlPanel.add(yearLab);
@@ -97,6 +99,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         controlPanel.add(weekLab);
         controlPanel.add(week);
         controlPanel.add(weekHoursLab);
+        controlPanel.add(accountBalanceLab);
         buttonPanel.add(prevWeek);
         buttonPanel.add(nextWeek);
         buttonPanel.add(controlPanel);
@@ -106,15 +109,14 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         mainPanel.add(favs);
         mainPanel.add(pageHeaderPanel);
         mainPanel.add(contentNodeParentPanel);
-        
+
         year.addChangeHandler(this);
         week.addChangeHandler(this);
-        
+
         fillYear();
         fillWeek();
     }
 
-    
     private void fillYear() {
         int currentYear = (new Date()).getYear() + 1900;
 
@@ -122,10 +124,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         for (int i = (currentYear + 1); i >= 2009; --i) {
             year.addItem("" + i);
         }
-        
+
         year.setSelectedIndex(year.getSelectedIndex() + 1);
     }
-
 
     private void fillWeek() {
         int selectedWeek = getSelectedWeek();
@@ -147,21 +148,21 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     public int getSelectedWeek() {
         try {
             if (week.getSelectedIndex() > -1) {
-                return Integer.parseInt( week.getItemText( week.getSelectedIndex() ) );
+                return Integer.parseInt(week.getItemText(week.getSelectedIndex()));
             }
         } catch (NumberFormatException e) {
             //no week selected. return -1
         }
         return -1;
     }
-    
+
     public int getSelectedYear() {
         try {
             if (year.getSelectedIndex() > -1) {
-                return Integer.parseInt( year.getItemText( year.getSelectedIndex() ) );
+                return Integer.parseInt(year.getItemText(year.getSelectedIndex()));
             }
         } catch (NumberFormatException e) {
-            ProjectTrackerEntryPoint.outputBox("NumberFormatException for number: " + year.getItemText( year.getSelectedIndex() ) );
+            ProjectTrackerEntryPoint.outputBox("NumberFormatException for number: " + year.getItemText(year.getSelectedIndex()));
         }
         return (new Date()).getYear() + 1900;
     }
@@ -205,12 +206,13 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         }
         refresh();
     }
-    
+
     public void refresh() {
         final int sweek = getSelectedWeek();
         final int syear = getSelectedYear();
-        
+
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
+
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
                 if (!operationFailed) {
@@ -222,6 +224,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     allRecent.setTaskStory(tasks);
                     dailyHours.initialise(firstDay, times, tasks);
                     refreshWeeklyHoursOfWork();
+                    refreshAccountBalance();
                     ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
                 }
             }
@@ -233,14 +236,27 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     public void onChange(ChangeEvent event) {
         refresh();
     }
-    
+
+    private void refreshAccountBalance() {
+        final BasicAsyncCallback<Double> callback = new BasicAsyncCallback<Double>() {
+
+            @Override
+            protected void afterExecution(Double result, boolean operationFailed) {
+                if (!operationFailed) {
+                    accountBalanceLab.setText(ACCOUNT_BALANCE + " " + DateHelper.doubleToHours(result) + " h");
+                }
+            }
+        };
+        ProjectTrackerEntryPoint.getProjectService(true).getAccountBalance(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
+    }
+
     private void refreshWeeklyHoursOfWork() {
         double hours = 0.0;
-        
-        for (int i = 0; i < 7;++i) {
+
+        for (int i = 0; i < 7; ++i) {
             hours += times.getTimeForDay(i);
             List<TaskNotice> taskList = tasks.getTasksForDay(i);
-            
+
             for (TaskNotice tmp : taskList) {
                 if (tmp.getActivity().getKindofactivity() == ActivityDTO.HOLIDAY) {
                     hours += tmp.getActivity().getWorkinghours();

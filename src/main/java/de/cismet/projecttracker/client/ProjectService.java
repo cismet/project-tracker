@@ -461,7 +461,13 @@ public interface ProjectService extends RemoteService {
      * @throws NoSessionException
      */
     public void deleteActivity(ActivityDTO activity) throws InvalidInputValuesException, DataRetrievalException, PersistentLayerException, PermissionDenyException, NoSessionException;
-
+    
+    /**
+     * returns the account balance of the given Staff
+     * @param staff the account balance of this user will be returned. 
+     * @return 
+     */
+    public Double getAccountBalance(StaffDTO staff); 
 
     /**
      * @param staff the activities of this user will be returned. If the staff is null, the activities of the current users will be returned
