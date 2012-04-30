@@ -30,7 +30,7 @@ body {
 /* Page header tweaks */
 .page-header {
     background-color: #f5f5f5;
-    padding: 20px 20px 10px;
+    padding: 20px 20px 5px;
     margin: -20px -20px 0px;
 }
 
@@ -129,21 +129,21 @@ body {
 }
 
 .recent-tasks {
-    margin-top: 57px !important;
+    margin-top: 75px !important;
     margin-right: 10px !important;
     margin-left: -260px !important;
     overflow-y: hidden;
 }
 
 .my-recent-tasks {
-    margin-top: 57px !important;
+    margin-top: 75px !important;
     margin-right: 10px !important;
     margin-left: -140px !important;
     overflow-y: hidden;
 }
 
 .fav-tasks {
-    margin-top: 57px !important;
+    margin-top: 75px !important;
     margin-left: 10px !important;
     margin-right: -140px !important;
     margin-bottom: 30px;
@@ -318,4 +318,8 @@ body {
 
 .TravelLab {
     margin-left: 10px;
+}
+
+.lowerCtrlPanel-margin{
+    padding-top: 5px;
 }
