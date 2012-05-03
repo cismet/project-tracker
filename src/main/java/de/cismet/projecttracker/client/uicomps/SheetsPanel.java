@@ -4,6 +4,8 @@
  */
 package de.cismet.projecttracker.client.uicomps;
 
+import com.allen_sauer.gwt.dnd.client.PickupDragController;
+import com.allen_sauer.gwt.dnd.client.drop.IndexedDropController;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -114,7 +116,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         mainPanel.add(favs);
         mainPanel.add(pageHeaderPanel);
         mainPanel.add(contentNodeParentPanel);
-
         year.addChangeHandler(this);
         week.addChangeHandler(this);
 
@@ -284,31 +285,37 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     @Override
     public void taskNoticeCreated(TaskStoryEvent e) {
         refreshWeeklyHoursOfWork();
+        refreshAccountBalance();
     }
 
     @Override
     public void taskNoticeChanged(TaskStoryEvent e) {
         refreshWeeklyHoursOfWork();
+        refreshAccountBalance();
     }
 
     @Override
     public void taskNoticeDeleted(TaskStoryEvent e) {
         refreshWeeklyHoursOfWork();
+        refreshAccountBalance();
     }
 
     @Override
     public void timeNoticeCreated(TimeStoryEvent e) {
         refreshWeeklyHoursOfWork();
+        refreshAccountBalance();
     }
 
     @Override
     public void timeNoticeChanged(TimeStoryEvent e) {
         refreshWeeklyHoursOfWork();
+        refreshAccountBalance();
     }
 
     @Override
     public void timeNoticeDeleted(TimeStoryEvent e) {
         refreshWeeklyHoursOfWork();
+        refreshAccountBalance();
     }
 
     @Override

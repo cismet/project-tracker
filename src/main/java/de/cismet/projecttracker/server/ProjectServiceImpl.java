@@ -37,6 +37,7 @@ import de.cismet.projecttracker.client.exceptions.NoSessionException;
 import de.cismet.projecttracker.client.exceptions.PermissionDenyException;
 import de.cismet.projecttracker.client.exceptions.PersistentLayerException;
 import de.cismet.projecttracker.client.exceptions.ReportNotFoundException;
+import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.types.ReportType;
@@ -101,8 +102,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String RECENT_ACTIVITIES_EX_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid <> %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
             + "order by max(id) desc limit 30;";
-    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(workinghours)  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day <= '%4$s' AND workpackageid NOT IN (284, 407,408 ,409, 410,411);";
-    private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day <= '%4$s' AND workpackageid IN (409,410,411);";
+    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(workinghours)  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
+    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
+    private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid IN (409,410,411);";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
     private static boolean initialised = false;
@@ -2727,9 +2729,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
                 final double whow = contract.getWhow();
                 SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+                final GregorianCalendar queryToDate = new GregorianCalendar();
+                queryToDate.setTime(contractToDateCal.getTime());
+                queryToDate.add(GregorianCalendar.DATE, 1);
                 //calculate the real working time exclude pause and freizeitausgleich activities
                 Statement s = dbManager.getDatabaseConnection().createStatement();
-                ResultSet rs = s.executeQuery(String.format(REAL_WORKING_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(contractToDateCal.getTime())));
+                ResultSet rs = s.executeQuery(String.format(REAL_WORKING_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
                 if (rs != null) {
                     while (rs.next()) {
                         realWorkingTime += rs.getDouble(1);
@@ -2737,10 +2742,18 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 }
 
                 //include holiday and illness activities
-                rs = s.executeQuery(String.format(REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(contractToDateCal.getTime())));
+                rs = s.executeQuery(String.format(REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
                 if (rs != null) {
                     while (rs.next()) {
                         realWorkingTime += rs.getDouble(1);
+                    }
+                }
+
+                //traveltime just with the half time
+                rs = s.executeQuery(String.format(TRAVEL_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
+                if (rs != null) {
+                    while (rs.next()) {
+                        realWorkingTime += rs.getDouble(1) / 2;
                     }
                 }
                 //calculate the nominal working time. 
@@ -2750,25 +2763,30 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         } catch (SQLException ex) {
             logger.error("Error during determining Real_Working_Time. AccountBalance may not be correct", ex);
-        } catch (Exception e) {
-            logger.debug("fehler beim datenbankzugriff ", e);
         }
-
         final Double result = (realWorkingTime - nominalWorkingTime);
 
         return result;
     }
 
-    private static long calculateNominalWorkingDays(GregorianCalendar from, GregorianCalendar to) {
+    private long calculateNominalWorkingDays(GregorianCalendar from, GregorianCalendar to) {
         final long diff = to.getTime().getTime() - from.getTime().getTime();
 
         final long days = Math.round(diff / (24 * 60 * 60 * 1000d));
         final long weeks = Math.round(days / 7);
         //exclude sa and so
         long workingDays = days - (2 * weeks);
+        
+        //check if from or to date are sa or so
+        if (from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY 
+                || from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY 
+                || to.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY 
+                || to.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY) {
+            workingDays--;
+        }
 
         HolidayEvaluator hev = new HolidayEvaluator();
-        final long holidays = hev.getNumberOfHolidays(from, to);
+        final long holidays = hev.getNumberOfHolidaysOnWeekDays(from, to);
 
         workingDays -= holidays;
 
