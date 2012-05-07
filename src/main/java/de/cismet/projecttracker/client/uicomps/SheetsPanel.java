@@ -57,6 +57,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private DailyHoursOfWork dailyHours = new DailyHoursOfWork();
     private Label weekHoursLab = new Label(WEEKLY_HOURS_OF_WORK);
     private Label accountBalanceLab = new Label(ACCOUNT_BALANCE);
+    private long lastAccountBalanceCalc = 0;
 
     public SheetsPanel() {
         init();
@@ -253,7 +254,11 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 }
             }
         };
-        ProjectTrackerEntryPoint.getProjectService(true).getAccountBalance(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
+        
+        if (System.currentTimeMillis() - lastAccountBalanceCalc > 100) {
+            lastAccountBalanceCalc = System.currentTimeMillis();
+            ProjectTrackerEntryPoint.getProjectService(true).getAccountBalance(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
+        }
     }
 
     private void refreshWeeklyHoursOfWork() {

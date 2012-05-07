@@ -102,8 +102,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String RECENT_ACTIVITIES_EX_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid <> %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
             + "order by max(id) desc limit 30;";
-    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(workinghours)  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
-    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
+    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
+//    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
     private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid IN (409,410,411);";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
@@ -1623,7 +1623,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         checkUserOrAdminPermission(act.getStaff().getId());
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
-        checkActivityDate(activity);
+//        checkActivityDate(activity);
         try {
             if (activity.getKindofactivity() != ActivityDTO.BEGIN_OF_DAY
                     && activity.getKindofactivity() != ActivityDTO.END_OF_DAY
@@ -1690,10 +1690,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             WorkPackagePeriodDTO period = activity.getWorkPackage().determineMostRecentPeriod();
 
             if (period != null) {
-                if (activity.getDay().before(period.getFromdate())) {
-                    throw new InvalidInputValuesException(LanguageBundle.ACTIVITY_BEFORE_START_OF_THE_PROJECT_COMPONENT);
-                } else if (period.getTodate() != null && activity.getDay().after(period.getTodate())) {
-                    throw new InvalidInputValuesException(LanguageBundle.ACTIVITY_AFTER_END_OF_THE_PROJECT_COMPONENT);
+                if ( !isDateLessOrEqual( period.getFromdate(), activity.getDay() ) ) {
+                    throw new InvalidInputValuesException( LanguageBundle.ACTIVITY_BEFORE_START_OF_THE_PROJECT_COMPONENT );
+                } else if ( period.getTodate() != null && !isDateLessOrEqual(activity.getDay(), period.getTodate())) {
+                    throw new InvalidInputValuesException( LanguageBundle.ACTIVITY_AFTER_END_OF_THE_PROJECT_COMPONENT );
                 }
             }
         }
@@ -1713,7 +1713,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
         checkUserOrAdminPermission(activityHib.getStaff().getId());
         DBManagerWrapper dbManager = new DBManagerWrapper();
-        checkActivityDate(activity);
+//        checkActivityDate(activity);
 
         try {
             warningSystem.saveActivity(activityHib);
@@ -2526,6 +2526,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         return result;
     }
+    
+    public boolean isDataChanged() throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException {
+        return false;
+    }
 
     private static boolean isSameDay(Date date, Date otherDate) {
         if (date == null && otherDate == null) {
@@ -2693,16 +2697,17 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     @Override
-    public Double getAccountBalance(StaffDTO staff) {
+    public Double getAccountBalance(StaffDTO staff) throws DataRetrievalException, NoSessionException, PermissionDenyException {
 
         double realWorkingTime = 0;
         double nominalWorkingTime = 0;
         //calculate the nominal workin days to determine the nominal working time
         long nominalWorkingDays = 0;
+        DBManagerWrapper dbManager = new DBManagerWrapper();
 
+        checkUserOrAdminPermission(staff.getId());
 
         try {
-            DBManagerWrapper dbManager = new DBManagerWrapper();
             final Session hibernateSession = dbManager.getSession();
             List contracts = hibernateSession.createCriteria(Contract.class).add(Restrictions.eq("staff.id", staff.getId())).list();
             final Iterator it = contracts.iterator();
@@ -2714,7 +2719,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 //if the contract is unlimeted calculate till now
                 final GregorianCalendar contractFromDateCal = new GregorianCalendar();
 
-                if (contract.getTodate() != null) {
+                if (contract.getTodate() != null && contract.getTodate().getTime() < contractToDateCal.getTimeInMillis()) {
                     contractToDateCal.setTime(contract.getTodate());
                 }
 
@@ -2750,12 +2755,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 }
 
                 //traveltime just with the half time
-                rs = s.executeQuery(String.format(TRAVEL_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
-                if (rs != null) {
-                    while (rs.next()) {
-                        realWorkingTime += rs.getDouble(1) / 2;
-                    }
-                }
+//                rs = s.executeQuery(String.format(TRAVEL_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
+//                if (rs != null) {
+//                    while (rs.next()) {
+//                        realWorkingTime += rs.getDouble(1) / 2;
+//                    }
+//                }
                 //calculate the nominal working time. 
                 nominalWorkingDays = calculateNominalWorkingDays(contractFromDateCal, contractToDateCal);
                 nominalWorkingTime += (whow / 5) * nominalWorkingDays;
@@ -2763,6 +2768,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         } catch (SQLException ex) {
             logger.error("Error during determining Real_Working_Time. AccountBalance may not be correct", ex);
+            throw new DataRetrievalException(ex.getMessage());
+        } finally {
+            dbManager.closeSession();
         }
         final Double result = (realWorkingTime - nominalWorkingTime);
 

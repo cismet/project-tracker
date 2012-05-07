@@ -467,7 +467,7 @@ public interface ProjectService extends RemoteService {
      * @param staff the account balance of this user will be returned. 
      * @return 
      */
-    public Double getAccountBalance(StaffDTO staff); 
+    public Double getAccountBalance(StaffDTO staff) throws DataRetrievalException, NoSessionException, PermissionDenyException; 
 
     /**
      * @param staff the activities of this user will be returned. If the staff is null, the activities of the current users will be returned

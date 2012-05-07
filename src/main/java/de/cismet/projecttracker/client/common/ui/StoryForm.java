@@ -228,7 +228,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
                 for (WorkPackageDTO tmp : wps) {
                     WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
-                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
+//                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
+                    if (tmp.getName() != null && !tmp.getName().toUpperCase().startsWith("WP")) {
                         workpackage.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
                     }
                 }

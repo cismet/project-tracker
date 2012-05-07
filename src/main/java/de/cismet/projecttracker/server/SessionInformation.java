@@ -11,6 +11,7 @@ import de.cismet.projecttracker.report.db.entities.Staff;
 public class SessionInformation {
     private Staff currentUser;
     private boolean admin;
+    private boolean dataChanged = false;
 
     /**
      * @return the currentUser
@@ -32,5 +33,19 @@ public class SessionInformation {
      */
     public boolean isAdmin() {
         return admin;
+    }
+
+    /**
+     * @return the dataChanged
+     */
+    public boolean isDataChanged() {
+        return dataChanged;
+    }
+
+    /**
+     * @param dataChanged the dataChanged to set
+     */
+    public void setDataChanged(boolean dataChanged) {
+        this.dataChanged = dataChanged;
     }
 }
