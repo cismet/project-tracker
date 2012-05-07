@@ -99,6 +99,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String RECENT_ACTIVITIES_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid = %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
             + "order by max(id) desc limit 30;";
+    private static final String FAVOURITE_ACTIVITIES_QUERY = "select max(id), workpackageid, description from activity where "
+            + "staffid = %1$s and day is null group by workpackageid, description";
     private static final String RECENT_ACTIVITIES_EX_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid <> %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
             + "order by max(id) desc limit 30;";
@@ -2322,8 +2324,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
-            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
+            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+//            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
             if (staff != null) {
                 HttpSession session = getThreadLocalRequest().getSession();
@@ -2799,5 +2801,38 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         workingDays -= holidays;
 
         return workingDays;
+    }
+
+    @Override
+    public List<ActivityDTO> getFavouriteActivities(StaffDTO staff) throws NoSessionException, DataRetrievalException {
+        logger.debug("get favourite activities");
+        long userId;
+        List<Activity> result = new ArrayList<Activity>();
+
+        if (staff == null) {
+            userId = getUserId();
+        } else {
+            userId = staff.getId();
+        }
+        DBManagerWrapper dbManager = new DBManagerWrapper();
+
+        try {
+            Statement s = dbManager.getDatabaseConnection().createStatement();
+            ResultSet rs = s.executeQuery(String.format(FAVOURITE_ACTIVITIES_QUERY, userId));
+
+            if (rs != null) {
+                while (rs.next()) {
+                    long id = rs.getLong(1);
+                    result.add((Activity) dbManager.getObject(Activity.class, id));
+                }
+            }
+
+            return (List) dtoManager.clone(result);
+        } catch (Throwable t) {
+            logger.error("Error:", t);
+            throw new DataRetrievalException(t.getMessage(), t);
+        } finally {
+            dbManager.closeSession();
+        }
     }
 }

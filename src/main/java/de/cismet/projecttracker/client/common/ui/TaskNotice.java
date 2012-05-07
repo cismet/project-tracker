@@ -36,37 +36,39 @@ public class TaskNotice extends Composite implements ClickHandler {
     private Label close = new Label("x");
     private List<TaskDeleteListener> listener = new ArrayList<TaskDeleteListener>();
     private List<TaskNoticeListener> taskListener = new ArrayList<TaskNoticeListener>();
-    private boolean dummy;
+    private boolean deleteButtonDisabled;
+    private boolean redBorder;
 
-    
     static {
-        projectStyle.put((long)1,0);
-        projectStyle.put((long)2,1);
-        projectStyle.put((long)18,2);
-        projectStyle.put((long)21,3);
-        projectStyle.put((long)20,4);
-        projectStyle.put((long)10,5);
+        projectStyle.put((long) 1, 0);
+        projectStyle.put((long) 2, 1);
+        projectStyle.put((long) 18, 2);
+        projectStyle.put((long) 21, 3);
+        projectStyle.put((long) 20, 4);
+        projectStyle.put((long) 10, 5);
     }
-    
+
     public TaskNotice(ActivityDTO activity) {
         this(activity, false);
     }
-    
-    public TaskNotice(ActivityDTO activity, boolean dummy) {
-        this.dummy = dummy;
+
+    public TaskNotice(ActivityDTO activity, boolean deleteButtonDisabled) {
+        this.deleteButtonDisabled = deleteButtonDisabled;
         this.activity = activity;
         init();
         initWidget(mainPanel);
     }
 
-
     private void init() {
         lab = new HTML();
-        
-        if (!dummy) {
+
+        if (!deleteButtonDisabled) {
             close.setStyleName("close pull-right closeButton");
             close.addClickHandler(this);
             mainPanel.add(close);
+            this.redBorder = true;
+        } else {
+            this.redBorder = false;
         }
         mainPanel.add(lab);
         refresh();
@@ -78,7 +80,7 @@ public class TaskNotice extends Composite implements ClickHandler {
             if (proj != null) {
                 long projectId = activity.getWorkPackage().getProject().getId();
                 Integer index = projectStyle.get(projectId);
-                
+
                 if (index == null) {
                     index = 6;
                 }
@@ -87,8 +89,8 @@ public class TaskNotice extends Composite implements ClickHandler {
                     index = ADDITIONAL_PROJECT_STYLES.length - 1;
                 }
                 String a = mainPanel.getStyleName();
-                
-                if (activity.getWorkinghours() == 0.0 && !dummy) {
+
+                if (activity.getWorkinghours() == 0.0 && redBorder) {
                     mainPanel.setStyleName(MAIN_STYLES + " red-border " + ADDITIONAL_PROJECT_STYLES[index]);
                 } else {
                     mainPanel.setStyleName(MAIN_STYLES + " " + ADDITIONAL_PROJECT_STYLES[index]);
@@ -121,34 +123,32 @@ public class TaskNotice extends Composite implements ClickHandler {
 //            mainPanel.setStyleName(MAIN_STYLES + " " + ADDITIONAL_PROJECT_STYLES[index]);
 //        }
 //    }
-    
     protected String getTextFromActivity() {
         String desc = getDesccription(activity.getDescription());
         StringBuilder text = new StringBuilder();
-        
+
         if (activity.getWorkCategory() != null && activity.getWorkCategory().getId() == WorkCategoryDTO.TRAVEL) {
             text.append("Travel: ").append(activity.getWorkPackage().getAbbreviation());
         } else {
             text.append(activity.getWorkPackage().getAbbreviation());
         }
-        
-        double hours = Math.round( activity.getWorkinghours() * 100 ) / 100.0;
+
+        double hours = Math.round(activity.getWorkinghours() * 100) / 100.0;
         text.append("<br />").append(desc);
 
-        if (hours != 0.0 &&  !dummy) {
+        if (hours != 0.0 && !deleteButtonDisabled) {
             text.append("<br />").append(DateHelper.doubleToHours(hours)).append(" hours");
         }
 
         return text.toString();
     }
-    
-    
+
     protected String getDesccription(String desc) {
         if (desc == null) {
             return "";
         }
         int i = desc.indexOf("(@");
-        
+
         if (i != -1) {
             String result = desc.substring(0, i);
             return result;
@@ -156,8 +156,7 @@ public class TaskNotice extends Composite implements ClickHandler {
             return desc;
         }
     }
-    
-    
+
     protected String getTooltipTextFromActivity() {
         StringBuilder text = new StringBuilder(activity.getWorkPackage().getProject().getName());
         text.append("\n").append(activity.getWorkPackage().getName());
@@ -165,7 +164,7 @@ public class TaskNotice extends Composite implements ClickHandler {
         if (activity.getDescription() != null) {
             text.append("\n").append(activity.getDescription());
         }
-        
+
         return text.toString();
     }
 
@@ -176,19 +175,17 @@ public class TaskNotice extends Composite implements ClickHandler {
     public ActivityDTO getActivity() {
         return activity;
     }
-    
+
     public void setActivity(ActivityDTO activity) {
         this.activity = activity;
         refresh();
         fireActivityModified();
     }
-    
-    
 
     public void refresh() {
         lab.setHTML(getTextFromActivity());
         mainPanel.setTitle(getTooltipTextFromActivity());
-        lab.setTitle(getTooltipTextFromActivity());        
+        lab.setTitle(getTooltipTextFromActivity());
         setColour();
     }
 
@@ -248,6 +245,16 @@ public class TaskNotice extends Composite implements ClickHandler {
         for (TaskNoticeListener l : taskListener) {
             l.taskChanged(this);
         }
+    }
+
+    public void setDeleteButtonEnabled(boolean aFlag) {
+        deleteButtonDisabled = aFlag;
+        refresh();
+    }
+
+    public void setRedBorderEnabled(boolean aFlag) {
+        redBorder = aFlag;
+        refresh();
     }
 
     @Override

@@ -5,6 +5,7 @@
 package de.cismet.projecttracker.client.uicomps;
 
 import com.allen_sauer.gwt.dnd.client.PickupDragController;
+import com.allen_sauer.gwt.dnd.client.drop.FlowPanelDropController;
 import com.allen_sauer.gwt.dnd.client.drop.IndexedDropController;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -51,7 +52,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private Button nextWeek = new Button("next week", this);
     private Story times = new Story();
     private FavouriteTaskStory favs = new FavouriteTaskStory();
-    private TaskStory tasks = new TaskStory(favs);
+    private TaskStory tasks = new TaskStory();
     private RecentStory recent = new RecentStory();
     private ExtendedRecentTaskStory allRecent = new ExtendedRecentTaskStory();
     private DailyHoursOfWork dailyHours = new DailyHoursOfWork();
@@ -227,8 +228,14 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     times.setTimes(firstDay, result.getActivities());
                     taskControlPanel.initialise(firstDay, tasks, times);
                     tasks.setActivities(firstDay, result.getActivities(), result.getHolidays());
+                    //initialise drag and drop for TaskStory
+                    favs.setTaskStory(tasks);
                     recent.setTaskStory(tasks);
                     allRecent.setTaskStory(tasks);
+                    //initialise drag and drop for favourite panel
+                    favs.registerDropController(recent.getDragController());
+                    favs.registerDropController(allRecent.getDragController());
+                    favs.registerDropControllers(tasks.getDragControllers());
                     dailyHours.initialise(firstDay, times, tasks);
                     refreshWeeklyHoursOfWork();
                     refreshAccountBalance();

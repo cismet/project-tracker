@@ -1,16 +1,11 @@
 package de.cismet.projecttracker.client.common.ui;
 
+import com.allen_sauer.gwt.dnd.client.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.allen_sauer.gwt.dnd.client.DragEndEvent;
-import com.allen_sauer.gwt.dnd.client.DragHandler;
-import com.allen_sauer.gwt.dnd.client.DragStartEvent;
-import com.allen_sauer.gwt.dnd.client.PickupDragController;
-import com.allen_sauer.gwt.dnd.client.VetoDragException;
 import com.allen_sauer.gwt.dnd.client.drop.FlowPanelDropController;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -26,21 +21,19 @@ import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.HolidayType;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-
 
 public class TaskStory extends Composite implements TaskDeleteListener, DoubleClickHandler, TaskNoticeListener {
 
     private static final String PAUSE_PROJECT = "Abwesenheit";
     private static TaskStoryUiBinder uiBinder = GWT.create(TaskStoryUiBinder.class);
-    private FlowPanelWithSpacer[] daysOfWeek = new FlowPanelWithSpacer[7]; 
+    private FlowPanelWithSpacer[] daysOfWeek = new FlowPanelWithSpacer[7];
     private HashMap<FlowPanelWithSpacer, List<TaskNotice>> taskMap = new HashMap<FlowPanelWithSpacer, List<TaskNotice>>();
     private HashMap<FlowPanelWithSpacer, PickupDragController> dragMap = new HashMap<FlowPanelWithSpacer, PickupDragController>();
     private Date firstDayOfWeek = new Date();
-    private FlowPanelWithSpacer draggableParent;
-    private int draggableIndex;
     private PickupDragController mondayDragController;
     private PickupDragController tuesdayDragController;
     private PickupDragController wednesdayDragController;
@@ -48,43 +41,29 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     private PickupDragController fridayDragController;
     private PickupDragController saturdayDragController;
     private PickupDragController sundayDragController;
-    private PickupDragController favController;
-    private DragHandler demoDragHandler;
     private List<TaskStoryListener> listener = new ArrayList<TaskStoryListener>();
-    private FavouriteTaskStory favs = new FavouriteTaskStory();
-
     @UiField
     FlowPanelWithSpacer monday;
-
     @UiField
     FlowPanelWithSpacer tuesday;
-
     @UiField
     FlowPanelWithSpacer wednesday;
-
     @UiField
     FlowPanelWithSpacer thursday;
-
     @UiField
     FlowPanelWithSpacer friday;
-
     @UiField
     FlowPanelWithSpacer saturday;
-
     @UiField
     FlowPanelWithSpacer sunday;
-
-
     @UiField
     AbsolutePanel boundaryPanel;
-    
-
 
     @Override
     public void taskDelete(Object source) {
         if (source instanceof TaskNotice) {
-            TaskNotice task = (TaskNotice)source;
-            
+            TaskNotice task = (TaskNotice) source;
+
             for (FlowPanelWithSpacer tmpPanel : taskMap.keySet()) {
                 List<TaskNotice> tmpList = taskMap.get(tmpPanel);
                 if (tmpList.contains(task)) {
@@ -99,8 +78,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         }
     }
 
-
-    public TaskStory(FavouriteTaskStory favs) {
+    public TaskStory() {
         initWidget(uiBinder.createAndBindUi(this));
 
         boundaryPanel.addStyleName("verticalScroller");
@@ -111,98 +89,11 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         daysOfWeek[4] = thursday;
         daysOfWeek[5] = friday;
         daysOfWeek[6] = saturday;
-        
+
         for (FlowPanelWithSpacer columnPanel : daysOfWeek) {
             taskMap.put(columnPanel, new ArrayList<TaskNotice>());
         }
-        
-        demoDragHandler = new DragHandler() {
-            @Override
-            public void onPreviewDragStart(final DragStartEvent event)
-                    throws VetoDragException {
-            }
 
-            @Override
-            public void onPreviewDragEnd(DragEndEvent event)
-                    throws VetoDragException {
-                
-            }
-
-            @Override
-            public void onDragStart(DragStartEvent event) {
-                //save information to restore the dragged widget
-                draggableParent = (FlowPanelWithSpacer)((Widget)event.getSource()).getParent();
-                draggableIndex = draggableParent.getWidgetIndex((Widget)event.getSource());
-            }
-
-            @Override
-            public void onDragEnd(DragEndEvent event) {
-                RestorePickupDragController o = (RestorePickupDragController)event.getContext().dragController;
-                if (event.getContext().finalDropController == null) {
-                    return;
-                }
-                final Widget dropTarget = event.getContext().finalDropController.getDropTarget();
-                List<Widget> selectedWidgets = event.getContext().selectedWidgets;
-                
-                if (dropTarget instanceof FlowPanelWithSpacer) {
-                    final List<TaskNotice> taskList = taskMap.get((FlowPanelWithSpacer)dropTarget);
-                    
-                    if (taskList != null && selectedWidgets != null) {
-                        for (Widget tmp : selectedWidgets) {
-                            if (tmp instanceof TaskNotice) {
-                                TaskNotice origNotice = (TaskNotice)tmp;
-
-                                //save the changes on the server
-                                int days = 6;
-
-                                if (dropTarget == monday) {
-                                    days = 0;
-                                } else if (dropTarget == tuesday) {
-                                    days = 1;
-                                } else if (dropTarget == wednesday) {
-                                    days = 2;
-                                } else if (dropTarget == thursday) {
-                                    days = 3;
-                                } else if (dropTarget == friday) {
-                                    days = 4;
-                                } else if (dropTarget == saturday) {
-                                    days = 5;
-                                }
-                                final ActivityDTO activity = origNotice.getActivity().createCopy();
-                                Date newDate = (Date)firstDayOfWeek.clone();
-                                DateHelper.addDays(newDate, days);
-
-                                activity.setId(0);
-                                activity.setWorkinghours(0.0);
-                                activity.setDay(newDate);
-                                activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
-                                
-                                if (taskList.isEmpty() && activity.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                                    addPause(newDate);
-                                }
-                                
-                                BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
-
-                                    @Override
-                                    protected void afterExecution(Long result, boolean operationFailed) {
-                                        if (!operationFailed) {
-                                            activity.setId(result);
-                                            addTask(activity, (FlowPanelWithSpacer)dropTarget);
-                                        }
-                                    }
-
-                                };
-                                activity.setDay(newDate);
-                                ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
-
-                                //restore the draggable widget
-                                ((InsertPanel) draggableParent).insert(tmp, draggableIndex);
-                            }
-                        }
-                    }
-                }
-            }
-        };
 
 //        mondayDragController = new RestorePickupDragController(RootPanel.get("contentId"), false);
 //        tuesdayDragController = new RestorePickupDragController(RootPanel.get("contentId"), false);
@@ -211,18 +102,14 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 //        fridayDragController = new RestorePickupDragController(RootPanel.get("contentId"), false);
 //        saturdayDragController = new RestorePickupDragController(RootPanel.get("contentId"), false);
 //        sundayDragController = new RestorePickupDragController(RootPanel.get("contentId"), false);        
-        mondayDragController = new RestorePickupDragController(this.boundaryPanel, false);
-        tuesdayDragController = new RestorePickupDragController(this.boundaryPanel, false);
-        wednesdayDragController = new RestorePickupDragController(this.boundaryPanel, false);
-        thursdayDragController = new RestorePickupDragController(this.boundaryPanel, false);
-        fridayDragController = new RestorePickupDragController(this.boundaryPanel, false);
-        saturdayDragController = new RestorePickupDragController(this.boundaryPanel, false);
-        sundayDragController = new RestorePickupDragController(this.boundaryPanel, false);        
-        
-        
-//        favController = new RestorePickupDragController(favs.boundaryPanel, false);
-//        initFavDragController();
-        
+        mondayDragController = new RestorePickupDragController(RootPanel.get(), false);
+        tuesdayDragController = new RestorePickupDragController(RootPanel.get(), false);
+        wednesdayDragController = new RestorePickupDragController(RootPanel.get(), false);
+        thursdayDragController = new RestorePickupDragController(RootPanel.get(), false);
+        fridayDragController = new RestorePickupDragController(RootPanel.get(), false);
+        saturdayDragController = new RestorePickupDragController(RootPanel.get(), false);
+        sundayDragController = new RestorePickupDragController(RootPanel.get(), false);
+
         initDragController(mondayDragController, monday);
         initDragController(tuesdayDragController, tuesday);
         initDragController(wednesdayDragController, wednesday);
@@ -232,47 +119,99 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         initDragController(sundayDragController, sunday);
     }
 
-    
     public void registerTaskStoryController(TaskStoryController controller, Date day) {
         daysOfWeek[day.getDay()].addDoubleClickHandler(controller);
     }
-    
+
     public void initDragController(PickupDragController controller, FlowPanelWithSpacer except) {
         controller.setBehaviorMultipleSelection(false);
-        controller.addDragHandler(demoDragHandler);
         dragMap.put(except, controller);
 
         for (FlowPanelWithSpacer columnPanel : daysOfWeek) {
             if (columnPanel != except) {
-                FlowPanelDropController widgetDropController = new FlowPanelDropController(columnPanel);
+                FlowPanelDropController widgetDropController = new FlowPanelDropController(columnPanel) {
+
+                    @Override
+                    public void onDrop(DragContext context) {
+                        if (context.finalDropController == null) {
+                            return;
+                        }
+                        final Widget dropTarget = context.finalDropController.getDropTarget();
+                        List<Widget> selectedWidgets = context.selectedWidgets;
+
+                        if (dropTarget instanceof FlowPanelWithSpacer) {
+                            final List<TaskNotice> taskList = taskMap.get((FlowPanelWithSpacer) dropTarget);
+
+                            if (taskList != null && selectedWidgets != null) {
+                                for (Widget tmp : selectedWidgets) {
+                                    if (tmp instanceof TaskNotice) {
+                                        TaskNotice origNotice = (TaskNotice) tmp;
+
+                                        //save the changes on the server
+                                        int days = 6;
+
+                                        if (dropTarget == monday) {
+                                            days = 0;
+                                        } else if (dropTarget == tuesday) {
+                                            days = 1;
+                                        } else if (dropTarget == wednesday) {
+                                            days = 2;
+                                        } else if (dropTarget == thursday) {
+                                            days = 3;
+                                        } else if (dropTarget == friday) {
+                                            days = 4;
+                                        } else if (dropTarget == saturday) {
+                                            days = 5;
+                                        }
+                                        final ActivityDTO activity = origNotice.getActivity().createCopy();
+                                        Date newDate = (Date) firstDayOfWeek.clone();
+                                        DateHelper.addDays(newDate, days);
+
+                                        activity.setId(0);
+                                        activity.setWorkinghours(0.0);
+                                        activity.setDay(newDate);
+                                        activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
+
+                                        if (taskList.isEmpty() && activity.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
+                                            addPause(newDate);
+                                        }
+
+                                        BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+
+                                            @Override
+                                            protected void afterExecution(Long result, boolean operationFailed) {
+                                                if (!operationFailed) {
+                                                    activity.setId(result);
+                                                    addTask(activity, (FlowPanelWithSpacer) dropTarget);
+                                                }
+                                            }
+                                        };
+                                        activity.setDay(newDate);
+                                        ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
                 controller.registerDropController(widgetDropController);
             }
         }
-//        FlowPanelDropController widgetDropController = new FlowPanelDropController(favs.recentTasks);
-//        controller.registerDropController(widgetDropController);
     }
-    
-    public void initFavDragController() {
-        favController.setBehaviorMultipleSelection(false);
-        favController.addDragHandler(demoDragHandler);
 
-        FlowPanelDropController widgetDropController = new FlowPanelDropController(favs.recentTasks);
-        favController.registerDropController(widgetDropController);
+    public Collection<PickupDragController> getDragControllers() {
+        return dragMap.values();
     }
-    
-    public DragHandler getDragHandler() {
-        return demoDragHandler;
-    }
-    
+
     public AbsolutePanel getBoundaryPanel() {
         return boundaryPanel;
     }
-    
+
     public void addTask(ActivityDTO activity, FlowPanelWithSpacer columnPanel) {
         TaskNotice widget = null;
-        
+
         if (activity.getKindofactivity() == ActivityDTO.ACTIVITY) {
-            widget = new TaskNotice( activity );
+            widget = new TaskNotice(activity);
         } else {
             widget = new HolidayTaskNotice(activity);
         }
@@ -280,21 +219,20 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         widget.addTaskNoticeListener(this);
         columnPanel.add(widget);
 
-        ((HasDoubleClickHandlers)widget.getMouseHandledWidget()).addDoubleClickHandler(this);
+        ((HasDoubleClickHandlers) widget.getMouseHandledWidget()).addDoubleClickHandler(this);
         dragMap.get(columnPanel).makeDraggable(widget, widget.getMouseHandledWidget());
-//        favController.makeDraggable(widget, widget.getMouseHandledWidget());
-        
+
         taskMap.get(columnPanel).add(widget);
         TaskStoryEvent e = new TaskStoryEvent(this, widget, widget.getActivity().getDay());
         fireTaskNoticeCreated(e);
     }
-    
+
     public void setActivities(Date fistDayOfWeek, List<ActivityDTO> activities, List<HolidayType> holidays) {
         this.firstDayOfWeek = fistDayOfWeek;
-        
+
         removeAllTasks();
         Collections.sort(activities);
-        
+
         for (ActivityDTO tmp : activities) {
             if (tmp.getKindofactivity() == ActivityDTO.ACTIVITY) {
                 addTask(tmp);
@@ -306,7 +244,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
             addTask(new ActivityDTO(0, null, null, null, tmp.getHours(), tmp.getName(), tmp.getDate(), true, type));
         }
     }
-    
 
     private void removeAllTasks() {
         for (FlowPanelWithSpacer tmp : daysOfWeek) {
@@ -320,15 +257,14 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
             list.clear();
         }
     }
-    
+
     public void addTask(ActivityDTO activity) {
         this.addTask(activity, daysOfWeek[activity.getDay().getDay()]);
     }
-    
+
     public List<TaskNotice> getTasksForDay(int day) {
         return taskMap.get(daysOfWeek[day]);
     }
-
 
     public void modifyTask(TaskNotice notice) {
         DialogBox taskForm = new DialogBox();
@@ -339,26 +275,26 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 
     @Override
     public void onDoubleClick(DoubleClickEvent event) {
-        modifyTask((TaskNotice) ((Widget)event.getSource()).getParent().getParent());
+        modifyTask((TaskNotice) ((Widget) event.getSource()).getParent().getParent());
     }
 
     @Override
     public void setHeight(String height) {
         super.setHeight(height);
-        
+
         boundaryPanel.setHeight(height);
     }
-    
+
     public void addPause(Date day) {
         int wd = day.getDay();
-        
+
         if (wd == 0 || wd == 6) {
             //no auto pause on saturdays and sundays
             return;
         }
-        
+
         WorkPackageDTO wp = getPauseWP();
-        
+
         if (wp != null) {
             final ActivityDTO activity = new ActivityDTO();
             activity.setDay(day);
@@ -366,7 +302,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
             activity.setWorkPackage(wp);
             activity.setWorkinghours(1.5);
             activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
-            
+
             BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
 
                 @Override
@@ -376,16 +312,15 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                         addTask(activity);
                     }
                 }
-
             };
 
             ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
         }
     }
-    
+
     private WorkPackageDTO getPauseWP() {
         List<ProjectDTO> projects = ProjectTrackerEntryPoint.getInstance().getProjects();
-        
+
         for (ProjectDTO tmp : projects) {
             if (tmp.getName().equals(PAUSE_PROJECT)) {
                 for (WorkPackageDTO wp : tmp.getWorkPackages()) {
@@ -395,7 +330,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -427,10 +362,10 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 
     @Override
     public void taskChanged(Object source) {
-        TaskStoryEvent e = new TaskStoryEvent(this, (TaskNotice)source, ((TaskNotice)source).getActivity().getDay());
+        TaskStoryEvent e = new TaskStoryEvent(this, (TaskNotice) source, ((TaskNotice) source).getActivity().getDay());
         fireTaskNoticeChange(e);
     }
 
     interface TaskStoryUiBinder extends UiBinder<Widget, TaskStory> {
-    }    
+    }
 }

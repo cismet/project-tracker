@@ -525,7 +525,8 @@ public interface ProjectService extends RemoteService {
      * @throws NoSessionException
      */
     public ArrayList<ActivityDTO> getActivitiesByWorkCategory(StaffDTO staff, WorkCategoryDTO workCategory) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
-
+    
+    public List<ActivityDTO> getFavouriteActivities(StaffDTO staff) throws NoSessionException, DataRetrievalException;
 
     /**
      *

@@ -4,6 +4,7 @@
  */
 package de.cismet.projecttracker.client.common.ui;
 
+import com.google.gwt.user.client.ui.RootPanel;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
@@ -26,9 +27,9 @@ public class ExtendedRecentTaskStory extends RecentStory {
         if (!initialised) {
             initialised = true;
             this.taskStory = taskStory;
-            mondayDragController = new RestorePickupDragController(taskStory.getBoundaryPanel(), false);
+            mondayDragController = new RestorePickupDragController(RootPanel.get(), false);
             taskStory.initDragController(mondayDragController, null);
-
+            
             BasicAsyncCallback<List<ActivityDTO>> callback = new BasicAsyncCallback<List<ActivityDTO>>() {
 
                 @Override
@@ -44,7 +45,4 @@ public class ExtendedRecentTaskStory extends RecentStory {
             ProjectTrackerEntryPoint.getProjectService(true).getLastActivitiesExceptForUser(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
         }
     }
-    
-    
-    
 }
