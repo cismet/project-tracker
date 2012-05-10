@@ -626,6 +626,8 @@ public interface ProjectService extends RemoteService {
      */
     public WorkCategoryDTO getWorkCategory(long id) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
     
+    public Boolean isExisitingFavouriteTask(ActivityDTO activity);
+    
     /**
      * Creates a new project costs.
      * @param projectCosts this object should contain the values of the new project costs, but it should not contain an ID.

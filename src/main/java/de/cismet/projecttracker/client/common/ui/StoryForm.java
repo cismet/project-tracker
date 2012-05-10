@@ -25,10 +25,8 @@ import java.util.List;
 
 public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler {
 
-    private static TaskFormUiBinder uiBinder = GWT
-        .create(TaskFormUiBinder.class);
+    private static TaskFormUiBinder uiBinder = GWT.create(TaskFormUiBinder.class);
     private static WorkCategoryDTO travelCatagory = null;
-
     @UiField
     TextBox description;
     @UiField
@@ -43,7 +41,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     ListBox workpackage;
     @UiField
     CheckBox travel;
-    
     private DialogBox form;
     private TaskStory caller;
     private Date day = new Date();
@@ -80,8 +77,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         initWidget(uiBinder.createAndBindUi(this));
         init();
         description.setText(tn.getActivity().getDescription());
-        if (tn.getActivity().getWorkCategory() != null && 
-                tn.getActivity().getWorkCategory().getId() == WorkCategoryDTO.TRAVEL) {
+        if (tn.getActivity().getWorkCategory() != null
+                && tn.getActivity().getWorkCategory().getId() == WorkCategoryDTO.TRAVEL) {
             travel.setValue(true);
         } else {
             travel.setValue(false);
@@ -95,7 +92,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         button.setText("Save");
         setDefaultButton();
     }
-    
+
     private void setDefaultButton() {
         button.setFocus(true);
         description.addKeyUpHandler(this);
@@ -103,11 +100,12 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         project.addKeyUpHandler(this);
         workpackage.addKeyUpHandler(this);
     }
-    
+
     @UiHandler("button")
     void onButtonClick(ClickEvent event) {
         if (travel.getValue() && travelCatagory == null) {
             BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
+
                 @Override
                 protected void afterExecution(WorkCategoryDTO result, boolean operationFailed) {
                     if (!operationFailed) {
@@ -147,9 +145,10 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         } else {
             newActivity.setWorkCategory(null);
         }
-        
+
         if (modification) {
             BasicAsyncCallback<ActivityDTO> callback = new BasicAsyncCallback<ActivityDTO>() {
+
                 @Override
                 protected void afterExecution(ActivityDTO result, boolean operationFailed) {
                     if (!operationFailed) {
@@ -162,6 +161,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
             ProjectTrackerEntryPoint.getProjectService(true).saveActivity(newActivity, callback);
         } else {
             BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+
                 @Override
                 protected void afterExecution(Long result, boolean operationFailed) {
                     if (!operationFailed) {
@@ -172,22 +172,21 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
                 }
             };
 
-            ProjectTrackerEntryPoint.getProjectService(true).createActivity(newActivity, callback); 
+            ProjectTrackerEntryPoint.getProjectService(true).createActivity(newActivity, callback);
         }
     }
-    
-    
+
     @UiHandler("cancelButton")
     void onButtoClick(ClickEvent event) {
         form.hide();
     }
-    
-    
+
     private void init() {
         List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
 //        travel.setText("Travel: ");
         if (result == null) {
             BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
+
                 @Override
                 protected void afterExecution(ArrayList<ProjectDTO> result, boolean operationFailed) {
                     for (ProjectDTO tmp : result) {
@@ -216,7 +215,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
             initWorkpackage();
         }
     }
-    
+
     private void initWorkpackage() {
         ProjectDTO selectedProject = getSelectedProject();
         if (selectedProject != null) {
@@ -224,19 +223,26 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
 
             if (selectedProject.getWorkPackages() != null) {
                 WorkPackageDTO[] wps = selectedProject.getWorkPackages().toArray(new WorkPackageDTO[selectedProject.getWorkPackages().size()]);
-                Arrays.sort(wps);                
+                Arrays.sort(wps);
                 for (WorkPackageDTO tmp : wps) {
                     WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
-                    if (tmp.getName() != null && !tmp.getName().toUpperCase().startsWith("WP")) {
+                    if (tmp.getName() != null) {
                         workpackage.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                    }
+                }
+
+                for (int i = 0; i < workpackage.getItemCount(); i++) {
+                    final String itemText = workpackage.getItemText(i);
+                    if (itemText.toUpperCase().startsWith("WP")) {
+                        workpackage.getElement().getElementsByTagName("option").getItem(i).setAttribute("disabled", "disabled");
                     }
                 }
             }
         }
     }
-    
+
     private static String extractWorkpackageName(WorkPackageDTO workpackage) {
         WorkPackageDTO tmp = workpackage.getWorkPackage();
         String prefix = "";
@@ -247,14 +253,14 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         }
 
         return prefix + workpackage.getName();
-    }    
-    
+    }
+
     private WorkPackageDTO getSelectedWorkpackage() {
-        String value = workpackage.getValue( workpackage.getSelectedIndex() );
-        
+        String value = workpackage.getValue(workpackage.getSelectedIndex());
+
         return getWorkpackageById(Long.parseLong(value));
     }
-    
+
     private WorkPackageDTO getWorkpackageById(long id) {
         for (WorkPackageDTO tmp : getSelectedProject().getWorkPackages()) {
             if (tmp.getId() == id) {
@@ -263,13 +269,13 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         }
         return null;
     }
-    
+
     private ProjectDTO getSelectedProject() {
-        String value = project.getValue( project.getSelectedIndex() );
-        
+        String value = project.getValue(project.getSelectedIndex());
+
         return getProjectById(Long.parseLong(value));
     }
-    
+
     private ProjectDTO getProjectById(long id) {
         for (ProjectDTO tmp : projects) {
             if (tmp.getId() == id) {
@@ -278,7 +284,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         }
         return null;
     }
-    
+
     private void setProjectById(long id) {
         for (int i = 0; i < project.getItemCount(); ++i) {
             if (project.getValue(i).equals("" + id)) {
@@ -286,19 +292,19 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
             }
         }
     }
-    
+
     private void setWPById(long id) {
         for (int i = 0; i < workpackage.getItemCount(); ++i) {
-            if ( workpackage.getValue(i).equals("" + id) ) {
+            if (workpackage.getValue(i).equals("" + id)) {
                 workpackage.setSelectedIndex(i);
             }
         }
     }
-    
+
     @Override
     public void onKeyUp(KeyUpEvent event) {
         if (event.getNativeKeyCode() == 13) {
             save();
         }
-    }    
+    }
 }

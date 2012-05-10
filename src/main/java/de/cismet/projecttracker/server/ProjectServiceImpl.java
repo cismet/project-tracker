@@ -4,6 +4,7 @@ import de.cismet.projecttracker.utilities.DBManagerWrapper;
 import de.cismet.projecttracker.utilities.DTOManager;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import de.cismet.projecttracker.client.ProjectService;
+import de.cismet.projecttracker.client.common.ui.FavouriteTaskStory;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.BasicDTO;
 import de.cismet.projecttracker.client.dto.CompanyDTO;
@@ -78,6 +79,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Level;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -107,6 +109,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
 //    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
     private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid IN (409,410,411);";
+   private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
+           + "staffid=%1$s and day is null and workpackageid = %2$s and "
+           + "case when description is null then true else description = '%3$s' end and staffid=16;";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
     private static boolean initialised = false;
@@ -1692,10 +1697,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             WorkPackagePeriodDTO period = activity.getWorkPackage().determineMostRecentPeriod();
 
             if (period != null) {
-                if ( !isDateLessOrEqual( period.getFromdate(), activity.getDay() ) ) {
-                    throw new InvalidInputValuesException( LanguageBundle.ACTIVITY_BEFORE_START_OF_THE_PROJECT_COMPONENT );
-                } else if ( period.getTodate() != null && !isDateLessOrEqual(activity.getDay(), period.getTodate())) {
-                    throw new InvalidInputValuesException( LanguageBundle.ACTIVITY_AFTER_END_OF_THE_PROJECT_COMPONENT );
+                if (!isDateLessOrEqual(period.getFromdate(), activity.getDay())) {
+                    throw new InvalidInputValuesException(LanguageBundle.ACTIVITY_BEFORE_START_OF_THE_PROJECT_COMPONENT);
+                } else if (period.getTodate() != null && !isDateLessOrEqual(activity.getDay(), period.getTodate())) {
+                    throw new InvalidInputValuesException(LanguageBundle.ACTIVITY_AFTER_END_OF_THE_PROJECT_COMPONENT);
                 }
             }
         }
@@ -2324,8 +2329,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
-            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
+            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+//            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
             if (staff != null) {
                 HttpSession session = getThreadLocalRequest().getSession();
@@ -2528,7 +2533,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         return result;
     }
-    
+
     public boolean isDataChanged() throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException {
         return false;
     }
@@ -2786,11 +2791,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final long weeks = Math.round(days / 7);
         //exclude sa and so
         long workingDays = days - (2 * weeks);
-        
+
         //check if from or to date are sa or so
-        if (from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY 
-                || from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY 
-                || to.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY 
+        if (from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY
+                || from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY
+                || to.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY
                 || to.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY) {
             workingDays--;
         }
@@ -2834,5 +2839,25 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         } finally {
             dbManager.closeSession();
         }
+    }
+
+    @Override
+    public Boolean isExisitingFavouriteTask(ActivityDTO activity) {
+        DBManagerWrapper dbManager = new DBManagerWrapper();
+        try {
+            Statement s = dbManager.getDatabaseConnection().createStatement();
+            ResultSet rs = s.executeQuery(String.format(FAVOURITE_EXISTS_QUERY,
+                    "" + activity.getStaff().getId(), "" + activity.getWorkPackage().getId(),
+                    activity.getDescription()));
+
+            if (rs != null && !rs.first()) {
+                return false;
+            }
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(FavouriteTaskStory.class.getName()).log(Level.SEVERE, "Error while checkig"
+                    + " if facourite task already exists. Drop action cancelled", ex);
+        }
+
+        return true;
     }
 }

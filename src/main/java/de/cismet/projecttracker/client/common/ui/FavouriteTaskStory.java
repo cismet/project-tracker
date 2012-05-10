@@ -13,8 +13,14 @@ import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.listener.TaskDeleteListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+import de.cismet.projecttracker.utilities.DBManagerWrapper;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -26,6 +32,11 @@ public class FavouriteTaskStory extends RecentStory implements TaskDeleteListene
 
     public FavouriteTaskStory() {
         widgetDropController = new FlowPanelDropController(this.recentTasks) {
+
+            @Override
+            public void onEnter(DragContext context) {
+                super.onEnter(context);
+            }
 
             @Override
             public void onDrop(DragContext context) {
@@ -42,17 +53,28 @@ public class FavouriteTaskStory extends RecentStory implements TaskDeleteListene
                         activity.setDay(null);
                         activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
-                        BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+                        BasicAsyncCallback favCallback = new BasicAsyncCallback<Boolean>(){
 
                             @Override
-                            protected void afterExecution(Long result, boolean operationFailed) {
-                                if (!operationFailed) {
-                                    activity.setId(result);
-                                    addTask(activity);
+                            protected void afterExecution(Boolean result, boolean operationFailed) {
+                                if (!operationFailed && !result) {
+
+                                    BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+
+                                        @Override
+                                        protected void afterExecution(Long result, boolean operationFailed) {
+                                            if (!operationFailed) {
+                                                activity.setId(result);
+                                                addTask(activity);
+                                            }
+                                        }
+                                    };
+                                    ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
                                 }
                             }
+                            
                         };
-                        ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
+                        ProjectTrackerEntryPoint.getProjectService(true).isExisitingFavouriteTask(activity, favCallback);
 
                     }
                 }
