@@ -12,20 +12,19 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import de.cismet.projecttracker.client.common.ui.LoadingPanel;
-import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
-import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
+import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
-import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
+import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.uicomps.SheetsPanel;
 import de.cismet.projecttracker.client.uicomps.TopPanel;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -184,6 +183,30 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 
     public StaffDTO getLoggedInStaff() {
         return loggedInStaff;
+    }
+    
+    public ContractDTO getContractForStaff(Date d) throws InvalidInputValuesException{
+        if(d == null){
+            throw new InvalidInputValuesException("Date must not be null!");
+        }
+        ArrayList<ContractDTO> contracts = ProjectTrackerEntryPoint.getInstance().getStaff().getContracts();
+        ContractDTO contract=null;
+        for (ContractDTO c : contracts) {
+            Date contractToDate = c.getTodate();
+            Date contractFromDate = c.getFromdate();
+            if(contractToDate == null){
+                contractToDate = new Date(d.getTime());
+                DateHelper.addDays(contractToDate, 7);
+            }
+            if (d.before(contractToDate) && d.after(contractFromDate)) {
+                contract = c;
+            }
+        }
+        return contract;
+    }
+    
+    public ContractDTO getContractForStaff(int week, int year)throws InvalidInputValuesException{
+        return getContractForStaff(DateHelper.getBeginOfWeek(year, week));
     }
 
     /**

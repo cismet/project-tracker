@@ -22,13 +22,15 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.common.ui.listener.TimeStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
+import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -37,8 +39,9 @@ import java.util.List;
 public class SheetsPanel extends Composite implements ResizeHandler, ClickHandler, ChangeHandler, TaskStoryListener, TimeStoryListener, MenuListener {
 
     private static final String WEEKLY_HOURS_OF_WORK = "Total: ";
-    private static final String HOURS_OF_WORK_PREVIOUS_WEEK = "Total prev. Week: ";
-    private static final String ACCOUNT_BALANCE = "Account Balance: ";
+    private static final String PREVIOUS_WEEK_BALANCE = "prev. Week Bal.: ";
+    private static final String ACCOUNT_BALANCE = "Acc. Bal.: ";
+    private static final String WEEK_BALANCE = "Week Bal.: ";
     private FlowPanel mainPanel = new FlowPanel();
     private FlowPanel pageHeaderPanel = new FlowPanel();
     private FlowPanel contentNodeParentPanel = new FlowPanel();
@@ -59,7 +62,8 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private DailyHoursOfWork dailyHours = new DailyHoursOfWork();
     private Label weekHoursLab = new Label(WEEKLY_HOURS_OF_WORK);
     private Label accountBalanceLab = new Label(ACCOUNT_BALANCE);
-    private Label previousWeekLab = new Label(HOURS_OF_WORK_PREVIOUS_WEEK);
+    private Label previousWeekBalLab = new Label(PREVIOUS_WEEK_BALANCE);
+    private Label weekBalanceLab = new Label(WEEK_BALANCE);
     private long lastAccountBalanceCalc = 0;
 
     public SheetsPanel() {
@@ -97,7 +101,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         yearLab.setStyleName("formLabel");
         weekLab.setStyleName("formLabel");
         weekHoursLab.setStyleName("formLabel totalLab");
-        accountBalanceLab.setStyleName("formLabel accountBalanceLab");
+        weekBalanceLab.setStyleName("formLabel accountBalanceLab");
         prevWeek.addStyleName("btn primary pull-left span3");
         nextWeek.addStyleName("btn info pull-right span3");
         FlowPanel upperCtrlPanel = new FlowPanel();
@@ -108,7 +112,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         FlowPanel lowerCtrlPanel = new FlowPanel();
         lowerCtrlPanel.addStyleName("lowerCtrlPanel-margin");
         lowerCtrlPanel.add(weekHoursLab);
-        lowerCtrlPanel.add(accountBalanceLab);
+        lowerCtrlPanel.add(weekBalanceLab);
 //        lowerCtrlPanel.add(previousWeekLab);
         controlPanel.add(upperCtrlPanel);
         controlPanel.add(lowerCtrlPanel);
@@ -118,7 +122,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         pageHeaderPanel.add(buttonPanel);
         FlowPanel whoPrevWeekLabel = new FlowPanel();
         whoPrevWeekLabel.addStyleName("howPrevWeek pull-left pre prettyprint noxoverflow");
-        whoPrevWeekLabel.add(previousWeekLab);
+        whoPrevWeekLabel.add(previousWeekBalLab);
         FlowPanel accountBalancePanel = new FlowPanel();
         accountBalancePanel.addStyleName("accountBalance pull-right pre prettyprint noxoverflow");
         accountBalancePanel.add(accountBalanceLab);
@@ -249,7 +253,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     favs.registerDropControllers(tasks.getDragControllers());
                     dailyHours.initialise(firstDay, times, tasks);
                     refreshWeeklyHoursOfWork();
-                    refreshHoursOfWorkForPrevWeek();
+                    refreshPrevWeekBalance();
                     refreshAccountBalance();
                     ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
                 }
@@ -282,20 +286,19 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     private double getWorkingHoursForActivity(ActivityDTO act) {
         double hours = 0.0;
-        ArrayList<ContractDTO> contracts = ProjectTrackerEntryPoint.getInstance().getStaff().getContracts();
         double dhow = 0.0;
-        for (ContractDTO c : contracts) {
-            Date toDate = c.getTodate();
-            if (toDate == null) {
-                toDate = DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek());
-                DateHelper.addDays(toDate, 7);
-            }
-            if (act.getDay().before(toDate) && act.getDay().after(c.getFromdate())) {
-                dhow = c.getWhow() / 5;
-                break;
-            }
+
+        ContractDTO contract = null;
+        try {
+            contract = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay());
+        } catch (InvalidInputValuesException ex) {
+            Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid Contract for Staff "
+                    + ProjectTrackerEntryPoint.getInstance().getStaff() + " and Date " + act.getDay(), ex);
         }
-        
+        if (contract != null) {
+            dhow = contract.getWhow() / 5;
+        }
+
         if (act.getKindofactivity() == ActivityDTO.HOLIDAY || act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
             hours += act.getWorkinghours();
         } else {
@@ -327,6 +330,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     private void refreshWeeklyHoursOfWork() {
         double hours = 0.0;
+        double weekDebit =0.0;
         for (int i = 0; i < 7; ++i) {
 //            hours += times.getTimeForDay(i);
             List<TaskNotice> taskList = tasks.getTasksForDay(i);
@@ -337,9 +341,18 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         }
 
         weekHoursLab.setText(WEEKLY_HOURS_OF_WORK + " " + DateHelper.doubleToHours(hours) + " h");
+        try {
+            weekDebit = hours - ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear()).getWhow();
+        } catch (InvalidInputValuesException ex) {
+            Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
+                                + "Contract for Staff " +ProjectTrackerEntryPoint.getInstance().getStaff() 
+                                + " and Week/year" + getSelectedWeek()+"/"+getSelectedYear(), ex);
+        }
+        
+        weekBalanceLab.setText(WEEK_BALANCE+ " "+ DateHelper.doubleToHours(weekDebit)+" h");
     }
-
-    private void refreshHoursOfWorkForPrevWeek() {
+    
+    private void refreshPrevWeekBalance() {
         int pweek;
         int pyear;
         if (getSelectedWeek() > 0) {
@@ -359,10 +372,19 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     for (ActivityDTO act : result.getActivities()) {
                         hours += SheetsPanel.this.getWorkingHoursForActivity(act);
                     }
-                    for(HolidayType holiday : result.getHolidays()){
+                    for (HolidayType holiday : result.getHolidays()) {
                         hours += holiday.getHours();
                     }
-                    previousWeekLab.setText(HOURS_OF_WORK_PREVIOUS_WEEK + DateHelper.doubleToHours(hours) + " h");
+
+                    double weekDebit = 0.0;
+                    try {
+                        weekDebit = hours - ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear()).getWhow();
+                    } catch (InvalidInputValuesException ex) {
+                        Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
+                                + "Contract for Staff " +ProjectTrackerEntryPoint.getInstance().getStaff() 
+                                + " and Week/year" + getSelectedWeek()+"/"+getSelectedYear(), ex);
+                    }
+                    previousWeekBalLab.setText(PREVIOUS_WEEK_BALANCE + DateHelper.doubleToHours(weekDebit) + " h");
                 }
             }
         };

@@ -32,7 +32,6 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
     private FlowPanel mainPanel = new FlowPanel();
     private Button add = new Button("<img src='" + ImageConstants.INSTANCE.plus().getURL() + "' />", this);
     private Button fill = new Button("<img src='" + ImageConstants.INSTANCE.magicFiller().getURL() + "' />", this);
-    
     private Date day;
     private TaskStory taskStory;
     private Story story;
@@ -54,7 +53,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
 
     public void setTaskStory(TaskStory taskStory) {
         this.taskStory = taskStory;
-        
+
         if (!isRegistered) {
             taskStory.registerTaskStoryController(this, day);
             isRegistered = true;
@@ -83,45 +82,50 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
         List<TaskNotice> taskList = taskStory.getTasksForDay(day.getDay());
         if (taskList.isEmpty()) {
             taskStory.addPause(day);
-        }        
+        }
         DialogBox taskForm = new DialogBox();
         taskForm.setWidget(new StoryForm(taskForm, taskStory, day));
         taskForm.center();
     }
-    
+
     private void fillTasks() {
         List<TaskNotice> list = taskStory.getTasksForDay(day.getDay());
         List<TaskNotice> tasksToChange = new ArrayList<TaskNotice>();
         double bookedHours = 0.0;
         double timeForDay = story.getTimeForDay(day.getDay());
-
+        int fillableActivitesCount = 0;
 
         if (list != null && list.size() > 0) {
             for (TaskNotice tmp : list) {
                 if (tmp.getActivity().getKindofactivity() == ActivityDTO.ACTIVITY) {
-                    if (tmp.getActivity().getWorkinghours() == 0.0) {
-                        tasksToChange.add(tmp);
-                    } else {
-                        bookedHours += tmp.getActivity().getWorkinghours();
+//                    if (tmp.getActivity().getWorkinghours() == 0.0) {
+                    tasksToChange.add(tmp);
+//                    } else {
+                    bookedHours += tmp.getActivity().getWorkinghours();
+//                    }
+                    if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
+                        fillableActivitesCount++;
                     }
                 }
             }
 
             if (tasksToChange.isEmpty()) {
                 ProjectTrackerEntryPoint.outputBox("There are no tasks without duration, which can be filled");
-            } else if ( (timeForDay - bookedHours) == 0.0) {
+            } else if ((timeForDay - bookedHours) <= 0.0) {
                 ProjectTrackerEntryPoint.outputBox("There is no time left to fill the tasks");
             }
-            
+
             if (tasksToChange.size() > 0) {
                 for (TaskNotice tmp : tasksToChange) {
-                    tmp.getActivity().setWorkinghours((timeForDay - bookedHours) / tasksToChange.size());
-                    tmp.refresh();
-                    tmp.save();
+                    if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
+                        tmp.getActivity().setWorkinghours(tmp.getActivity().getWorkinghours() + (timeForDay - bookedHours) / fillableActivitesCount);
+                        tmp.refresh();
+                        tmp.save();
+                    }
                 }
             }
         }
-        
+
     }
 
     @Override
