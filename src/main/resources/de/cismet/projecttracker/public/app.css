@@ -35,12 +35,12 @@ body {
 }
 
 .white {
-        color: #FFFFFF;
-        font-size: 15px;
+    color: #FFFFFF;
+    font-size: 15px;
 }
 
 .span1V2 {
-  width: 90px;
+    width: 90px;
 }
 
 /* Give a quick and non-cross-browser friendly divider */
@@ -60,11 +60,11 @@ body {
 
 
 .loginPanel {
-  margin: 5px 0 0 0;
-  position: relative;
-  -khtml-opacity: 1;
-  opacity: 1;
-  display: block;
+    margin: 5px 0 0 0;
+    position: relative;
+    -khtml-opacity: 1;
+    opacity: 1;
+    display: block;
 }
 
 .input-small {
@@ -83,28 +83,28 @@ body {
 }
 
 .dateBoxPopup {
-	z-index: 2;
+    z-index: 2;
 }
 
 .normal-text {
-	color: #404040;
+    color: #404040;
 }
 
 .topbar {
-        text-align: center;
-        opacity:0.8;
+    text-align: center;
+    opacity:0.8;
 }
 .LabelLink {
-        display: inline;
-        width: 80px;
-        height: 40px;
-        float: left;
-        line-height: 40px;
-        text-decoration: none;
-        color: #a2a2a2;
-        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-        text-align: center;
-        vertical-align: middle;
+    display: inline;
+    width: 80px;
+    height: 40px;
+    float: left;
+    line-height: 40px;
+    text-decoration: none;
+    color: #a2a2a2;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    text-align: center;
+    vertical-align: middle;
 }
 
 .formLabel {
@@ -120,12 +120,12 @@ body {
 }
 
 .verticalScroller {
-        overflow-y: auto !important;
-        overflow-x: hidden;
+    overflow-y: auto !important;
+    overflow-x: hidden;
 }
 
 .noxoverflow {
-        overflow-x: hidden;
+    overflow-x: hidden;
 }
 
 .recent-tasks {
@@ -142,10 +142,25 @@ body {
     overflow-y: hidden;
 }
 
+.howPrevWeek{
+    margin-left: -180px !important;
+    margin-top: 18px !important;
+    margin-right: 10px !important;
+    overflow-y: hidden;
+}
+
+
 .fav-tasks {
     margin-top: 75px !important;
     margin-left: 10px !important;
     margin-right: -140px !important;
+    margin-bottom: 30px;
+}
+
+.accountBalance{
+    margin-top: 18px !important;
+    margin-left: 10px !important;
+    margin-right: -200px !important;
     margin-bottom: 30px;
 }
 
@@ -155,7 +170,7 @@ body {
 
 .controlPanel {
     text-align: right; 
-    
+
     border-right-style: solid;
     border-left-style: solid;
     border-bottom-style: solid;
@@ -178,14 +193,14 @@ body {
 }
 
 .LabelLink-active {
-        background-color: #171717;
-        color: #FFFFFF;
+    background-color: #171717;
+    color: #FFFFFF;
 }
 
 .LabelLink:hover {
-        text-decoration: none;
-        color: #FFFFFF;
-        cursor: pointer;
+    text-decoration: none;
+    color: #FFFFFF;
+    cursor: pointer;
 }
 
 .topbar {
@@ -221,50 +236,50 @@ body {
 }
 
 .pre {
-  font-weight: normal;
-  font-style: normal;
-  /*font-family: Monaco, Andale Mono, Courier New, monospace;*/
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  background-color: #f5f5f5;
-  display: block;
-  padding: 8.5px;
-  margin: 0 0 0px;
-  line-height: 14px;
-  font-size: 12px;
-  border: 1px solid #ccc;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 3px;
-  white-space: normal;
-  word-wrap: break-word;    
+    font-weight: normal;
+    font-style: normal;
+    /*font-family: Monaco, Andale Mono, Courier New, monospace;*/
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    background-color: #f5f5f5;
+    display: block;
+    padding: 8.5px;
+    margin: 0 0 0px;
+    line-height: 14px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+    white-space: normal;
+    word-wrap: break-word;    
 }
 
 .proj1 {
-       background-color: rgba(0,160,176,0.5) !important; 
+    background-color: rgba(0,160,176,0.5) !important; 
 }
 
 .proj2 {
-       background-color: rgba(106,74,60,0.5) !important; 
+    background-color: rgba(106,74,60,0.5) !important; 
 }
 
 .proj3 {
-       background-color: rgba(204,51,63,0.5) !important; 
+    background-color: rgba(204,51,63,0.5) !important; 
 }
 
 .proj4 {
-       background-color: rgba(235,104,65,0.5) !important; 
+    background-color: rgba(235,104,65,0.5) !important; 
 }
 
 .proj5 {
-       background-color: rgba(237,201,81,0.5) !important; 
+    background-color: rgba(237,201,81,0.5) !important; 
 }
 
 .proj6 {
-       background-color: rgba(143,190,00,0.5) !important; 
+    background-color: rgba(143,190,00,0.5) !important; 
 }
 
 .proj7 {
-       background-color: rgba(205,215,182,0.5) !important; 
+    background-color: rgba(205,215,182,0.5) !important; 
 }
 
 .red-border {
@@ -288,9 +303,9 @@ body {
 
 
 .row {
-  zoom: 1;
-<!--  margin-left: -20px;-->
-  margin-left: 0px;
+    zoom: 1;
+    <!--  margin-left: -20px;-->
+    margin-left: 0px;
 }
 
 .cismet-logo {

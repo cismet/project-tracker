@@ -4,9 +4,6 @@
  */
 package de.cismet.projecttracker.client.uicomps;
 
-import com.allen_sauer.gwt.dnd.client.PickupDragController;
-import com.allen_sauer.gwt.dnd.client.drop.FlowPanelDropController;
-import com.allen_sauer.gwt.dnd.client.drop.IndexedDropController;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -24,9 +21,12 @@ import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.common.ui.listener.TimeStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
+import de.cismet.projecttracker.client.types.HolidayType;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -37,6 +37,7 @@ import java.util.List;
 public class SheetsPanel extends Composite implements ResizeHandler, ClickHandler, ChangeHandler, TaskStoryListener, TimeStoryListener, MenuListener {
 
     private static final String WEEKLY_HOURS_OF_WORK = "Total: ";
+    private static final String HOURS_OF_WORK_PREVIOUS_WEEK = "Total prev. Week: ";
     private static final String ACCOUNT_BALANCE = "Account Balance: ";
     private FlowPanel mainPanel = new FlowPanel();
     private FlowPanel pageHeaderPanel = new FlowPanel();
@@ -58,6 +59,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private DailyHoursOfWork dailyHours = new DailyHoursOfWork();
     private Label weekHoursLab = new Label(WEEKLY_HOURS_OF_WORK);
     private Label accountBalanceLab = new Label(ACCOUNT_BALANCE);
+    private Label previousWeekLab = new Label(HOURS_OF_WORK_PREVIOUS_WEEK);
     private long lastAccountBalanceCalc = 0;
 
     public SheetsPanel() {
@@ -107,14 +109,23 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         lowerCtrlPanel.addStyleName("lowerCtrlPanel-margin");
         lowerCtrlPanel.add(weekHoursLab);
         lowerCtrlPanel.add(accountBalanceLab);
+//        lowerCtrlPanel.add(previousWeekLab);
         controlPanel.add(upperCtrlPanel);
         controlPanel.add(lowerCtrlPanel);
         buttonPanel.add(prevWeek);
         buttonPanel.add(nextWeek);
         buttonPanel.add(controlPanel);
         pageHeaderPanel.add(buttonPanel);
+        FlowPanel whoPrevWeekLabel = new FlowPanel();
+        whoPrevWeekLabel.addStyleName("howPrevWeek pull-left pre prettyprint noxoverflow");
+        whoPrevWeekLabel.add(previousWeekLab);
+        FlowPanel accountBalancePanel = new FlowPanel();
+        accountBalancePanel.addStyleName("accountBalance pull-right pre prettyprint noxoverflow");
+        accountBalancePanel.add(accountBalanceLab);
+        mainPanel.add(whoPrevWeekLabel);
         mainPanel.add(allRecent);
         mainPanel.add(recent);
+        mainPanel.add(accountBalancePanel);
         mainPanel.add(favs);
         mainPanel.add(pageHeaderPanel);
         mainPanel.add(contentNodeParentPanel);
@@ -238,6 +249,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     favs.registerDropControllers(tasks.getDragControllers());
                     dailyHours.initialise(firstDay, times, tasks);
                     refreshWeeklyHoursOfWork();
+                    refreshHoursOfWorkForPrevWeek();
                     refreshAccountBalance();
                     ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
                 }
@@ -261,37 +273,100 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 }
             }
         };
-        
+
         if (System.currentTimeMillis() - lastAccountBalanceCalc > 100) {
             lastAccountBalanceCalc = System.currentTimeMillis();
             ProjectTrackerEntryPoint.getProjectService(true).getAccountBalance(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
         }
     }
 
-    private void refreshWeeklyHoursOfWork() {
+    private double getWorkingHoursForActivity(ActivityDTO act) {
         double hours = 0.0;
-
-        for (int i = 0; i < 7; ++i) {
-            hours += times.getTimeForDay(i);
-            List<TaskNotice> taskList = tasks.getTasksForDay(i);
-
-            for (TaskNotice tmp : taskList) {
-                if (tmp.getActivity().getKindofactivity() == ActivityDTO.HOLIDAY) {
-                    hours += tmp.getActivity().getWorkinghours();
-                } else if (tmp.getActivity().getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
-                    hours += tmp.getActivity().getWorkinghours();
-                } else {
-                    if (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID) {
-                        hours -= tmp.getActivity().getWorkinghours();
-                    } else if (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID
-                            || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID
-                            || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPECIAL_HOLIDAY_ID) {
-                        hours += tmp.getActivity().getWorkinghours();
+        ArrayList<ContractDTO> contracts = ProjectTrackerEntryPoint.getInstance().getStaff().getContracts();
+        double dhow = 0.0;
+        for (ContractDTO c : contracts) {
+            Date toDate = c.getTodate();
+            if (toDate == null) {
+                toDate = DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek());
+                DateHelper.addDays(toDate, 7);
+            }
+            if (act.getDay().before(toDate) && act.getDay().after(c.getFromdate())) {
+                dhow = c.getWhow() / 5;
+                break;
+            }
+        }
+        
+        if (act.getKindofactivity() == ActivityDTO.HOLIDAY || act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
+            hours += act.getWorkinghours();
+        } else {
+            if (act.getWorkPackage() != null) {
+                if (act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID) {
+                    if (act.getWorkinghours() == 0 && dhow > 0) {
+                        hours += dhow;
+                    } else {
+                        hours += act.getWorkinghours();
                     }
+                } else if (act.getWorkPackage().getId() == ActivityDTO.ILLNESS_ID) {
+                    if (act.getWorkinghours() == 0 && dhow > 0) {
+                        hours += dhow;
+                    } else {
+                        hours += act.getWorkinghours();
+                    }
+                } else if (act.getWorkPackage().getId() == ActivityDTO.PAUSE_ID) {
+                    hours -= act.getWorkinghours();
+                } else if (act.getWorkPackage().getId() == ActivityDTO.Travel_ID) {
+                    hours += act.getWorkinghours() / 2;
+                } else {
+                    hours += act.getWorkinghours();
                 }
             }
         }
+
+        return hours;
+    }
+
+    private void refreshWeeklyHoursOfWork() {
+        double hours = 0.0;
+        for (int i = 0; i < 7; ++i) {
+//            hours += times.getTimeForDay(i);
+            List<TaskNotice> taskList = tasks.getTasksForDay(i);
+
+            for (TaskNotice tmp : taskList) {
+                hours += getWorkingHoursForActivity(tmp.getActivity());
+            }
+        }
+
         weekHoursLab.setText(WEEKLY_HOURS_OF_WORK + " " + DateHelper.doubleToHours(hours) + " h");
+    }
+
+    private void refreshHoursOfWorkForPrevWeek() {
+        int pweek;
+        int pyear;
+        if (getSelectedWeek() > 0) {
+            pweek = getSelectedWeek() - 1;
+            pyear = getSelectedYear();
+        } else {
+            pyear = getSelectedYear() + 1;
+            pweek = week.getItemCount() - 1;
+        }
+
+        BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
+
+            @Override
+            protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
+                double hours = 0.0;
+                if (!operationFailed) {
+                    for (ActivityDTO act : result.getActivities()) {
+                        hours += SheetsPanel.this.getWorkingHoursForActivity(act);
+                    }
+                    for(HolidayType holiday : result.getHolidays()){
+                        hours += holiday.getHours();
+                    }
+                    previousWeekLab.setText(HOURS_OF_WORK_PREVIOUS_WEEK + DateHelper.doubleToHours(hours) + " h");
+                }
+            }
+        };
+        ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), pyear, pweek, callback);
     }
 
     @Override
