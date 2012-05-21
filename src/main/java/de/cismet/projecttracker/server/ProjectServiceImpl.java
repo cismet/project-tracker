@@ -38,7 +38,6 @@ import de.cismet.projecttracker.client.exceptions.NoSessionException;
 import de.cismet.projecttracker.client.exceptions.PermissionDenyException;
 import de.cismet.projecttracker.client.exceptions.PersistentLayerException;
 import de.cismet.projecttracker.client.exceptions.ReportNotFoundException;
-import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.types.ReportType;
@@ -106,9 +105,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String RECENT_ACTIVITIES_EX_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid <> %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
             + "order by max(id) desc limit 30;";
-    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
+    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
 //    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
-    private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid IN (409,410,411);";
+    private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (409,410,411);";
    private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
            + "staffid=%1$s and day is null and workpackageid = %2$s and "
            + "case when description is null then true else description = '%3$s' end and staffid=16;";
@@ -1646,9 +1645,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             for (Activity tmp : actList) {
                 dbManager.createObject(act);
             }
-
+            
             warningSystem.addActivity(act);
             long id = (Long) dbManager.createObject(act);
+            if (act.getStaff() != null && act.getStaff().getId() != getUserId() && act.getDay() != null) {
+                sendChangedActivityEmail(act, null, act.getStaff().getEmail());
+            }
             return id;
         } finally {
             dbManager.closeSession();
@@ -1746,8 +1748,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             dbManager.closeSession();
             dbManager = new DBManagerWrapper();
             dbManager.saveObject(activityHib);
-            if (activityHib.getStaff().getId() != getUserId()) {
-                sendChangedActivityEmail(activityHib, actText);
+            if (activityHib.getStaff().getId() != getUserId() && activityHib.getDay() != null) {
+                sendChangedActivityEmail(activityHib, actText, activityHib.getStaff().getEmail());
             }
 
             return activity;
@@ -1756,13 +1758,26 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
     }
 
-    private void sendChangedActivityEmail(Activity activity, String originalActivity) {
+    /**
+     * 
+     * @param activity 
+     * @param originalActivity The description of the original activity. If null, a new activity was created
+     */
+    private void sendChangedActivityEmail(Activity activity, String originalActivity, String email) {
         try {
-            if (activity.getStaff().getEmail() != null) {
+            if (email != null) {
                 Staff s = getStaffById(getUserId());
-                String text = s.getFirstname() + " " + s.getName() + " has changed the following actvitiy:\n" + originalActivity;
-                text += "\n\nto\n\n" + activity.toString();
-                Utilities.sendEmail(activity.getStaff().getEmail(), "Activity changed", text);
+                String text;
+                if (activity == null) {
+                    text = s.getFirstname() + " " + s.getName() + " has deleted the following actvitiy:\n" + originalActivity;
+                } else if (originalActivity != null) {
+                        text = s.getFirstname() + " " + s.getName() + " has changed the following actvitiy:\n" + originalActivity;
+                        text += "\n\nto\n\n" + activity.toString();
+                } else {
+                    text = s.getFirstname() + " " + s.getName() + " has added the following actvitiy:\n" + activity.toString();
+                }
+
+                Utilities.sendCollectedEmail(email, "Activity changed", text);
             } else {
                 logger.warn("Cannot send the email, because there is no email address");
             }
@@ -1790,8 +1805,21 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     throw new PersistentLayerException(LanguageBundle.CANNOT_CHANGE_ACTIVITY);
                 }
             }
-
+            
+            String actText = null;
+            Staff st = null;
+            Date day = null;
+            
+            if (act.getDay() != null) {
+                actText = act.toString();
+                st = act.getStaff();
+                day = act.getDay();
+            }
             dbManager.deleteObject(act);
+
+            if (st != null && st.getId() != getUserId() && day != null) {
+                sendChangedActivityEmail(null, actText, st.getEmail());
+            }
         } finally {
             dbManager.closeSession();
         }
@@ -2534,8 +2562,17 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         return result;
     }
 
-    public boolean isDataChanged() throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException {
-        return false;
+    public boolean isDataChanged() throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException, PersistentLayerException {
+        Staff s = getStaffById(getUserId());
+        
+        if (s.getLastmodification() != null) {
+            s.setLastmodification(null);
+            saveStaff((StaffDTO)dtoManager.clone(s));
+            
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private static boolean isSameDay(Date date, Date otherDate) {
@@ -2705,10 +2742,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
     @Override
     public Double getAccountBalance(StaffDTO staff) throws DataRetrievalException, NoSessionException, PermissionDenyException {
-
         double realWorkingTime = 0;
         double nominalWorkingTime = 0;
-        //calculate the nominal workin days to determine the nominal working time
+        //calculate the nominal working days to determine the nominal working time
         long nominalWorkingDays = 0;
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
@@ -2738,15 +2774,18 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     contractFromDateCal.setTime(contract.getFromdate());
                 }
 
+                contractToDateCal.set(GregorianCalendar.HOUR_OF_DAY, 0);
+                contractToDateCal.set(GregorianCalendar.MINUTE, 0);
+                contractToDateCal.set(GregorianCalendar.SECOND, 0);
+                contractFromDateCal.set(GregorianCalendar.HOUR_OF_DAY, 0);
+                contractFromDateCal.set(GregorianCalendar.MINUTE, 0);
+                contractFromDateCal.set(GregorianCalendar.SECOND, 0);
 
                 final double whow = contract.getWhow();
                 SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-                final GregorianCalendar queryToDate = new GregorianCalendar();
-                queryToDate.setTime(contractToDateCal.getTime());
-                queryToDate.add(GregorianCalendar.DATE, 1);
                 //calculate the real working time exclude pause and freizeitausgleich activities
                 Statement s = dbManager.getDatabaseConnection().createStatement();
-                ResultSet rs = s.executeQuery(String.format(REAL_WORKING_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
+                ResultSet rs = s.executeQuery(String.format(REAL_WORKING_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(contractToDateCal.getTime())));
                 if (rs != null) {
                     while (rs.next()) {
                         realWorkingTime += rs.getDouble(1);
@@ -2754,20 +2793,13 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 }
 
                 //include holiday and illness activities
-                rs = s.executeQuery(String.format(REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
+                rs = s.executeQuery(String.format(REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(contractToDateCal.getTime())));
                 if (rs != null) {
                     while (rs.next()) {
                         realWorkingTime += rs.getDouble(1);
                     }
                 }
 
-                //traveltime just with the half time
-//                rs = s.executeQuery(String.format(TRAVEL_TIME_QUERY, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(queryToDate.getTime())));
-//                if (rs != null) {
-//                    while (rs.next()) {
-//                        realWorkingTime += rs.getDouble(1) / 2;
-//                    }
-//                }
                 //calculate the nominal working time. 
                 nominalWorkingDays = calculateNominalWorkingDays(contractFromDateCal, contractToDateCal);
                 nominalWorkingTime += (whow / 5) * nominalWorkingDays;
@@ -2784,28 +2816,16 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         return result;
     }
 
-    private long calculateNominalWorkingDays(GregorianCalendar from, GregorianCalendar to) {
-        final long diff = to.getTime().getTime() - from.getTime().getTime();
-
-        final long days = Math.round(diff / (24 * 60 * 60 * 1000d));
-        final long weeks = Math.round(days / 7);
-        //exclude sa and so
-        long workingDays = days - (2 * weeks);
-
-        //check if from or to date are sa or so
-        if (from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY
-                || from.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY
-                || to.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SATURDAY
-                || to.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY) {
-            workingDays--;
+    private int calculateNominalWorkingDays(GregorianCalendar from, GregorianCalendar to) {
+        GregorianCalendar fromDay = (GregorianCalendar)from.clone();
+        int days = 0; 
+        
+        while (CalendarHelper.isDateLess(fromDay, to)) {
+            days += CalendarHelper.isWorkingDayExactly(fromDay);
+            fromDay.add(GregorianCalendar.DAY_OF_MONTH, 1);
         }
 
-        HolidayEvaluator hev = new HolidayEvaluator();
-        final long holidays = hev.getNumberOfHolidaysOnWeekDays(from, to);
-
-        workingDays -= holidays;
-
-        return workingDays;
+        return days;
     }
 
     @Override

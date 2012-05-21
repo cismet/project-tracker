@@ -29,6 +29,8 @@ import org.hibernate.criterion.Restrictions;
  */
 public class QuickBooking extends BasicServlet {
     private static final Logger logger = Logger.getLogger(QuickBooking.class);
+    private static final String PRESENT_RESPONSE = "anwesend";
+    private static final String ABSENT_RESPONSE = "abwesend";
 
     
     /**
@@ -51,20 +53,18 @@ public class QuickBooking extends BasicServlet {
             
             if (staff != null) {
                 if (operation.equals("changeStatus")) {
-                    Object lastAct = dbManager.getSession().createCriteria(Activity.class)
-                            .add(Restrictions.eq("staff", staff))
-                            .add(Restrictions.or(Restrictions.eq("kindofactivity", ActivityDTO.BEGIN_OF_DAY), Restrictions.eq("kindofactivity", ActivityDTO.END_OF_DAY)))
-                            .addOrder(Order.desc("day")).setMaxResults(1).uniqueResult();
-                            
-                    if (lastAct instanceof Activity) {
-                        Activity act = new Activity();
-                        act.setKindofactivity( (((Activity)lastAct).getKindofactivity() % 2) + 1 );
-                        act.setStaff(staff);
-                        act.setDay(new Date());
-                        
-                        dbManager.createObject(act);
-                        SessionInformation si = getCurrentSession(request);
-                        si.setDataChanged(true);
+                    changeStatus(staff, dbManager);
+                } else if (operation.toLowerCase().equals("kommen")) {
+                    addCome(staff, dbManager);
+                } else if (operation.toLowerCase().equals("gehen")) {
+                    addGo(staff, dbManager);
+                } else if (operation.toLowerCase().equals("status")) {
+                    String status = status(staff, dbManager);
+                    
+                    if (status != null) {
+                        out.print(status);
+                    } else {
+                        out.print(ABSENT_RESPONSE);
                     }
                 } else {
                     response.setStatus(400);
@@ -85,7 +85,65 @@ public class QuickBooking extends BasicServlet {
         }
     }
     
+    private void changeStatus(Staff staff, DBManager dbManager) {
+        Object lastAct = dbManager.getSession().createCriteria(Activity.class)
+                .add(Restrictions.eq("staff", staff))
+                .add(Restrictions.or(Restrictions.eq("kindofactivity", ActivityDTO.BEGIN_OF_DAY), Restrictions.eq("kindofactivity", ActivityDTO.END_OF_DAY)))
+                .addOrder(Order.desc("day")).setMaxResults(1).uniqueResult();
 
+        if (lastAct instanceof Activity) {
+            Activity act = new Activity();
+            act.setKindofactivity( (((Activity)lastAct).getKindofactivity() % 2) + 1 );
+            act.setStaff(staff);
+            act.setDay(new Date());
+
+            dbManager.createObject(act);
+            refreshModification(staff, dbManager);
+        }
+    }
+    
+    private void refreshModification(Staff staff, DBManager dbManager) {
+        staff.setLastmodification(new Date());
+        dbManager.saveObject(staff);
+    }
+    
+    private String status(Staff staff, DBManager dbManager) {
+        Object lastAct = dbManager.getSession().createCriteria(Activity.class)
+                .add(Restrictions.eq("staff", staff))
+                .add(Restrictions.or(Restrictions.eq("kindofactivity", ActivityDTO.BEGIN_OF_DAY), Restrictions.eq("kindofactivity", ActivityDTO.END_OF_DAY)))
+                .addOrder(Order.desc("day")).setMaxResults(1).uniqueResult();
+
+        if (lastAct instanceof Activity) {
+            if (((Activity)lastAct).getKindofactivity() == ActivityDTO.BEGIN_OF_DAY) {
+                return PRESENT_RESPONSE;
+            } else {
+                return ABSENT_RESPONSE;
+            }
+        }
+        
+        return null;
+    }
+
+    private void addCome(Staff staff, DBManager dbManager) {
+        Activity act = new Activity();
+        act.setKindofactivity( ActivityDTO.BEGIN_OF_DAY );
+        act.setStaff(staff);
+        act.setDay(new Date());
+
+        dbManager.createObject(act);
+        refreshModification(staff, dbManager);
+    }
+
+    private void addGo(Staff staff, DBManager dbManager) {
+        Activity act = new Activity();
+        act.setKindofactivity( ActivityDTO.END_OF_DAY );
+        act.setStaff(staff);
+        act.setDay(new Date());
+
+        dbManager.createObject(act);
+        refreshModification(staff, dbManager);
+    }
+    
     public Staff checklogin(String username, String pasword, HttpSession session, DBManager dbManager) throws LoginFailedException, DataRetrievalException {
         try {
             Session hibernateSession = dbManager.getSession();

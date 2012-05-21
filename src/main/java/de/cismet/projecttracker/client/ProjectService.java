@@ -924,4 +924,15 @@ public interface ProjectService extends RemoteService {
     public TimePeriod getStartEndOfWork(StaffDTO staff, Date day) throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException;
 
     public List<HolidayType> getHolidaysByWeek(int year, int week) throws InvalidInputValuesException, DataRetrievalException;
+
+    /**
+     * checks, if the user data was changed by the quickbooking service
+     * @return
+     * @throws DataRetrievalException
+     * @throws NoSessionException
+     * @throws InvalidInputValuesException
+     * @throws PermissionDenyException
+     * @throws PersistentLayerException 
+     */
+    public boolean isDataChanged() throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException, PersistentLayerException;
 }

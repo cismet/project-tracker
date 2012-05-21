@@ -2,7 +2,7 @@ package de.cismet.projecttracker.utilities;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.util.*;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -20,8 +20,40 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class);
     private final static String LOG4J_CONFIG_FILE = "WEB-INF/config/log4j.properties";
     private static Properties fMailServerConfig = new Properties();
+    private static final Map<String, EMailContent> toSend = new Hashtable<String, EMailContent>();
+    private static final Timer sendTimer;
+    
+    
+    static {
+        sendTimer = new Timer(true);
+        sendTimer.schedule(new TimerTask() {
 
+            @Override
+            public void run() {
+                checkCollectedEmails();
+            }
+        
+        }, 300000, 60000);
+    }
+    
+    public Utilities() {
+        
+    }
 
+    private static synchronized void checkCollectedEmails() {
+        GregorianCalendar now = new GregorianCalendar();
+        List<String> keys = new ArrayList<String>(toSend.keySet());
+        
+        for (String address : keys) {
+            EMailContent c = toSend.get(address);
+            if (c.getTimeToSend().before(now)) {
+                sendEmail(c.getAddress(), c.getSubject(), c.getBody());
+                toSend.remove(address);
+            }
+        }
+    }
+    
+    
     /**
      * initialize the LOG4J Logger
      */
@@ -50,6 +82,28 @@ public class Utilities {
         }
     }
 
+    /**
+     * Send a single email.
+     */
+    public static synchronized void sendCollectedEmail(String address, String subject, String body) {
+        EMailContent mail = toSend.get(address);
+        GregorianCalendar time = new GregorianCalendar();
+        time.add(GregorianCalendar.MINUTE, 5);
+        
+        if (mail == null) {
+            mail = new EMailContent();
+            mail.setAddress(address);
+            mail.setSubject(subject);
+            mail.setBody(body);
+            toSend.put(address, mail);
+        } else {
+            mail.setBody(mail.getBody() + "\n\n\n" + body);
+        }
+        
+        mail.setTimeToSend(time);
+    }
+    
+    
 
     /**
      * Open a specific text file containing mail server

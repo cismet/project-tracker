@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.projecttracker.utilities;
+package de.cismet.projecttracker.client.utilities;
 
 import com.google.gwt.user.client.Timer;
 import de.cismet.projecttracker.client.common.ui.listener.ServerDataChangeListener;
