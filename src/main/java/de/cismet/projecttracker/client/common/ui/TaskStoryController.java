@@ -90,38 +90,45 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
 
     private void fillTasks() {
         List<TaskNotice> list = taskStory.getTasksForDay(day.getDay());
-        List<TaskNotice> tasksToChange = new ArrayList<TaskNotice>();
+        List<TaskNotice> zeroTasksToChange = new ArrayList<TaskNotice>();
+        List<TaskNotice> procentualTasks = new ArrayList<TaskNotice>();
         double bookedHours = 0.0;
         double timeForDay = story.getTimeForDay(day.getDay());
-        int fillableActivitesCount = 0;
+        double fillableBookedHours = 0.0;
 
         if (list != null && list.size() > 0) {
             for (TaskNotice tmp : list) {
                 if (tmp.getActivity().getKindofactivity() == ActivityDTO.ACTIVITY) {
-//                    if (tmp.getActivity().getWorkinghours() == 0.0) {
-                    tasksToChange.add(tmp);
-//                    } else {
-                    bookedHours += tmp.getActivity().getWorkinghours();
-//                    }
-                    if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
-                        fillableActivitesCount++;
+
+                    if (tmp.getActivity().getWorkinghours() == 0.0) {
+                        zeroTasksToChange.add(tmp);
+                    } else if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
+                        fillableBookedHours += tmp.getActivity().getWorkinghours();
+                        procentualTasks.add(tmp);
                     }
+                    bookedHours += tmp.getActivity().getWorkinghours();
                 }
             }
+        }
 
-            if (tasksToChange.isEmpty()) {
-                ProjectTrackerEntryPoint.outputBox("There are no tasks without duration, which can be filled");
-            } else if ((timeForDay - bookedHours) <= 0.0) {
-                ProjectTrackerEntryPoint.outputBox("There is no time left to fill the tasks");
+        if ((timeForDay - bookedHours) <= 0.0) {
+            ProjectTrackerEntryPoint.outputBox("There is no time left to fill the tasks");
+        } else if (zeroTasksToChange.isEmpty()) {
+            for (TaskNotice tmp : procentualTasks) {
+                double fillFactor = tmp.getActivity().getWorkinghours() * 100 / fillableBookedHours;
+                double newWorkingHours = tmp.getActivity().getWorkinghours() + ((fillFactor * (timeForDay - bookedHours)) / 100);
+                tmp.getActivity().setWorkinghours(newWorkingHours);
+                tmp.refresh();
+                tmp.save();
+                taskStory.taskChanged(tmp);
             }
-
-            if (tasksToChange.size() > 0) {
-                for (TaskNotice tmp : tasksToChange) {
-                    if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
-                        tmp.getActivity().setWorkinghours(tmp.getActivity().getWorkinghours() + (timeForDay - bookedHours) / fillableActivitesCount);
-                        tmp.refresh();
-                        tmp.save();
-                    }
+        } else {
+            if (zeroTasksToChange.size() > 0) {
+                for (TaskNotice tmp : zeroTasksToChange) {
+                    tmp.getActivity().setWorkinghours(tmp.getActivity().getWorkinghours() + (timeForDay - bookedHours) / zeroTasksToChange.size());
+                    tmp.refresh();
+                    tmp.save();
+                    taskStory.taskChanged(tmp);
                 }
             }
         }
