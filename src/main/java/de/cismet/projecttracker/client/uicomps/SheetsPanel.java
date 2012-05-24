@@ -302,7 +302,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         if (act.getKindofactivity() == ActivityDTO.HOLIDAY || act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
             hours += act.getWorkinghours();
         } else {
-            if (act.getWorkPackage() != null) {
+            if (act.getWorkPackage() != null && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
                 if (act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID) {
                     if (act.getWorkinghours() == 0 && dhow > 0) {
                         hours += dhow;
@@ -315,8 +315,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     } else {
                         hours += act.getWorkinghours();
                     }
-                } else if (act.getWorkPackage().getId() == ActivityDTO.PAUSE_ID) {
-                    hours -= act.getWorkinghours();
                 } else if (act.getWorkPackage().getId() == ActivityDTO.Travel_ID) {
                     hours += act.getWorkinghours() / 2;
                 } else {
