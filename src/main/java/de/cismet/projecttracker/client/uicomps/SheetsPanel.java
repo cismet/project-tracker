@@ -389,6 +389,11 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), pyear, pweek, callback);
     }
 
+    public Story getTimes() {
+        return times;
+    }
+    
+
     @Override
     public void taskNoticeCreated(TaskStoryEvent e) {
         refreshWeeklyHoursOfWork();

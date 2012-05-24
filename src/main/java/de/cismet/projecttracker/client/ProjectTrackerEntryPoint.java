@@ -11,10 +11,10 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
+import de.cismet.projecttracker.client.common.ui.BeginOfWorkDialog;
 import de.cismet.projecttracker.client.common.ui.LoadingPanel;
+import de.cismet.projecttracker.client.common.ui.listener.ServerDataChangeListener;
 import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
@@ -23,6 +23,7 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.uicomps.SheetsPanel;
 import de.cismet.projecttracker.client.uicomps.TopPanel;
+import de.cismet.projecttracker.client.utilities.ChangeChecker;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +34,7 @@ import java.util.List;
  *
  * @author therter
  */
-public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler, ResizeHandler, HasResizeHandlers, ClickHandler {
+public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler, ResizeHandler, HasResizeHandlers, ClickHandler,ServerDataChangeListener {
     private static ProjectTrackerEntryPoint currentInstance;
     private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
     private HandlerManager handlerManager = new HandlerManager(this);
@@ -171,6 +172,26 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
             topPanel.setGravatar(GRAVATAR_URL_PREFIX + md5(staff.getEmail()) + "?s=30");
         }
         topPanel.fillUser();
+        ChangeChecker.getInstance().addListener(this);
+        checkBeginOfDayBooking();
+    }
+    
+    private void checkBeginOfDayBooking(){
+        final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>(){
+
+            @Override
+            protected void afterExecution(Boolean result, boolean operationFailed) {
+                if(!operationFailed && !result){
+                    // popup
+                    DialogBox form = new DialogBox();
+                    form.setWidget( new BeginOfWorkDialog(form,  sheets));
+                    form.center();
+                }
+            }
+            
+        };
+        
+        ProjectTrackerEntryPoint.getProjectService(true).checkBeginOfDayActivityExists(getStaff(),callback);
     }
 
     public StaffDTO getStaff() {
@@ -446,5 +467,11 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
      */
     public void setProjects(List<ProjectDTO> projects) {
         this.projects = projects;
+    }
+
+    @Override
+    public void dataChanged() {
+        checkBeginOfDayBooking();
+        sheets.refresh();
     }
 }

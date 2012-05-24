@@ -899,6 +899,8 @@ public interface ProjectService extends RemoteService {
      * logout
      */
     public StaffDTO checkLogin() throws DataRetrievalException;
+    
+    public Boolean checkBeginOfDayActivityExists(StaffDTO staff);
 
     /**
      * logout

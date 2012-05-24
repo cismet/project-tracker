@@ -4,6 +4,7 @@ import de.cismet.projecttracker.utilities.DBManagerWrapper;
 import de.cismet.projecttracker.utilities.DTOManager;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import de.cismet.projecttracker.client.ProjectService;
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.FavouriteTaskStory;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.BasicDTO;
@@ -108,9 +109,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
 //    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
     private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (409,410,411);";
-   private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
-           + "staffid=%1$s and day is null and workpackageid = %2$s and "
-           + "case when description is null then true else description = '%3$s' end and staffid=16;";
+    private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
+            + "staffid=%1$s and day is null and workpackageid = %2$s and "
+            + "case when description is null then true else description = '%3$s' end";
+    private static final String CHECK_BEGIN_OF_DAY_QUERY = "select max(day) from activity where staffid = %1$s and date_trunc('day', day) = '%2$s' and kindofactivity=1";
+    private static final String CHECK_KIND_OF_LAST_ACTIVITY = "select kindofactivity from activity where staffid = %1$s and day = (select max(day) from activity where staffid = %1$s and date_trunc('day',day) ='%2$s')";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
     private static boolean initialised = false;
@@ -1645,7 +1648,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             for (Activity tmp : actList) {
                 dbManager.createObject(act);
             }
-            
+
             warningSystem.addActivity(act);
             long id = (Long) dbManager.createObject(act);
             if (act.getStaff() != null && act.getStaff().getId() != getUserId() && act.getDay() != null) {
@@ -1759,8 +1762,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     /**
-     * 
-     * @param activity 
+     *
+     * @param activity
      * @param originalActivity The description of the original activity. If null, a new activity was created
      */
     private void sendChangedActivityEmail(Activity activity, String originalActivity, String email) {
@@ -1771,8 +1774,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 if (activity == null) {
                     text = s.getFirstname() + " " + s.getName() + " has deleted the following actvitiy:\n" + originalActivity;
                 } else if (originalActivity != null) {
-                        text = s.getFirstname() + " " + s.getName() + " has changed the following actvitiy:\n" + originalActivity;
-                        text += "\n\nto\n\n" + activity.toString();
+                    text = s.getFirstname() + " " + s.getName() + " has changed the following actvitiy:\n" + originalActivity;
+                    text += "\n\nto\n\n" + activity.toString();
                 } else {
                     text = s.getFirstname() + " " + s.getName() + " has added the following actvitiy:\n" + activity.toString();
                 }
@@ -1805,11 +1808,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     throw new PersistentLayerException(LanguageBundle.CANNOT_CHANGE_ACTIVITY);
                 }
             }
-            
+
             String actText = null;
             Staff st = null;
             Date day = null;
-            
+
             if (act.getDay() != null) {
                 actText = act.toString();
                 st = act.getStaff();
@@ -2357,8 +2360,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
-            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
+            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+//            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
             if (staff != null) {
                 HttpSession session = getThreadLocalRequest().getSession();
@@ -2562,17 +2565,26 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         return result;
     }
 
+    @Override
     public boolean isDataChanged() throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException, PersistentLayerException {
-        Staff s = getStaffById(getUserId());
-        
-        if (s.getLastmodification() != null) {
-            s.setLastmodification(null);
-            saveStaff((StaffDTO)dtoManager.clone(s));
-            
-            return true;
-        } else {
-            return false;
+        logger.debug("getStaffById");
+        DBManagerWrapper dbManager = new DBManagerWrapper();
+
+        try {
+            Staff s = (Staff) dbManager.getObject(Staff.class, getUserId());
+
+            if (s.getLastmodification() != null) {
+                s.setLastmodification(null);
+                saveStaff((StaffDTO) dtoManager.clone(s));
+
+                return true;
+            } else {
+                return false;
+            }
+        } finally {
+            dbManager.closeSession();
         }
+
     }
 
     private static boolean isSameDay(Date date, Date otherDate) {
@@ -2817,9 +2829,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     private int calculateNominalWorkingDays(GregorianCalendar from, GregorianCalendar to) {
-        GregorianCalendar fromDay = (GregorianCalendar)from.clone();
-        int days = 0; 
-        
+        GregorianCalendar fromDay = (GregorianCalendar) from.clone();
+        int days = 0;
+
         while (CalendarHelper.isDateLess(fromDay, to)) {
             days += CalendarHelper.isWorkingDayExactly(fromDay);
             fromDay.add(GregorianCalendar.DAY_OF_MONTH, 1);
@@ -2874,10 +2886,46 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 return false;
             }
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(FavouriteTaskStory.class.getName()).log(Level.SEVERE, "Error while checkig"
+            java.util.logging.Logger.getLogger(FavouriteTaskStory.class.getName()).log(Level.SEVERE, "Error while checking"
                     + " if facourite task already exists. Drop action cancelled", ex);
         }
 
+        return true;
+    }
+
+    @Override
+    public Boolean checkBeginOfDayActivityExists(StaffDTO staff) {
+        try {
+            DBManagerWrapper dbManager = new DBManagerWrapper();
+            Statement s = dbManager.getDatabaseConnection().createStatement();
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+            final String query = String.format(CHECK_BEGIN_OF_DAY_QUERY, staff.getId(), dateFormatter.format(new Date()));
+            ResultSet rs = s.executeQuery(query);
+
+            //check if there exists at least one begin of day activity
+            if (rs != null) {
+                while (rs.next()) {
+                    if (rs.getDate(1) == null) {
+                        return false;
+                    }
+                }
+            }
+            rs = s.executeQuery(String.format(CHECK_KIND_OF_LAST_ACTIVITY, staff.getId(), dateFormatter.format(new Date())));
+
+            //check if there exists at least one begin of day activity
+            if (rs != null) {
+                while (rs.next()) {
+                    if (rs.getInt(1) == ActivityDTO.END_OF_DAY) {
+                        return false;
+                    }
+                }
+            }
+
+            //check if the last activity for this day is a end of day activity
+
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, "Error while checking if begin_of_day activity exists", ex);
+        }
         return true;
     }
 }
