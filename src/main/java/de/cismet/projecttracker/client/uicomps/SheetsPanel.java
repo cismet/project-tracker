@@ -340,7 +340,13 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
         weekHoursLab.setText(WEEKLY_HOURS_OF_WORK + " " + DateHelper.doubleToHours(hours) + " h");
         try {
-            weekDebit = hours - ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear()).getWhow();
+            ContractDTO co = ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear());
+            if (co != null) {
+                weekDebit = hours - co.getWhow();
+            } else {
+                ProjectTrackerEntryPoint.outputBox("The employee has no valid contract for some days of the week. "
+                        + "So the account balance is probably not correct.");
+            }
         } catch (InvalidInputValuesException ex) {
             Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
                                 + "Contract for Staff " +ProjectTrackerEntryPoint.getInstance().getStaff() 

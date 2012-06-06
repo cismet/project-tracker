@@ -7,18 +7,9 @@ package de.cismet.projecttracker.client.utilities;
 import com.google.gwt.user.client.Timer;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.listener.ServerDataChangeListener;
-import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import de.cismet.projecttracker.utilities.DBManagerWrapper;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *

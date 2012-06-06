@@ -182,7 +182,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
             if (day == null) {
                 day = tmp.getDay();
             } else if (!DateHelper.isSameDaySV(day, tmp.getDay())) {
-                if (begin != null && end != null) {
+                if (begin != null) {
                     addTask(day.getDay(), begin, end);
                 }
                 day = tmp.getDay();
@@ -293,6 +293,10 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
                         
                         if (end == null) {
                             end = new Date();
+                            
+                            if (end.before(start)) {
+                                end = new Date( ((Date)start.clone()).getTime() + 60000 );
+                            }
                         }
                         
                         addTimeStartEnd(day, start, end);
