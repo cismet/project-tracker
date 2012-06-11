@@ -65,6 +65,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private Label previousWeekBalLab = new Label(PREVIOUS_WEEK_BALANCE);
     private Label weekBalanceLab = new Label(WEEK_BALANCE);
     private long lastAccountBalanceCalc = 0;
+    private static final int TRAVEL_WORK_CATEGORY = 4;
 
     public SheetsPanel() {
         init();
@@ -315,7 +316,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     } else {
                         hours += act.getWorkinghours();
                     }
-                } else if (act.getWorkPackage().getId() == ActivityDTO.Travel_ID) {
+                } else if (act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
                     hours += act.getWorkinghours() / 2;
                 } else {
                     hours += act.getWorkinghours();
@@ -328,13 +329,13 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     private void refreshWeeklyHoursOfWork() {
         double hours = 0.0;
-        double weekDebit =0.0;
+        double weekDebit = 0.0;
         for (int i = 0; i < 7; ++i) {
 //            hours += times.getTimeForDay(i);
             List<TaskNotice> taskList = tasks.getTasksForDay(i);
 
             for (TaskNotice tmp : taskList) {
-                hours += getWorkingHoursForActivity(tmp.getActivity());
+                    hours += getWorkingHoursForActivity(tmp.getActivity());
             }
         }
 
@@ -349,13 +350,13 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             }
         } catch (InvalidInputValuesException ex) {
             Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
-                                + "Contract for Staff " +ProjectTrackerEntryPoint.getInstance().getStaff() 
-                                + " and Week/year" + getSelectedWeek()+"/"+getSelectedYear(), ex);
+                    + "Contract for Staff " + ProjectTrackerEntryPoint.getInstance().getStaff()
+                    + " and Week/year" + getSelectedWeek() + "/" + getSelectedYear(), ex);
         }
-        
-        weekBalanceLab.setText(WEEK_BALANCE+ " "+ DateHelper.doubleToHours(weekDebit)+" h");
+
+        weekBalanceLab.setText(WEEK_BALANCE + " " + DateHelper.doubleToHours(weekDebit) + " h");
     }
-    
+
     private void refreshPrevWeekBalance() {
         int pweek;
         int pyear;
@@ -385,8 +386,8 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                         weekDebit = hours - ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear()).getWhow();
                     } catch (InvalidInputValuesException ex) {
                         Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
-                                + "Contract for Staff " +ProjectTrackerEntryPoint.getInstance().getStaff() 
-                                + " and Week/year" + getSelectedWeek()+"/"+getSelectedYear(), ex);
+                                + "Contract for Staff " + ProjectTrackerEntryPoint.getInstance().getStaff()
+                                + " and Week/year" + getSelectedWeek() + "/" + getSelectedYear(), ex);
                     }
                     previousWeekBalLab.setText(PREVIOUS_WEEK_BALANCE + DateHelper.doubleToHours(weekDebit) + " h");
                 }
@@ -398,7 +399,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     public Story getTimes() {
         return times;
     }
-    
 
     @Override
     public void taskNoticeCreated(TaskStoryEvent e) {
