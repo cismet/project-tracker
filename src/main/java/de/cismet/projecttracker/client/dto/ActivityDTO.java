@@ -17,6 +17,7 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
     public static final int ACTIVITY = 0;
     public static final int BEGIN_OF_DAY = 1;
     public static final int END_OF_DAY = 2;
+    public static final int LOCKED_DAY = 3;
     public static final int HOLIDAY = -1;
     public static final int HALF_HOLIDAY = -2;
     public static final int SPARE_TIME_ID = 407;

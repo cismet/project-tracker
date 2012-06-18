@@ -391,7 +391,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         
 
         RootPanel p = RootPanel.get("contentId");
-        int newHeight = height - p.getAbsoluteTop() - 105;
+        int newHeight = height - p.getAbsoluteTop() - 75;
         if (newHeight < 150) {
             newHeight = 150;
         }

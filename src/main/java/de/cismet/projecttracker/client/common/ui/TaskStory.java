@@ -33,6 +33,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     private FlowPanelWithSpacer[] daysOfWeek = new FlowPanelWithSpacer[7];
     private HashMap<FlowPanelWithSpacer, List<TaskNotice>> taskMap = new HashMap<FlowPanelWithSpacer, List<TaskNotice>>();
     private HashMap<FlowPanelWithSpacer, PickupDragController> dragMap = new HashMap<FlowPanelWithSpacer, PickupDragController>();
+    private HashMap<FlowPanelWithSpacer, TaskStoryController> taskStoryControllerMap = new HashMap<FlowPanelWithSpacer, TaskStoryController>();
     private Date firstDayOfWeek = new Date();
     private PickupDragController mondayDragController;
     private PickupDragController tuesdayDragController;
@@ -41,6 +42,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     private PickupDragController fridayDragController;
     private PickupDragController saturdayDragController;
     private PickupDragController sundayDragController;
+    private LockPanel lockPanel;
     private List<TaskStoryListener> listener = new ArrayList<TaskStoryListener>();
     @UiField
     FlowPanelWithSpacer monday;
@@ -121,6 +123,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 
     public void registerTaskStoryController(TaskStoryController controller, Date day) {
         daysOfWeek[day.getDay()].addDoubleClickHandler(controller);
+        taskStoryControllerMap.put(daysOfWeek[day.getDay()], controller);
     }
 
     public void initDragController(PickupDragController controller, FlowPanelWithSpacer except) {
@@ -164,7 +167,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                             days = 5;
                                         }
                                         final ActivityDTO activity = origNotice.getActivity().createCopy();
-                                        Date newDate = (Date) firstDayOfWeek.clone();
+                                        final Date newDate = (Date) firstDayOfWeek.clone();
                                         DateHelper.addDays(newDate, days);
 
                                         activity.setId(0);
@@ -172,22 +175,35 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                         activity.setDay(newDate);
                                         activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
-                                        if (taskList.isEmpty() && activity.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                                            addPause(newDate);
-                                        }
-
-                                        BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+                                        BasicAsyncCallback<Boolean> freezeDayCallback = new BasicAsyncCallback<Boolean>() {
 
                                             @Override
-                                            protected void afterExecution(Long result, boolean operationFailed) {
+                                            protected void afterExecution(Boolean result, boolean operationFailed) {
                                                 if (!operationFailed) {
-                                                    activity.setId(result);
-                                                    addTask(activity, (FlowPanelWithSpacer) dropTarget);
+                                                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                                                        if (taskList.isEmpty() && activity.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
+                                                            addPause(newDate);
+                                                        }
+
+                                                        BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+
+                                                            @Override
+                                                            protected void afterExecution(Long result, boolean operationFailed) {
+                                                                if (!operationFailed) {
+                                                                    activity.setId(result);
+                                                                    addTask(activity, (FlowPanelWithSpacer) dropTarget);
+                                                                }
+                                                            }
+                                                        };
+                                                        activity.setDay(newDate);
+                                                        ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
+                                                    }
                                                 }
                                             }
                                         };
-                                        activity.setDay(newDate);
-                                        ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
+
+                                        ProjectTrackerEntryPoint.getProjectService(true).isDayLocked(newDate, activity.getStaff(), freezeDayCallback);
+
                                     }
                                 }
                             }
@@ -209,7 +225,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 
     public void addTask(ActivityDTO activity, FlowPanelWithSpacer columnPanel) {
         TaskNotice widget = null;
-
         if (activity.getKindofactivity() == ActivityDTO.ACTIVITY) {
             widget = new TaskNotice(activity);
         } else {
@@ -236,7 +251,11 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         for (ActivityDTO tmp : activities) {
             if (tmp.getKindofactivity() == ActivityDTO.ACTIVITY) {
                 addTask(tmp);
+            } else if (tmp.getKindofactivity() == 3) {
+                // we have found a freeze activitiy, so we have to update the checkbox of the taskStoryController
+                lockPanel.setLocked(tmp.getDay(), true);
             }
+
         }
 
         for (HolidayType tmp : holidays) {
@@ -244,9 +263,17 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
             addTask(new ActivityDTO(0, null, null, null, tmp.getHours(), tmp.getName(), tmp.getDate(), true, type));
         }
     }
+    
+    public void setLockPanel(LockPanel p){
+        this.lockPanel=p;
+    }
 
     private void removeAllTasks() {
+        final Date d = new Date(firstDayOfWeek.getTime());
         for (FlowPanelWithSpacer tmp : daysOfWeek) {
+            //update the freeze checkbox
+            lockPanel.setLocked(d, false);
+            DateHelper.addDays(d, 1);
             List<TaskNotice> list = taskMap.get(tmp);
             for (TaskNotice widget : list) {
                 PickupDragController c = dragMap.get(tmp);
@@ -275,7 +302,20 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 
     @Override
     public void onDoubleClick(DoubleClickEvent event) {
-        modifyTask((TaskNotice) ((Widget) event.getSource()).getParent().getParent());
+        final TaskNotice notice = (TaskNotice) ((Widget) event.getSource()).getParent().getParent();
+        BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
+
+            @Override
+            protected void afterExecution(Boolean result, boolean operationFailed) {
+                if (!operationFailed) {
+                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                        modifyTask(notice);
+                    }
+                }
+            }
+        };
+
+        ProjectTrackerEntryPoint.getProjectService(true).isDayLocked(notice.getActivity().getDay(), notice.getActivity().getStaff(), callback);
     }
 
     @Override

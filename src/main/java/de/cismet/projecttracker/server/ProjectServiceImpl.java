@@ -119,6 +119,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static boolean initialised = false;
     private static DTOManager dtoManager = new DTOManager();
     private static final GregorianCalendar accountBalanceDueDate = new GregorianCalendar(2012, 2, 1);
+//    private static final int PAUSE_CHECKER_DAYS = 2;
 
     @Override
     public void init() throws ServletException {
@@ -138,6 +139,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             }
 
             reportManager = new ReportManager(getServletContext().getRealPath("/"));
+
+            // start the timer that checks pause tasks
+
+//            PauseChecker pauseChecker = new PauseChecker(this, PAUSE_CHECKER_DAYS);
         }
     }
 
@@ -1636,6 +1641,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         try {
             if (activity.getKindofactivity() != ActivityDTO.BEGIN_OF_DAY
                     && activity.getKindofactivity() != ActivityDTO.END_OF_DAY
+                    && activity.getKindofactivity() != ActivityDTO.LOCKED_DAY
                     && activity.getWorkPackage() == null) {
                 throw new DataRetrievalException(LanguageBundle.ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT);
             }
@@ -1738,7 +1744,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     throw new PersistentLayerException(LanguageBundle.CANNOT_CHANGE_ACTIVITY);
                 }
             }
-
             // to avoid the following error message:
             // org.hibernate.NonUniqueObjectException: a different object with the same identifier value was already associated with the session
 //            activityHib.setWorkCategory((WorkCategory)dtoManager.merge( getWorkCategories().get(0)));
@@ -2360,8 +2365,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
-            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
+            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+//            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
             if (staff != null) {
                 HttpSession session = getThreadLocalRequest().getSession();
@@ -2927,5 +2932,52 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, "Error while checking if begin_of_day activity exists", ex);
         }
         return true;
+    }
+
+    @Override
+    public Boolean isDayLocked(Date day, StaffDTO s) {
+        DBManagerWrapper dbManager = new DBManagerWrapper();
+
+        Activity lockedDayActivity = null;
+        Criteria crit = null;
+        try {
+            crit = dbManager.getSession().createCriteria(Activity.class).add(Restrictions.and(Restrictions.eq("staff", dtoManager.merge(s)), Restrictions.and(Restrictions.eq("kindofactivity", ActivityDTO.LOCKED_DAY), Restrictions.eq("day", day)))).setMaxResults(1);
+        } catch (InvalidInputValuesException ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        lockedDayActivity = (Activity) crit.uniqueResult();
+
+        if (lockedDayActivity != null) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public ArrayList<ActivityDTO> getActivityByDay(StaffDTO staff, Date day) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException {
+        final ArrayList<ActivityDTO> resultList = new ArrayList<ActivityDTO>();
+        final DBManagerWrapper dbManager = new DBManagerWrapper();
+        Criteria crit = null;
+        try {
+            final GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(day);
+            cal.add(GregorianCalendar.DAY_OF_YEAR, 1);
+            Criterion dateRestriction = Restrictions.and(Restrictions.ge("day", day), Restrictions.lt("day", cal.getTime()));
+            crit = dbManager.getSession().createCriteria(Activity.class).add(Restrictions.and(Restrictions.eq("staff", dtoManager.merge(staff)), dateRestriction));
+            crit.addOrder(Order.asc("day"));
+            List list = crit.list();
+
+
+            final Iterator it = list.iterator();
+
+            while (it.hasNext()) {
+                final Activity activity = (Activity) it.next();
+                resultList.add((ActivityDTO) dtoManager.clone(activity));
+            }
+        } catch (InvalidInputValuesException ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return resultList;
+
     }
 }

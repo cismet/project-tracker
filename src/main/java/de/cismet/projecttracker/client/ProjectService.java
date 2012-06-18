@@ -479,6 +479,8 @@ public interface ProjectService extends RemoteService {
      * @throws NoSessionException
      */
     public ArrayList<ActivityDTO> getActivitiesByWeek(StaffDTO staff, int year, int week) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
+    
+    public ArrayList<ActivityDTO> getActivityByDay(StaffDTO staff, Date day) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
 
     /**
      * 
@@ -627,6 +629,8 @@ public interface ProjectService extends RemoteService {
     public WorkCategoryDTO getWorkCategory(long id) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
     
     public Boolean isExisitingFavouriteTask(ActivityDTO activity);
+    
+    public Boolean isDayLocked(Date day, StaffDTO s);
     
     /**
      * Creates a new project costs.

@@ -40,7 +40,7 @@
 						<t:TaskStoryController ui:field="sunday" styleName="{style.taskboard}" />
 					</div>
 				</div>
-                                </div>
+                            </div>
 			</g:HTMLPanel>
 		</g:AbsolutePanel>
 	</g:HTMLPanel>

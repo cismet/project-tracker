@@ -151,7 +151,8 @@ public class QuickBooking extends BasicServlet {
             MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
+            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+//            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
             return staff;
         } catch (Throwable t) {

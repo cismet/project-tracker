@@ -13,6 +13,7 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskDeleteListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskNoticeListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
@@ -204,19 +205,35 @@ public class TaskNotice extends Composite implements ClickHandler {
     @Override
     public void onClick(ClickEvent event) {
         if (event.getSource() == close) {
-            BasicAsyncCallback<Void> callback = new BasicAsyncCallback<Void>() {
+            StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
+            BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
 
                 @Override
-                protected void afterExecution(Void result, boolean operationFailed) {
+                protected void afterExecution(Boolean result, boolean operationFailed) {
                     if (!operationFailed) {
-                        fireActivityDelete();
-                    } else {
+                        if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                            deleteTask();
+                        }
                     }
                 }
             };
-
-            ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(activity, callback);
+            ProjectTrackerEntryPoint.getProjectService(true).isDayLocked(activity.getDay(), activity.getStaff(), callback);
         }
+    }
+
+    private void deleteTask() {
+        BasicAsyncCallback<Void> callback = new BasicAsyncCallback<Void>() {
+
+            @Override
+            protected void afterExecution(Void result, boolean operationFailed) {
+                if (!operationFailed) {
+                    fireActivityDelete();
+                } else {
+                }
+            }
+        };
+
+        ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(activity, callback);
     }
 
     public void addListener(TaskDeleteListener l) {

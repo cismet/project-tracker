@@ -12,6 +12,7 @@ import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 
 /**
@@ -228,6 +229,13 @@ public class DateHelper {
      */
     public static int getCurrentWeek() {
         return getWeekOfYear(new Date());
+    }
+    
+    public static int getYear(Date d){
+//        final GregorianCalendar cal = new GregorianCalendar();
+//        cal.setTime(d);
+//        return cal.get(GregorianCalendar.YEAR);
+        return d.getYear() +1900;
     }
 
     /**

@@ -60,6 +60,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private RecentStory recent = new RecentStory();
     private ExtendedRecentTaskStory allRecent = new ExtendedRecentTaskStory();
     private DailyHoursOfWork dailyHours = new DailyHoursOfWork();
+    private LockPanel lockPanel = new LockPanel();
     private Label weekHoursLab = new Label(WEEKLY_HOURS_OF_WORK);
     private Label accountBalanceLab = new Label(ACCOUNT_BALANCE);
     private Label previousWeekBalLab = new Label(PREVIOUS_WEEK_BALANCE);
@@ -73,6 +74,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         setStyleName("content");
         tasks.addTaskStoryListener(this);
         times.addTimeStoryListener(this);
+        tasks.setLockPanel(lockPanel);
     }
 
     private void init() {
@@ -94,6 +96,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 //        contentNodeParentPanel.add(favs);
         contentNodeParentPanel.add(contentNodePanel);
         contentNodeParentPanel.add(dailyHours);
+        contentNodeParentPanel.add(lockPanel);
         contentNodeParentPanel.add(taskContentNodePanel);
         contentNodeParentPanel.add(taskControlPanel);
         controlPanel.setStyleName("pull-center");
@@ -253,6 +256,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     favs.registerDropController(allRecent.getDragController());
                     favs.registerDropControllers(tasks.getDragControllers());
                     dailyHours.initialise(firstDay, times, tasks);
+                    lockPanel.initialise(firstDay, times, tasks);
                     refreshWeeklyHoursOfWork();
                     refreshPrevWeekBalance();
                     refreshAccountBalance();
@@ -316,7 +320,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     } else {
                         hours += act.getWorkinghours();
                     }
-                } else if (act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
+                } else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
                     hours += act.getWorkinghours() / 2;
                 } else {
                     hours += act.getWorkinghours();
@@ -344,9 +348,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             ContractDTO co = ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear());
             if (co != null) {
                 weekDebit = hours - co.getWhow();
-            } else {
-                ProjectTrackerEntryPoint.outputBox("The employee has no valid contract for some days of the week. "
-                        + "So the account balance is probably not correct.");
             }
         } catch (InvalidInputValuesException ex) {
             Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
