@@ -2940,6 +2940,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         //TODO: change Time Restriction to same day and not same time...
         final Date d = new Date(day.getTime());
         d.setHours(5);
+        d.setMinutes(0);
+        d.setSeconds(0);
 
         Activity lockedDayActivity = null;
         Criteria crit = null;
