@@ -90,10 +90,13 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
 
         if (eventSource == startTime) {
             activityToSave = start;
-            newDate = startTime.getText();
+            newDate = checkTimeFormat(startTime.getText());
+            startTime.setText(newDate);
+
         } else if (eventSource == endTime) {
             activityToSave = end;
-            newDate = endTime.getText();
+            newDate = checkTimeFormat(endTime.getText());
+            endTime.setText(newDate);
 
             if (!endTime.getText().equals("")) {
                 try {
@@ -190,6 +193,26 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
         } catch (IllegalArgumentException e) {
             ((TextBox) eventSource).setText(DateHelper.formatTime(activityToSave.getDay()));
         }
+    }
+
+    /**
+     *
+     * checks if s matches a time expression, if not checks if the insertet text can be interpreted as
+     * hours and returns a time expression representing the 
+     *
+     * @param s
+     * @return
+     */
+    private String checkTimeFormat(String s) {
+      
+        if (!s.matches("([01]?[0-9]|2[0-3]):[0-5][0-9]")) {
+            if (s.matches("[01][0-9]|2[0-3]")) {
+                s += ":00";
+            }else if(s.matches("[0-9]|2[0-3]")){
+                s = "0"+s+":00";
+            }
+        }
+        return s;
     }
 
     @Override
