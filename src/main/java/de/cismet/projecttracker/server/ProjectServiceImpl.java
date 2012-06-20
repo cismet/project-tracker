@@ -2937,11 +2937,14 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     @Override
     public Boolean isDayLocked(Date day, StaffDTO s) {
         DBManagerWrapper dbManager = new DBManagerWrapper();
+        //TODO: change Time Restriction to same day and not same time...
+        final Date d = new Date(day.getTime());
+        d.setHours(5);
 
         Activity lockedDayActivity = null;
         Criteria crit = null;
         try {
-            crit = dbManager.getSession().createCriteria(Activity.class).add(Restrictions.and(Restrictions.eq("staff", dtoManager.merge(s)), Restrictions.and(Restrictions.eq("kindofactivity", ActivityDTO.LOCKED_DAY), Restrictions.eq("day", day)))).setMaxResults(1);
+            crit = dbManager.getSession().createCriteria(Activity.class).add(Restrictions.and(Restrictions.eq("staff", dtoManager.merge(s)), Restrictions.and(Restrictions.eq("kindofactivity", ActivityDTO.LOCKED_DAY), Restrictions.eq("day", d)))).setMaxResults(1);
         } catch (InvalidInputValuesException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
