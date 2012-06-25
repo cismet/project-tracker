@@ -109,11 +109,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
 //    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
     private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (409,410,411);";
+    private static final String REAL_WORKING_TIME_SPARE_TIME = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (407);";
     private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
             + "staffid=%1$s and day is null and workpackageid = %2$s and "
             + "case when description is null then true else description = '%3$s' end";
     private static final String CHECK_BEGIN_OF_DAY_QUERY = "select max(day) from activity where staffid = %1$s and date_trunc('day', day) = '%2$s' and kindofactivity=1";
-    private static final String CHECK_KIND_OF_LAST_ACTIVITY = "select kindofactivity from activity where staffid = %1$s and day = (select max(day) from activity where staffid = %1$s and date_trunc('day',day) ='%2$s')";
+    private static final String CHECK_KIND_OF_LAST_ACTIVITY = "select kindofactivity, day from activity where staffid = %1$s and day = (select max(day) from activity where staffid = %1$s and date_trunc('day',day) ='%2$s')";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
     private static boolean initialised = false;
@@ -2816,6 +2817,14 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                         realWorkingTime += rs.getDouble(1);
                     }
                 }
+                
+                //exclude spare time
+                rs = s.executeQuery(String.format(REAL_WORKING_TIME_SPARE_TIME, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(contractToDateCal.getTime())));
+                if (rs != null) {
+                    while (rs.next()) {
+                        realWorkingTime -= rs.getDouble(1);
+                    }
+                }
 
                 //calculate the nominal working time. 
                 nominalWorkingDays = calculateNominalWorkingDays(contractFromDateCal, contractToDateCal);
@@ -2917,16 +2926,19 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             }
             rs = s.executeQuery(String.format(CHECK_KIND_OF_LAST_ACTIVITY, staff.getId(), dateFormatter.format(new Date())));
 
-            //check if there exists at least one begin of day activity
+            //check if the last activity for this day is a end of day activity
             if (rs != null) {
                 while (rs.next()) {
                     if (rs.getInt(1) == ActivityDTO.END_OF_DAY) {
-                        return false;
+                        final Date helper = new Date();
+                        final Date now = new Date(helper.getYear(), helper.getMonth(), helper.getDate(), helper.getHours(), helper.getMinutes());
+                        final Timestamp endOfDay = rs.getTimestamp("day");
+                        if (endOfDay.before(now)) {
+                            return false;
+                        }
                     }
                 }
             }
-
-            //check if the last activity for this day is a end of day activity
 
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, "Error while checking if begin_of_day activity exists", ex);

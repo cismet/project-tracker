@@ -220,9 +220,10 @@ public class LockPanel extends Composite implements ClickHandler {
         this.firstDayOfWeek = firstDayOfWeek;
     }
     
-    public void lockAllDaysInWeek(){
+    public void lockAllDaysInWeek(boolean aflag){
         final Date d = new Date(firstDayOfWeek.getTime());
         for(SimpleCheckBox cb : days){
+            cb.setValue(aflag);
             lockDay(d);
             DateHelper.addDays(d, 1);
         }

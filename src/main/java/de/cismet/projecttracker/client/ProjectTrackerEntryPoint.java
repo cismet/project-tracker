@@ -173,7 +173,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         }
         topPanel.fillUser();
         ChangeChecker.getInstance().addListener(this);
-//        checkBeginOfDayBooking();
+        checkBeginOfDayBooking();
     }
     
     private void checkBeginOfDayBooking(){
@@ -471,7 +471,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 
     @Override
     public void dataChanged() {
-//        checkBeginOfDayBooking();
+        checkBeginOfDayBooking();
         sheets.refresh();
     }
 }
