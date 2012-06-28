@@ -632,6 +632,10 @@ public interface ProjectService extends RemoteService {
     
     public Boolean isDayLocked(Date day, StaffDTO s);
     
+    public Boolean isPausePolicyFullfilled(StaffDTO staff, Date day);
+    
+    public ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff,int year, int week);
+    
     /**
      * Creates a new project costs.
      * @param projectCosts this object should contain the values of the new project costs, but it should not contain an ID.

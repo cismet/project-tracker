@@ -43,6 +43,13 @@ public class DateHelper {
     public final static int FRIDAY = 5;
     public final static int SATURDAY = 6;
 
+    public static String formatShortDate(Date date){
+        if(date == null){
+            return "";
+        }
+
+        return ""+date.getDate()+"."+(date.getMonth() + 1);
+    }
     /**
      * @param date
      * @return a string representation of the given date

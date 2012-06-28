@@ -27,6 +27,7 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -65,8 +66,10 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private Label accountBalanceLab = new Label(ACCOUNT_BALANCE);
     private Label previousWeekBalLab = new Label(PREVIOUS_WEEK_BALANCE);
     private Label weekBalanceLab = new Label(WEEK_BALANCE);
+    private Label weekDates = new Label();
     private long lastAccountBalanceCalc = 0;
     private static final int TRAVEL_WORK_CATEGORY = 4;
+//    private SimpleCheckBox weekLockCB = new SimpleCheckBox();
 
     public SheetsPanel() {
         init();
@@ -80,7 +83,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private void init() {
         Label yearLab = new Label("Year:");
         Label weekLab = new Label("Week:");
-
         pageHeaderPanel.setStyleName("page-header");
         contentNodeParentPanel.setStyleName("span16");
         recent.setStyleName("my-recent-tasks pull-left pre prettyprint noxoverflow");
@@ -104,6 +106,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         week.setStyleName("mini inlineComponent");
         yearLab.setStyleName("formLabel");
         weekLab.setStyleName("formLabel");
+        weekDates.setStyleName("formLabel");
         weekHoursLab.setStyleName("formLabel totalLab");
         weekBalanceLab.setStyleName("formLabel accountBalanceLab");
         prevWeek.addStyleName("btn primary pull-left span3");
@@ -113,10 +116,13 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         upperCtrlPanel.add(year);
         upperCtrlPanel.add(weekLab);
         upperCtrlPanel.add(week);
+        upperCtrlPanel.add(weekDates);
         FlowPanel lowerCtrlPanel = new FlowPanel();
         lowerCtrlPanel.addStyleName("lowerCtrlPanel-margin");
         lowerCtrlPanel.add(weekHoursLab);
         lowerCtrlPanel.add(weekBalanceLab);
+//        lowerCtrlPanel.add(weekLockCB);
+//        weekLockCB.addClickHandler(this);
 //        lowerCtrlPanel.add(previousWeekLab);
         controlPanel.add(upperCtrlPanel);
         controlPanel.add(lowerCtrlPanel);
@@ -231,6 +237,19 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 }
             }
         }
+//        else if (event.getSource() == weekLockCB) {
+//            if (!weekLockCB.getValue()) {
+//                if (ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+//                    lockPanel.lockAllDaysInWeek(false);
+//                    weekLockCB.setEnabled(true);
+//                }
+//            } else {
+//                lockPanel.lockAllDaysInWeek(true);
+//                weekLockCB.setEnabled(false);
+//            }
+//            //we dont need to refresh the whole SheetsPanel since the date has not changed..
+//            return;
+//        }
         refresh();
     }
 
@@ -244,6 +263,10 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
                 if (!operationFailed) {
                     Date firstDay = DateHelper.getBeginOfWeek(syear, sweek);
+                    Date lastDay = new Date(firstDay.getTime());
+                    DateHelper.addDays(lastDay, 6);
+//                    weekDates.setText("from: "+DateHelper.formatShortDate(firstDay) +" till: "+DateHelper.formatShortDate(lastDay));
+                    weekDates.setText("Mon.: "+DateHelper.formatShortDate(firstDay) +" - Sun.:"+DateHelper.formatShortDate(lastDay));
                     times.setTimes(firstDay, result.getActivities());
                     taskControlPanel.initialise(firstDay, tasks, times);
                     tasks.setActivities(firstDay, result.getActivities(), result.getHolidays());
@@ -260,6 +283,8 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     refreshWeeklyHoursOfWork();
                     refreshPrevWeekBalance();
                     refreshAccountBalance();
+//                    weekLockCB.setValue(false);
+//                    weekLockCB.setEnabled(true);
                     ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
                 }
             }
@@ -339,7 +364,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             List<TaskNotice> taskList = tasks.getTasksForDay(i);
 
             for (TaskNotice tmp : taskList) {
-                    hours += getWorkingHoursForActivity(tmp.getActivity());
+                hours += getWorkingHoursForActivity(tmp.getActivity());
             }
         }
 

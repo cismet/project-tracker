@@ -89,7 +89,7 @@ public class LockPanel extends Composite implements ClickHandler {
             offset = 6;
         }
         DateHelper.addDays(day, offset);
-        lockDay(day);
+        handleClick(day, false);
     }
 
     private void unlockDay(final Date day) {
@@ -106,8 +106,7 @@ public class LockPanel extends Composite implements ClickHandler {
             protected void afterExecution(ArrayList<ActivityDTO> result, boolean operationFailed) {
                 if (!operationFailed) {
                     for (ActivityDTO activity : result) {
-                        if (day.getDay() == activity.getDay().getDay()
-                                && activity.getKindofactivity() == ActivityDTO.LOCKED_DAY) {
+                        if (activity.getKindofactivity() == ActivityDTO.LOCKED_DAY) {
                             final ActivityDTO lockTask = activity;
                             BasicAsyncCallback<Void> callback = new BasicAsyncCallback<Void>() {
 
@@ -123,7 +122,7 @@ public class LockPanel extends Composite implements ClickHandler {
                 }
             }
         };
-        ProjectTrackerEntryPoint.getProjectService(true).getActivitiesByWeek(staff, DateHelper.getYear(day), DateHelper.getWeekOfYear(day), callback);
+        ProjectTrackerEntryPoint.getProjectService(true).getActivityByDay(staff, day, callback);
     }
 
     public void refuseLock(final Date day) {
@@ -133,7 +132,7 @@ public class LockPanel extends Composite implements ClickHandler {
         ProjectTrackerEntryPoint.outputBox("Pause Policy is not fulfilled! Can not lock this day.");
     }
 
-    private void lockDay(final Date day) {
+    private void handleClick(final Date day, final boolean weekLockMode) {
 
         final SimpleCheckBox lockCB = days[day.getDay()];
         /*
@@ -169,36 +168,40 @@ public class LockPanel extends Composite implements ClickHandler {
                 lockCB.setValue(false);
                 return;
             }
-            //create a new locked-day activtiy for that day and user and save it to db. 
-            ActivityDTO lockedDayActivity = new ActivityDTO();
-            lockedDayActivity.setKindofactivity(3);
-            final Date d = new Date(day.getTime());
-            d.setHours(5);
-            lockedDayActivity.setDay(d);
-            lockedDayActivity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
-            lockedDayActivity.setCommitted(false);
-            //TODO: set a Workpackage for the locked-day activity
-            BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
-
-                @Override
-                protected void afterExecution(Long result, boolean operationFailed) {
-                    if (!operationFailed) {
-                        /*
-                         * check that pause policy is fulfilled, this may refuse the lock status of this day. In this
-                         * case the refuseLock method is called
-                         */
-                        ClientSidePauseChecker.isPausePolicyFulfilled(day, ProjectTrackerEntryPoint.getInstance().getStaff(), taskStory, LockPanel.this);
-                    }
-                }
-            };
-            ProjectTrackerEntryPoint.getProjectService(true).createActivity(lockedDayActivity, callback);
-
-            if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
-                lockCB.setEnabled(false);
-            }
-
+            
+            performLock(day);
         }
 
+    }
+
+    private void performLock(final Date day) {
+        final SimpleCheckBox lockCB = days[day.getDay()];
+        //create a new locked-day activtiy for that day and user and save it to db. 
+        BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
+
+            @Override
+            protected void afterExecution(Boolean result, boolean operationFailed) throws IllegalStateException {
+                if (result) {
+                    ActivityDTO lockedDayActivity = new ActivityDTO();
+                    lockedDayActivity.setKindofactivity(3);
+                    final Date d = new Date(day.getTime());
+                    d.setHours(5);
+                    lockedDayActivity.setDay(d);
+                    lockedDayActivity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
+                    lockedDayActivity.setCommitted(false);
+                    BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>();
+                    ProjectTrackerEntryPoint.getProjectService(true).createActivity(lockedDayActivity, callback);
+                } else {
+                    refuseLock(day);
+                }
+            }
+        };
+        ProjectTrackerEntryPoint.getProjectService(true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), day, cb);
+        
+        //disable the checkbox
+        if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+            lockCB.setEnabled(false);
+        }
     }
 
     public void setLocked(Date day, Boolean aFlag) {
@@ -219,13 +222,34 @@ public class LockPanel extends Composite implements ClickHandler {
         this.times = times;
         this.firstDayOfWeek = firstDayOfWeek;
     }
-    
-    public void lockAllDaysInWeek(boolean aflag){
-        final Date d = new Date(firstDayOfWeek.getTime());
-        for(SimpleCheckBox cb : days){
-            cb.setValue(aflag);
-            lockDay(d);
-            DateHelper.addDays(d, 1);
-        }
+
+    public void lockAllDaysInWeek(boolean aflag) {
+        //TODO check for all Days, that there are no times left...
+
+        BasicAsyncCallback<ArrayList<Date>> callback = new BasicAsyncCallback<ArrayList<Date>>() {
+
+            @Override
+            protected void afterExecution(ArrayList<Date> result, boolean operationFailed) {
+                if (!operationFailed && result.isEmpty()) {
+//                    Pause policy is fullfilled lock each day...
+                    final Date d = new Date(firstDayOfWeek.getTime());
+                    final Date sunday = new Date(d.getTime());
+                    DateHelper.addDays(sunday, 6);
+                    for (int i = 0; i < days.length; i++) {
+                        SimpleCheckBox cb = days[i];
+                        cb.setValue(false);
+                        if (i == 0) {
+                            performLock(sunday);
+                        } else {
+                            performLock(d);
+                            DateHelper.addDays(d, 1);
+                        }
+                    }
+                }else{
+                    //TODO generate a error message....
+                }
+            }
+        };
+        ProjectTrackerEntryPoint.getProjectService(true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), DateHelper.getWeekOfYear(firstDayOfWeek), DateHelper.getYear(firstDayOfWeek), callback);
     }
 }

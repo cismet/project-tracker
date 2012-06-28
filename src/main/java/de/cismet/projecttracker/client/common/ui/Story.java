@@ -33,6 +33,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     private HashMap<FlowPanel, List<TimeNotice>> taskMap = new HashMap<FlowPanel, List<TimeNotice>>();
     private Date firstDayOfWeek = new Date();
     private List<TimeStoryListener> listener = new ArrayList<TimeStoryListener>();
+    private static final String DOW_TOOLTIP_SUFFX =  "\n(click to add a new time slot)";
     @UiField
     FlowPanel monday;
     @UiField
@@ -188,20 +189,20 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     }
 
     private void setDates() {
-        mondayLab.setTitle(DateHelper.formatDate(firstDayOfWeek));
+        mondayLab.setTitle("\t"+DateHelper.formatDate(firstDayOfWeek)+DOW_TOOLTIP_SUFFX);
         Date tmpDay = (Date) firstDayOfWeek.clone();
         DateHelper.addDays(tmpDay, 1);
-        tuesdayLab.setTitle(DateHelper.formatDate(tmpDay));
+        tuesdayLab.setTitle("\t"+DateHelper.formatDate(tmpDay)+DOW_TOOLTIP_SUFFX);
         DateHelper.addDays(tmpDay, 1);
-        wednesdayLab.setTitle(DateHelper.formatDate(tmpDay));
+        wednesdayLab.setTitle("\t"+DateHelper.formatDate(tmpDay)+DOW_TOOLTIP_SUFFX);
         DateHelper.addDays(tmpDay, 1);
-        thursdayLab.setTitle(DateHelper.formatDate(tmpDay));
+        thursdayLab.setTitle("\t"+DateHelper.formatDate(tmpDay)+DOW_TOOLTIP_SUFFX);
         DateHelper.addDays(tmpDay, 1);
-        fridayLab.setTitle(DateHelper.formatDate(tmpDay));
+        fridayLab.setTitle("\t"+DateHelper.formatDate(tmpDay)+DOW_TOOLTIP_SUFFX);
         DateHelper.addDays(tmpDay, 1);
-        saturdayLab.setTitle(DateHelper.formatDate(tmpDay));
+        saturdayLab.setTitle("\t"+DateHelper.formatDate(tmpDay)+DOW_TOOLTIP_SUFFX);
         DateHelper.addDays(tmpDay, 1);
-        sundayLab.setTitle(DateHelper.formatDate(tmpDay));
+        sundayLab.setTitle("\t"+DateHelper.formatDate(tmpDay)+DOW_TOOLTIP_SUFFX);
     }
 
 //    @UiHandler("addTask")

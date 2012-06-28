@@ -43,7 +43,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
         mainPanel.add(add);
         mainPanel.add(fill);
         initWidget(mainPanel);
-        add.setTitle("add");
+        add.setTitle("add task");
         fill.setTitle("fill");
     }
 

@@ -19,7 +19,7 @@ import java.util.Date;
  */
 public class ClientSidePauseChecker {
 
-    public static void isPausePolicyFulfilled(final Date day, StaffDTO staff, TaskStory taskStory, final LockPanel caller) {
+    public static void isPausePolicyFulfilled(final Date day, StaffDTO staff,  final LockPanel caller, final boolean lockMode) {
 
         BasicAsyncCallback<ArrayList<ActivityDTO>> callback = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
 

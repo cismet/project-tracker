@@ -39,6 +39,7 @@ import de.cismet.projecttracker.client.exceptions.NoSessionException;
 import de.cismet.projecttracker.client.exceptions.PermissionDenyException;
 import de.cismet.projecttracker.client.exceptions.PersistentLayerException;
 import de.cismet.projecttracker.client.exceptions.ReportNotFoundException;
+import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.types.ReportType;
@@ -109,7 +110,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414);";
 //    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
     private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (409,410,411);";
-    private static final String REAL_WORKING_TIME_SPARE_TIME = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (407);";
     private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
             + "staffid=%1$s and day is null and workpackageid = %2$s and "
             + "case when description is null then true else description = '%3$s' end";
@@ -2817,14 +2817,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                         realWorkingTime += rs.getDouble(1);
                     }
                 }
-                
-                //exclude spare time
-                rs = s.executeQuery(String.format(REAL_WORKING_TIME_SPARE_TIME, "" + (whow / 5), "" + staff.getId(), dateFormatter.format(contractFromDateCal.getTime()), dateFormatter.format(contractToDateCal.getTime())));
-                if (rs != null) {
-                    while (rs.next()) {
-                        realWorkingTime -= rs.getDouble(1);
-                    }
-                }
 
                 //calculate the nominal working time. 
                 nominalWorkingDays = calculateNominalWorkingDays(contractFromDateCal, contractToDateCal);
@@ -2996,5 +2988,89 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
         return resultList;
 
+    }
+
+    @Override
+    public Boolean isPausePolicyFullfilled(StaffDTO staff, Date day) {
+        try {
+            ArrayList<ActivityDTO> activities = getActivityByDay(staff, day);
+            Date lastBeginActivityTime = null;
+            Date lastEndActivityTime = null;
+            boolean pauseActivityNeeded = false;
+            double pauseTimesFromActivity = 0;
+            double activityWorkingHours = 0;
+            //the time beetween two time slots
+            double slotPauseTime = 0;
+            for (ActivityDTO act : activities) {
+                if (act.getKindofactivity() == ActivityDTO.BEGIN_OF_DAY) {
+                    lastBeginActivityTime = act.getDay();
+                    if (lastEndActivityTime != null) {
+                        slotPauseTime += (act.getDay().getTime() - lastEndActivityTime.getTime()) / 1000 / 60 / 60d;
+                    }
+                } else if (act.getKindofactivity() == ActivityDTO.END_OF_DAY) {
+                    lastEndActivityTime = act.getDay();
+                    if (lastBeginActivityTime != null) {
+                        final long workingTimeSlot = act.getDay().getTime() - lastBeginActivityTime.getTime();
+                        if (workingTimeSlot > 6 * 60 * 60 * 1000) {
+                            pauseActivityNeeded = true;
+                        }
+                    }
+                } else if (act.getKindofactivity() == ActivityDTO.ACTIVITY) {
+                    final long wpId = act.getWorkPackage().getId();
+                    if (wpId == ActivityDTO.PAUSE_ID) {
+                        pauseTimesFromActivity += act.getWorkinghours();
+                    } else if (!(wpId == ActivityDTO.ILLNESS_ID || wpId == ActivityDTO.SPARE_TIME_ID || wpId == ActivityDTO.Travel_ID || wpId == ActivityDTO.HOLIDAY_ID || wpId == ActivityDTO.SPECIAL_HOLIDAY_ID)) {
+                        activityWorkingHours += act.getWorkinghours();
+                    }
+                }
+            }
+
+            //there is a time slot greate than 6 hours so check if a there is a pause activity of at least 45 min
+            if (pauseActivityNeeded) {
+                if (pauseTimesFromActivity >= 0.75d) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                if (activityWorkingHours > 6d) {
+                    if (pauseTimesFromActivity + slotPauseTime >= 0.75d) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            }
+        } catch (InvalidInputValuesException ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DataRetrievalException ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (PermissionDenyException ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSessionException ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return false;
+    }
+
+    @Override
+    public ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff, int year, int week) {
+        GregorianCalendar from = getFirstDayOfWeek(year, week);
+        GregorianCalendar till = getLastDayOfWeek(year, week);
+        till.add(GregorianCalendar.DAY_OF_MONTH, 1);
+        final ArrayList<Date> faultyDays = new ArrayList<Date>();
+        while(from.get(GregorianCalendar.DAY_OF_WEEK)!=till.get(GregorianCalendar.DAY_OF_WEEK)){
+            final boolean dayFullfilled = isPausePolicyFullfilled(staff,from.getTime());
+            if(!dayFullfilled){
+//                return false;
+                faultyDays.add(from.getTime());
+            }
+            from.add(GregorianCalendar.DAY_OF_MONTH, 1);
+        }
+        
+        return faultyDays;
     }
 }
