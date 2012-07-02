@@ -23,6 +23,7 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
     public static final int SPARE_TIME_ID = 407;
     public static final int PAUSE_ID = 408;
     public static final int HOLIDAY_ID = 409;
+    public static final int LECTURE_ID = 419;
     public static final int ILLNESS_ID = 410;
     public static final int Travel_ID = 414;
     public static final int SPECIAL_HOLIDAY_ID = 411;

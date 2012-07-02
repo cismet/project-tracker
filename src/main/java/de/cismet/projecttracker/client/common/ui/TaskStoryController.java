@@ -130,7 +130,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
 
                     if (tmp.getActivity().getWorkinghours() == 0.0) {
                         zeroTasksToChange.add(tmp);
-                    } else if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
+                    } else if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.LECTURE_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
                         fillableBookedHours += tmp.getActivity().getWorkinghours();
                         procentualTasks.add(tmp);
                     }

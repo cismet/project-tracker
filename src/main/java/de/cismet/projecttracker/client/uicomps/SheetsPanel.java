@@ -333,7 +333,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             hours += act.getWorkinghours();
         } else {
             if (act.getWorkPackage() != null && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                if (act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID) {
+                if (act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || act.getWorkPackage().getId() == ActivityDTO.LECTURE_ID) {
                     if (act.getWorkinghours() == 0 && dhow > 0) {
                         hours += dhow;
                     } else {
