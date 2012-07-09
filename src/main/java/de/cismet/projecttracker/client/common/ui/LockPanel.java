@@ -15,7 +15,6 @@ import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import de.cismet.projecttracker.client.utilities.ClientSidePauseChecker;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +46,8 @@ public class LockPanel extends Composite implements ClickHandler {
     private TaskStory taskStory;
     private Date firstDayOfWeek;
     private Story times;
+    private SimpleCheckBox weekLockCB;
+    private ArrayList<SimpleCheckBox> lockedDays = new ArrayList<SimpleCheckBox>();
 
     interface LockPanelUiBinder extends UiBinder<Widget, LockPanel> {
     }
@@ -89,7 +90,7 @@ public class LockPanel extends Composite implements ClickHandler {
             offset = 6;
         }
         DateHelper.addDays(day, offset);
-        handleClick(day, false);
+        handleClick(day);
     }
 
     private void unlockDay(final Date day) {
@@ -97,7 +98,6 @@ public class LockPanel extends Composite implements ClickHandler {
         final SimpleCheckBox lockCB = days[day.getDay()];
 
         lockCB.setEnabled(true);
-        //logged in user has admin permission, lets unlock this day...
         StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
 
         BasicAsyncCallback<ArrayList<ActivityDTO>> callback = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
@@ -128,103 +128,173 @@ public class LockPanel extends Composite implements ClickHandler {
     public void refuseLock(final Date day) {
         final SimpleCheckBox lockCB = days[day.getDay()];
         lockCB.setValue(false);
+        lockedDays.remove(lockCB);
+        weekLockCB.setValue(false);
+        weekLockCB.setEnabled(true);
         unlockDay(day);
         ProjectTrackerEntryPoint.outputBox("Pause Policy is not fulfilled! Can not lock this day.");
     }
 
-    private void handleClick(final Date day, final boolean weekLockMode) {
+    private void handleClick(final Date day) {
 
         final SimpleCheckBox lockCB = days[day.getDay()];
+        //set the enable status to false to prevent the user from a new click during calculation
+        lockCB.setEnabled(false);
         /*
          * if the lock status of the day is removed, check if the logged in user has admin permission and remove the
          * lock status if so this day shall be locked add a locked-day-activity
          */
         if (!lockCB.getValue()) {
             if (ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                //logged in user has admin permission, lets unlock this day...
+                lockedDays.remove(lockCB);
+                weekLockCB.setValue(false);
+                weekLockCB.setEnabled(true);
                 unlockDay(day);
             }
         } else {
             // lets lock the day...
             //first check if that there are no times left
-            double hours = times.getTimeForDay(day.getDay());
-            double hoursWorked = 0.0;
-            List<TaskNotice> tasks = taskStory.getTasksForDay(day.getDay());
-
-            for (TaskNotice tmp : tasks) {
-                if (tmp.getActivity() != null && tmp.getActivity().getWorkPackage() != null
-                        && tmp.getActivity().getWorkPackage().getProject() != null) {
-                    if (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID
-                            || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID) {
-                        hours -= tmp.getActivity().getWorkinghours();
-                    } else {
-                        hoursWorked += tmp.getActivity().getWorkinghours();
-                    }
-                }
-            }
-            //just in case the difference is greater than 1 minute raise the error
-            if (Math.abs(
-                    hours - hoursWorked) > 1d / 60d) {
+            if (!checkTimeSlots(day)) {
                 ProjectTrackerEntryPoint.outputBox("The working time of the activites does not match the time for this day. You have to correct in order to lock this day");
                 lockCB.setValue(false);
-                return;
             }
-            
-            performLock(day);
+
+            BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
+
+                @Override
+                protected void afterExecution(Boolean result, boolean operationFailed) throws IllegalStateException {
+                    if (result) {
+                        performLock(day);
+                    } else {
+                        refuseLock(day);
+                    }
+                }
+            };
+            ProjectTrackerEntryPoint.getProjectService(true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), day, cb);
         }
 
     }
 
-    private void performLock(final Date day) {
-        final SimpleCheckBox lockCB = days[day.getDay()];
-        //create a new locked-day activtiy for that day and user and save it to db. 
-        BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
+    private boolean checkTimeSlots(Date day) {
+        double hours = times.getTimeForDay(day.getDay());
+        double hoursWorked = 0.0;
+        List<TaskNotice> tasks = taskStory.getTasksForDay(day.getDay());
 
-            @Override
-            protected void afterExecution(Boolean result, boolean operationFailed) throws IllegalStateException {
-                if (result) {
-                    ActivityDTO lockedDayActivity = new ActivityDTO();
-                    lockedDayActivity.setKindofactivity(3);
-                    final Date d = new Date(day.getTime());
-                    d.setHours(5);
-                    lockedDayActivity.setDay(d);
-                    lockedDayActivity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
-                    lockedDayActivity.setCommitted(false);
-                    BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>();
-                    ProjectTrackerEntryPoint.getProjectService(true).createActivity(lockedDayActivity, callback);
+        for (TaskNotice tmp : tasks) {
+            if (tmp.getActivity() != null && tmp.getActivity().getWorkPackage() != null
+                    && tmp.getActivity().getWorkPackage().getProject() != null) {
+                if (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID
+                        || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID) {
+                    hours -= tmp.getActivity().getWorkinghours();
                 } else {
-                    refuseLock(day);
+                    hoursWorked += tmp.getActivity().getWorkinghours();
                 }
             }
-        };
-        ProjectTrackerEntryPoint.getProjectService(true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), day, cb);
-        
+        }
+        //just in case the difference is greater than 1 minute raise the error
+        if (Math.abs(
+                hours - hoursWorked) > 1d / 60d) {
+//            ProjectTrackerEntryPoint.outputBox("The working time of the activites does not match the time for this day. You have to correct in order to lock this day");
+//            lockCB.setValue(false);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void performLock(final Date day) {
+
+        final SimpleCheckBox lockCB = days[day.getDay()];
+        //create a new locked-day activtiy for that day and user and save it to db. 
+        ActivityDTO lockedDayActivity = new ActivityDTO();
+        lockedDayActivity.setKindofactivity(3);
+        final Date d = new Date(day.getTime());
+        d.setHours(5);
+        lockedDayActivity.setDay(d);
+        lockedDayActivity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
+        lockedDayActivity.setCommitted(false);
+        BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>();
+        ProjectTrackerEntryPoint.getProjectService(true).createActivity(lockedDayActivity, callback);
+        lockedDays.add(lockCB);
+        if (lockedDays.size() == days.length) {
+            weekLockCB.setValue(true);
+            if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                weekLockCB.setEnabled(false);
+            }
+        }
         //disable the checkbox
+        lockCB.setValue(Boolean.TRUE);
         if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
             lockCB.setEnabled(false);
+        } else {
+            lockCB.setEnabled(true);
         }
     }
 
     public void setLocked(Date day, Boolean aFlag) {
         final SimpleCheckBox lockCB = days[day.getDay()];
         if (aFlag) {
+            lockedDays.add(lockCB);
+            if (lockedDays.size() == days.length) {
+                weekLockCB.setValue(true);
+                if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    weekLockCB.setEnabled(false);
+                }
+            }
             lockCB.setValue(aFlag);
             if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
                 lockCB.setEnabled(false);
             }
         } else {
+            lockedDays.remove(lockCB);
+            weekLockCB.setValue(false);
+            weekLockCB.setEnabled(true);
             lockCB.setValue(false);
             lockCB.setEnabled(true);
         }
     }
 
-    public void initialise(final Date firstDayOfWeek, final Story times, final TaskStory story) {
+    public void initialise(final Date firstDayOfWeek, TaskStory story, Story times, SimpleCheckBox weekLockCB) {
         this.taskStory = story;
         this.times = times;
         this.firstDayOfWeek = firstDayOfWeek;
+        this.weekLockCB = weekLockCB;
     }
 
-    public void lockAllDaysInWeek(boolean aflag) {
-        //TODO check for all Days, that there are no times left...
+    public void lockAllDaysInWeek() {
+        //check for all Days, that there are no times left...
+        final Date d = new Date(firstDayOfWeek.getTime());
+        final Date sunday = new Date(d.getTime());
+        final ArrayList<Date> faultyTimeSlotsDays = new ArrayList<Date>();
+        DateHelper.addDays(sunday, 6);
+        for (int i = 0; i < days.length; i++) {
+            if (i == 0) {
+                if (!checkTimeSlots(sunday)) {
+                    faultyTimeSlotsDays.add(sunday);
+                }
+            } else {
+                if (!checkTimeSlots(d)) {
+                    faultyTimeSlotsDays.add(new Date(d.getTime()));
+                }
+                DateHelper.addDays(d, 1);
+            }
+        }
+
+        if (!faultyTimeSlotsDays.isEmpty()) {
+            String timeSlotNotCorrectDays = "";
+            for (Date tmp : faultyTimeSlotsDays) {
+                if (faultyTimeSlotsDays.indexOf(tmp) == faultyTimeSlotsDays.size() - 1) {
+                    timeSlotNotCorrectDays += DateHelper.getDayAbbreviation(tmp) + ".";
+                } else {
+                    timeSlotNotCorrectDays += DateHelper.getDayAbbreviation(tmp) + ", ";
+                }
+            }
+            ProjectTrackerEntryPoint.outputBox(("Can not lock the week. For the following days the times have to be corrected: " + timeSlotNotCorrectDays));
+            weekLockCB.setValue(false);
+            weekLockCB.setEnabled(true);
+            return;
+        }
 
         BasicAsyncCallback<ArrayList<Date>> callback = new BasicAsyncCallback<ArrayList<Date>>() {
 
@@ -237,19 +307,59 @@ public class LockPanel extends Composite implements ClickHandler {
                     DateHelper.addDays(sunday, 6);
                     for (int i = 0; i < days.length; i++) {
                         SimpleCheckBox cb = days[i];
-                        cb.setValue(false);
                         if (i == 0) {
-                            performLock(sunday);
+                            if (!cb.getValue()) {
+                                performLock(sunday);
+                            }
                         } else {
-                            performLock(d);
+                            if (!cb.getValue()) {
+                                performLock(d);
+                            }
                             DateHelper.addDays(d, 1);
                         }
                     }
-                }else{
-                    //TODO generate a error message....
+                    if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                        weekLockCB.setEnabled(false);
+                    } else {
+                        weekLockCB.setEnabled(true);
+                    }
+                } else {
+                    String pauseNotFulfulfilledDays = "";
+                    for (Date tmp : result) {
+                        if (result.indexOf(tmp) == result.size() - 1) {
+                            pauseNotFulfulfilledDays += DateHelper.getDayAbbreviation(tmp) + ".";
+                        } else {
+                            pauseNotFulfulfilledDays += DateHelper.getDayAbbreviation(tmp) + ", ";
+                        }
+                    }
+                    ProjectTrackerEntryPoint.outputBox("Can not lock the week. Pause Policy is not fulfilled for the following days: " + pauseNotFulfulfilledDays);
+                    weekLockCB.setValue(false);
+                    weekLockCB.setEnabled(true);
                 }
             }
         };
-        ProjectTrackerEntryPoint.getProjectService(true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), DateHelper.getWeekOfYear(firstDayOfWeek), DateHelper.getYear(firstDayOfWeek), callback);
+
+        ProjectTrackerEntryPoint.getProjectService(
+                true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), DateHelper.getYear(firstDayOfWeek), DateHelper.getWeekOfYear(firstDayOfWeek), callback);
+    }
+
+    public void unlockAllDaysInWeek() {
+
+        final Date d = new Date(firstDayOfWeek.getTime());
+        final Date sunday = new Date(d.getTime());
+        DateHelper.addDays(sunday, 6);
+        lockedDays.removeAll(lockedDays);
+        weekLockCB.setValue(false);
+        for (int i = 0; i < days.length; i++) {
+            SimpleCheckBox cb = days[i];
+            cb.setValue(false);
+            if (i == 0) {
+                unlockDay(sunday);
+            } else {
+                unlockDay(d);
+                DateHelper.addDays(d, 1);
+            }
+        }
+        weekLockCB.setEnabled(true);
     }
 }

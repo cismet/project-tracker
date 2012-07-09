@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.helper;
 
 import com.google.gwt.core.client.GWT;
@@ -17,20 +16,22 @@ import java.util.StringTokenizer;
 
 /**
  * This class contains some static methods to use Date objects.
+ *
  * @author therter
  */
 public class DateHelper {
-    private final static CalendarMessages MESSAGES = (CalendarMessages)GWT.create(CalendarMessages.class);
+
+    private final static CalendarMessages MESSAGES = (CalendarMessages) GWT.create(CalendarMessages.class);
     public final static String[] DAYS_OF_WEEK = {MESSAGES.mondayAbbreviation(), MESSAGES.tuesdayAbbreviation(), MESSAGES.wednesdayAbbreviation(),
-                                     MESSAGES.thursdayAbbreviation(), MESSAGES.fridayAbbreviation(), MESSAGES.saturdayAbbreviation(),
-                                     MESSAGES.sundayAbbreviation()};
+        MESSAGES.thursdayAbbreviation(), MESSAGES.fridayAbbreviation(), MESSAGES.saturdayAbbreviation(),
+        MESSAGES.sundayAbbreviation()};
     public final static String[] DAYS_OF_WEEK_LONG = {MESSAGES.mondayAbbreviationLong(), MESSAGES.tuesdayAbbreviationLong(), MESSAGES.wednesdayAbbreviationLong(),
-                                     MESSAGES.thursdayAbbreviationLong(), MESSAGES.fridayAbbreviationLong(), MESSAGES.saturdayAbbreviationLong(),
-                                     MESSAGES.sundayAbbreviationLong()};
+        MESSAGES.thursdayAbbreviationLong(), MESSAGES.fridayAbbreviationLong(), MESSAGES.saturdayAbbreviationLong(),
+        MESSAGES.sundayAbbreviationLong()};
     public final static String[] NAME_OF_MONTH = {MESSAGES.januaryAbbreviation(), MESSAGES.februaryAbbreviation(), MESSAGES.marchAbbreviation(),
-                                      MESSAGES.aprilAbbreviation(), MESSAGES.mayAbbreviation(), MESSAGES.juneAbbreviation(),
-                                      MESSAGES.julyAbbreviation(), MESSAGES.augustAbbreviation(), MESSAGES.septemberAbbreviation(),
-                                      MESSAGES.octoberAbbreviation(), MESSAGES.novemberAbbreviation(), MESSAGES.decemberAbbreviation()};
+        MESSAGES.aprilAbbreviation(), MESSAGES.mayAbbreviation(), MESSAGES.juneAbbreviation(),
+        MESSAGES.julyAbbreviation(), MESSAGES.augustAbbreviation(), MESSAGES.septemberAbbreviation(),
+        MESSAGES.octoberAbbreviation(), MESSAGES.novemberAbbreviation(), MESSAGES.decemberAbbreviation()};
     public final static long DAY_IN_MILLIS = 86400000L;
     public final static long HOUR_IN_MILLIS = 3600000L;
     public final static long MINUTE_IN_MILLIS = 60000L;
@@ -43,13 +44,14 @@ public class DateHelper {
     public final static int FRIDAY = 5;
     public final static int SATURDAY = 6;
 
-    public static String formatShortDate(Date date){
-        if(date == null){
+    public static String formatShortDate(Date date) {
+        if (date == null) {
             return "";
         }
 
-        return ""+date.getDate()+"."+(date.getMonth() + 1);
+        return "" + date.getDate() + "." + (date.getMonth() + 1);
     }
+
     /**
      * @param date
      * @return a string representation of the given date
@@ -59,49 +61,48 @@ public class DateHelper {
             return "";
         }
 
-        return MESSAGES.dateFormat( (date.getYear() + 1900), (date.getMonth() + 1), date.getDate());
+        return MESSAGES.dateFormat((date.getYear() + 1900), (date.getMonth() + 1), date.getDate());
     }
-
 
     public static void addDays(Date day, int days) {
         day.setTime(day.getTime() + (days * DAY_IN_MILLIS));
     }
-    
+
     public static String doubleToHours(double ihours) {
-        double hours = Math.abs( ihours );
-        int minutes = (int)Math.round((hours - ((int)hours)) * 60);
-        
+        double hours = Math.abs(ihours);
+        int minutes = (int) Math.round((hours - ((int) hours)) * 60);
+
         //vermeidet Angaben wie 7:60
         if (minutes == 60) {
             ++hours;
             minutes = 0;
         }
-        
-        return (ihours < 0.0 ? "-" : "") + (int)hours + ":" + IntToDoubleDigit( minutes );
+
+        return (ihours < 0.0 ? "-" : "") + (int) hours + ":" + IntToDoubleDigit(minutes);
     }
-    
+
     public static double hoursToDouble(String hours) throws NumberFormatException {
         String[] st = hours.split(":");
-        
+
         if (st.length == 2) {
             String hour = st[0];
             String minute = st[1];
-            
+
             int hourInt = Integer.parseInt(hour);
             int minuteInt = Integer.parseInt(minute);
-            
-            return  hourInt + minuteInt / 60.0;
+
+            return hourInt + minuteInt / 60.0;
         } else if (st.length == 1) {
             try {
-                return Integer.parseInt( st[0] );
+                return Integer.parseInt(st[0]);
             } catch (final NumberFormatException e) {
                 throw new NumberFormatException(hours + " is no valid duration");
             }
         } else {
             throw new NumberFormatException(hours + " is no valid duration");
         }
-    } 
-    
+    }
+
     /**
      * @param date
      * @return a string representation of the given time
@@ -111,9 +112,8 @@ public class DateHelper {
             return "";
         }
 
-        return MESSAGES.dateTimeFormat( (date.getYear() + 1900), (date.getMonth() + 1), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+        return MESSAGES.dateTimeFormat((date.getYear() + 1900), (date.getMonth() + 1), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
     }
-
 
     /**
      * @param date
@@ -124,9 +124,8 @@ public class DateHelper {
             return "";
         }
 
-        return MESSAGES.timeFormat( date.getHours(), date.getMinutes());
+        return MESSAGES.timeFormat(date.getHours(), date.getMinutes());
     }
-
 
     public static Date createDateObject(Date day, Date time) {
 //        long dayInMillis = day.getTime();
@@ -136,7 +135,7 @@ public class DateHelper {
 //        return new Date(dayInMillis + timeInMillis);
         return new Date(day.getYear(), day.getMonth(), day.getDate(), time.getHours(), time.getMinutes(), time.getSeconds());
     }
-    
+
     /**
      * @param date
      * @param otherDate
@@ -145,15 +144,15 @@ public class DateHelper {
     public static boolean isSameDay(Date date, Date otherDate) {
         if (date == null && otherDate == null) {
             return true;
-        } else if (date == null || otherDate == null)  {
+        } else if (date == null || otherDate == null) {
             return false;
         }
 
-        return (date.getYear() == otherDate.getYear() &&
-                date.getMonth() == otherDate.getMonth() &&
-                date.getDate() == otherDate.getDate() );
+        return (date.getYear() == otherDate.getYear()
+                && date.getMonth() == otherDate.getMonth()
+                && date.getDate() == otherDate.getDate());
     }
-    
+
     /**
      * @param date
      * @param otherDate
@@ -162,24 +161,25 @@ public class DateHelper {
     public static boolean isSameDaySV(Date date, Date otherDate) {
         if (date == null && otherDate == null) {
             return true;
-        } else if (date == null || otherDate == null)  {
+        } else if (date == null || otherDate == null) {
             return false;
         }
-        
+
         Date newDate = new Date(date.getTime() - (4 * HOUR_IN_MILLIS));
         Date newOtherDate = new Date(otherDate.getTime() - (4 * HOUR_IN_MILLIS));
-        
-        return (newDate.getYear() == newOtherDate.getYear() &&
-                newDate.getMonth() == newOtherDate.getMonth() &&
-                newDate.getDate() == newOtherDate.getDate() );
+
+        return (newDate.getYear() == newOtherDate.getYear()
+                && newDate.getMonth() == newOtherDate.getMonth()
+                && newDate.getDate() == newOtherDate.getDate());
     }
 
     /**
      * compares two calendar objects
+     *
      * @param date1
      * @param date2
-     * @return true, if and only if date1 is less or equal to date2. The result
-     *               only depends on the dates, which are contained in the given GregorianCalendar objects. The times will be ignored.
+     * @return true, if and only if date1 is less or equal to date2. The result only depends on the dates, which are
+     * contained in the given GregorianCalendar objects. The times will be ignored.
      */
     public static boolean isDateLessOrEqual(Date date1, Date date2) {
         int firstDate = (date1.getYear() + 1900) * 10000 + date1.getMonth() * 100 + date1.getDate();
@@ -190,18 +190,19 @@ public class DateHelper {
 
     /**
      * compares two calendar objects
+     *
      * @param date1
      * @param date2
-     * @return true, if and only if date1 is less or equal to date2. The result
-     *               only depends on the dates, which are contained in the given GregorianCalendar objects. The times will be ignored.
+     * @return true, if and only if date1 is less or equal to date2. The result only depends on the dates, which are
+     * contained in the given GregorianCalendar objects. The times will be ignored.
      */
     public static boolean isDateGreaterOrEqual(Date date1, Date date2) {
         int firstDate = (date1.getYear() + 1900) * 10000 + date1.getMonth() * 100 + date1.getDate();
         int secondDate = (date2.getYear() + 1900) * 10000 + date2.getMonth() * 100 + date2.getDate();
 
         return (firstDate >= secondDate);
-    }    
-    
+    }
+
     /**
      * converts the given String object to a Date object
      *
@@ -215,7 +216,6 @@ public class DateHelper {
         }
         return dtf.parseStrict(dateString);
     }
-
 
     /**
      * converts a number to a string that contains a double digit.
@@ -237,12 +237,12 @@ public class DateHelper {
     public static int getCurrentWeek() {
         return getWeekOfYear(new Date());
     }
-    
-    public static int getYear(Date d){
+
+    public static int getYear(Date d) {
 //        final GregorianCalendar cal = new GregorianCalendar();
 //        cal.setTime(d);
 //        return cal.get(GregorianCalendar.YEAR);
-        return d.getYear() +1900;
+        return d.getYear() + 1900;
     }
 
     /**
@@ -258,8 +258,8 @@ public class DateHelper {
         int dayOfWeekJanTheFourth = DateHelper.convertDayOfWeek(firstWeek.getDay());
         int dayOfWeekNow = DateHelper.convertDayOfWeek(givenDate.getDay());
         int diff = dayOfWeekJanTheFourth - dayOfWeekNow;
-        givenDate.setTime( givenDate.getTime() + (diff * DAY_IN_MILLIS) );
-        
+        givenDate.setTime(givenDate.getTime() + (diff * DAY_IN_MILLIS));
+
         long givenDateNormalized = givenDate.getTime() - givenDate.getTimezoneOffset() * 60000;
         long firstWeekNormalized = firstWeek.getTime() - firstWeek.getTimezoneOffset() * 60000;
         long timeDistance = (givenDateNormalized - firstWeekNormalized);
@@ -267,13 +267,17 @@ public class DateHelper {
 
         if (week == 0) {
             week = getWeekCountForYear(givenDate.getYear() + 1899);
-        } else if (week == 53 && getWeekCountForYear(date.getYear() + 1900) == 52 ) {
+        } else if (week == 53 && getWeekCountForYear(date.getYear() + 1900) == 52) {
             week = 1;
         } else if (week > 53) {
             week = 1;
         }
 
-        return (int)week;
+        return (int) week;
+    }
+
+    public static String getDayAbbreviation(Date d) {
+        return d.getDay() == 0 ? DAYS_OF_WEEK_LONG[6]:DAYS_OF_WEEK_LONG[d.getDay()-1];
     }
 
     /**
@@ -322,9 +326,6 @@ public class DateHelper {
 //            return date.getTime();
 ////        }
 //    }
-    
-
-    
     /**
      *
      * @param year
@@ -334,19 +335,19 @@ public class DateHelper {
     public static Date getBeginOfWeek(int year, int week) {
         Date date = new Date(year - 1900, 0, 1);
         // set to monday
-        date.setTime( date.getTime() - ( convertDayOfWeek( date.getDay() ) * DAY_IN_MILLIS) );
+        date.setTime(date.getTime() - (convertDayOfWeek(date.getDay()) * DAY_IN_MILLIS));
 
         int currentWeekOfYear = getWeekOfYear(date);
         int origWeek = week;
-        
-        if ( currentWeekOfYear == 1 ) {
+
+        if (currentWeekOfYear == 1) {
             week -= 1;
         }
 
-        date.setTime( date.getTime() + (week * DAY_IN_MILLIS * DAYS_PER_WEEK) );
+        date.setTime(date.getTime() + (week * DAY_IN_MILLIS * DAYS_PER_WEEK));
 
         //TODO: folgendes if entfernen. Das if ist ausschliesslich zu Debugzwecken enthalten
-        if (getWeekOfYear( date ) != origWeek) {
+        if (getWeekOfYear(date) != origWeek) {
             ProjectTrackerEntryPoint.outputBox("error in method getBeginOfWeek");
         }
 
@@ -355,6 +356,7 @@ public class DateHelper {
 
     /**
      * this method converts the given day of week with the sunday as 0 to a day of week with the monday as 0.
+     *
      * @return
      */
     public static int convertDayOfWeek(int dayOfWeek) {
@@ -362,7 +364,9 @@ public class DateHelper {
     }
 
     /**
-     * calculates a modulo. The result is a positive integer from 0 to <code>range</code> - 1
+     * calculates a modulo. The result is a positive integer from 0 to
+     * <code>range</code> - 1
+     *
      * @param number
      * @param range
      * @return
@@ -373,20 +377,20 @@ public class DateHelper {
     }
 
     public static boolean isDayInWorkPackagePeriod(Date day, WorkPackagePeriodDTO period) {
-        return ( isDateGreaterOrEqual(day, period.getFromdate()) && ( period.getTodate() == null || isDateLessOrEqual(day, period.getTodate()) ) );
+        return (isDateGreaterOrEqual(day, period.getFromdate()) && (period.getTodate() == null || isDateLessOrEqual(day, period.getTodate())));
     }
 
     public static boolean isDayInProjectPeriod(Date day, ProjectPeriodDTO period) {
-        return ( isDateGreaterOrEqual(day, period.getFromdate()) && ( period.getTodate() == null || isDateLessOrEqual(day, period.getTodate()) ) );
+        return (isDateGreaterOrEqual(day, period.getFromdate()) && (period.getTodate() == null || isDateLessOrEqual(day, period.getTodate())));
     }
 
     /**
-     * 
+     *
      * @param time
-     * @param otherTime 
+     * @param otherTime
      * @return the difference of the two times in hours
      */
     public static double substract(Date time, Date otherTime) {
-        return (otherTime.getTime() - time.getTime()) / (double)HOUR_IN_MILLIS;
+        return (otherTime.getTime() - time.getTime()) / (double) HOUR_IN_MILLIS;
     }
 }

@@ -69,7 +69,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private Label weekDates = new Label();
     private long lastAccountBalanceCalc = 0;
     private static final int TRAVEL_WORK_CATEGORY = 4;
-//    private SimpleCheckBox weekLockCB = new SimpleCheckBox();
+    private SimpleCheckBox weekLockCB = new SimpleCheckBox();
 
     public SheetsPanel() {
         init();
@@ -78,6 +78,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         tasks.addTaskStoryListener(this);
         times.addTimeStoryListener(this);
         tasks.setLockPanel(lockPanel);
+
     }
 
     private void init() {
@@ -121,8 +122,8 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         lowerCtrlPanel.addStyleName("lowerCtrlPanel-margin");
         lowerCtrlPanel.add(weekHoursLab);
         lowerCtrlPanel.add(weekBalanceLab);
-//        lowerCtrlPanel.add(weekLockCB);
-//        weekLockCB.addClickHandler(this);
+        lowerCtrlPanel.add(weekLockCB);
+        weekLockCB.addClickHandler(this);
 //        lowerCtrlPanel.add(previousWeekLab);
         controlPanel.add(upperCtrlPanel);
         controlPanel.add(lowerCtrlPanel);
@@ -236,20 +237,19 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     week.setSelectedIndex(0);
                 }
             }
+        } else if (event.getSource() == weekLockCB) {
+            //set the enable status to false to prevent the user from a new click during calculation
+            weekLockCB.setEnabled(false);
+            if (!weekLockCB.getValue()) {
+                if (ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    lockPanel.unlockAllDaysInWeek();
+                }
+            } else {
+                lockPanel.lockAllDaysInWeek();
+            }
+            //we dont need to refresh the whole SheetsPanel since the date has not changed..
+            return;
         }
-//        else if (event.getSource() == weekLockCB) {
-//            if (!weekLockCB.getValue()) {
-//                if (ProjectTrackerEntryPoint.getInstance().isAdmin()) {
-//                    lockPanel.lockAllDaysInWeek(false);
-//                    weekLockCB.setEnabled(true);
-//                }
-//            } else {
-//                lockPanel.lockAllDaysInWeek(true);
-//                weekLockCB.setEnabled(false);
-//            }
-//            //we dont need to refresh the whole SheetsPanel since the date has not changed..
-//            return;
-//        }
         refresh();
     }
 
@@ -265,8 +265,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     Date firstDay = DateHelper.getBeginOfWeek(syear, sweek);
                     Date lastDay = new Date(firstDay.getTime());
                     DateHelper.addDays(lastDay, 6);
-//                    weekDates.setText("from: "+DateHelper.formatShortDate(firstDay) +" till: "+DateHelper.formatShortDate(lastDay));
-                    weekDates.setText("Mon.: "+DateHelper.formatShortDate(firstDay) +" - Sun.:"+DateHelper.formatShortDate(lastDay));
+                    weekDates.setText("from: " + DateHelper.formatShortDate(firstDay) + " till: " + DateHelper.formatShortDate(lastDay));
+                    weekDates.setText("Mon.: " + DateHelper.formatShortDate(firstDay) + " - Sun.:" + DateHelper.formatShortDate(lastDay));
+                    lockPanel.initialise(firstDay, tasks, times, weekLockCB);
                     times.setTimes(firstDay, result.getActivities());
                     taskControlPanel.initialise(firstDay, tasks, times);
                     tasks.setActivities(firstDay, result.getActivities(), result.getHolidays());
@@ -279,12 +280,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     favs.registerDropController(allRecent.getDragController());
                     favs.registerDropControllers(tasks.getDragControllers());
                     dailyHours.initialise(firstDay, times, tasks);
-                    lockPanel.initialise(firstDay, times, tasks);
                     refreshWeeklyHoursOfWork();
                     refreshPrevWeekBalance();
                     refreshAccountBalance();
-//                    weekLockCB.setValue(false);
-//                    weekLockCB.setEnabled(true);
                     ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
                 }
             }

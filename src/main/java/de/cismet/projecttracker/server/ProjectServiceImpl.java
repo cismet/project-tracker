@@ -2894,6 +2894,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(FavouriteTaskStory.class.getName()).log(Level.SEVERE, "Error while checking"
                     + " if facourite task already exists. Drop action cancelled", ex);
+        } finally {
+            dbManager.closeSession();
         }
 
         return true;
@@ -2901,8 +2903,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
     @Override
     public Boolean checkBeginOfDayActivityExists(StaffDTO staff) {
+        DBManagerWrapper dbManager = new DBManagerWrapper();
         try {
-            DBManagerWrapper dbManager = new DBManagerWrapper();
             Statement s = dbManager.getDatabaseConnection().createStatement();
             SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
             final String query = String.format(CHECK_BEGIN_OF_DAY_QUERY, staff.getId(), dateFormatter.format(new Date()));
@@ -2934,6 +2936,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, "Error while checking if begin_of_day activity exists", ex);
+        } finally {
+            dbManager.closeSession();
         }
         return true;
     }
@@ -2951,10 +2955,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         Criteria crit = null;
         try {
             crit = dbManager.getSession().createCriteria(Activity.class).add(Restrictions.and(Restrictions.eq("staff", dtoManager.merge(s)), Restrictions.and(Restrictions.eq("kindofactivity", ActivityDTO.LOCKED_DAY), Restrictions.eq("day", d)))).setMaxResults(1);
+            lockedDayActivity = (Activity) crit.uniqueResult();
         } catch (InvalidInputValuesException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            dbManager.closeSession();
         }
-        lockedDayActivity = (Activity) crit.uniqueResult();
 
         if (lockedDayActivity != null) {
             return true;
@@ -2985,6 +2991,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             }
         } catch (InvalidInputValuesException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            dbManager.closeSession();
         }
         return resultList;
 
@@ -3060,17 +3068,17 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff, int year, int week) {
         GregorianCalendar from = getFirstDayOfWeek(year, week);
         GregorianCalendar till = getLastDayOfWeek(year, week);
-        till.add(GregorianCalendar.DAY_OF_MONTH, 1);
+//        till.add(GregorianCalendar.DAY_OF_MONTH, 1);
         final ArrayList<Date> faultyDays = new ArrayList<Date>();
-        while(from.get(GregorianCalendar.DAY_OF_WEEK)!=till.get(GregorianCalendar.DAY_OF_WEEK)){
-            final boolean dayFullfilled = isPausePolicyFullfilled(staff,from.getTime());
-            if(!dayFullfilled){
+        for (int i = 0; i < 7; i++) {
+            final boolean dayFullfilled = isPausePolicyFullfilled(staff, from.getTime());
+            if (!dayFullfilled) {
 //                return false;
                 faultyDays.add(from.getTime());
             }
             from.add(GregorianCalendar.DAY_OF_MONTH, 1);
         }
-        
+
         return faultyDays;
     }
 }
