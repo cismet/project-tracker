@@ -256,6 +256,10 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
 
         return sum;
     }
+    
+    public List<TimeNotice> getTimeNoticesForDay(int day){
+        return taskMap.get(daysOfWeek[day]);
+    }
 
     private void addTime(final Date day) {
 

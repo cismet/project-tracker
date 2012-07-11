@@ -197,19 +197,19 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
 
     /**
      *
-     * checks if s matches a time expression, if not checks if the insertet text can be interpreted as
-     * hours and returns a time expression representing the 
+     * checks if s matches a time expression, if not checks if the insertet text can be interpreted as hours and returns
+     * a time expression representing the
      *
      * @param s
      * @return
      */
     private String checkTimeFormat(String s) {
-      
+
         if (!s.matches("([01]?[0-9]|2[0-3]):[0-5][0-9]")) {
             if (s.matches("[01][0-9]|2[0-3]")) {
                 s += ":00";
-            }else if(s.matches("[0-9]|2[0-3]")){
-                s = "0"+s+":00";
+            } else if (s.matches("[0-9]|2[0-3]")) {
+                s = "0" + s + ":00";
             }
         }
         return s;
@@ -303,5 +303,9 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
 
     public Date getEnd() {
         return end.getDay();
+    }
+
+    public void setDeleteButtonEnabled(boolean aFlag) {
+        close.setVisible(aFlag);
     }
 }

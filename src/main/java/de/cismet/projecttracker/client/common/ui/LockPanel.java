@@ -17,6 +17,7 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -96,6 +97,7 @@ public class LockPanel extends Composite implements ClickHandler {
     private void unlockDay(final Date day) {
 
         final SimpleCheckBox lockCB = days[day.getDay()];
+        setDisabledStatusVisible(day, false);
 
         lockCB.setEnabled(true);
         StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
@@ -230,6 +232,10 @@ public class LockPanel extends Composite implements ClickHandler {
         } else {
             lockCB.setEnabled(true);
         }
+        //set the disable status for tasks and time slots
+        setDisabledStatusVisible(day, true);
+
+
     }
 
     public void setLocked(Date day, Boolean aFlag) {
@@ -246,12 +252,14 @@ public class LockPanel extends Composite implements ClickHandler {
             if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
                 lockCB.setEnabled(false);
             }
+            setDisabledStatusVisible(day, true);
         } else {
             lockedDays.remove(lockCB);
             weekLockCB.setValue(false);
             weekLockCB.setEnabled(true);
             lockCB.setValue(false);
             lockCB.setEnabled(true);
+            setDisabledStatusVisible(day, false);
         }
     }
 
@@ -361,5 +369,30 @@ public class LockPanel extends Composite implements ClickHandler {
             }
         }
         weekLockCB.setEnabled(true);
+    }
+
+    private void setDisabledStatusVisible(Date day, boolean disabledStatus) {
+        ArrayList<TaskNotice> tasks = (ArrayList<TaskNotice>) taskStory.getTasksForDay(day.getDay());
+        for (TaskNotice tn : tasks) {
+            tn.setCloseButtonVisible(!disabledStatus);
+//            if (disabledStatus) {
+//                tn.addStyleName("lockedDay");
+//            } else {
+//                tn.removeStyleName("lockedDay");
+//            }
+        }
+
+        //disable the delete buttons of all time slots...
+        List<TimeNotice> timeSlots = times.getTimeNoticesForDay(day.getDay());
+        Iterator<TimeNotice> it = timeSlots.iterator();
+        while (it.hasNext()) {
+            TimeNotice slot = it.next();
+            slot.setDeleteButtonEnabled(!disabledStatus);
+//            if (disabledStatus) {
+//                slot.addStyleName("lockedDay");
+//            } else {
+//                slot.removeStyleName("lockedDay");
+//            }
+        }
     }
 }

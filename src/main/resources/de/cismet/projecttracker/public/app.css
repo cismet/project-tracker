@@ -119,6 +119,11 @@ body {
     margin-top: -5px !important;
 }
 
+.lockedDay{
+    border-color: #00FF00 !important;
+    border-width: 2px !important;
+}
+
 .verticalScroller {
     overflow-y: auto !important;
     overflow-x: hidden;

@@ -291,4 +291,8 @@ public class TaskNotice extends Composite implements ClickHandler {
         hash = 37 * hash + (this.activity != null ? (int) this.activity.getId() : 0);
         return hash;
     }
+    
+    public void setCloseButtonVisible(boolean aFlag){
+        close.setVisible(aFlag);
+    }
 }
