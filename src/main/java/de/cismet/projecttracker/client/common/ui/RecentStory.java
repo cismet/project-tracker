@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.*;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecentStory extends Composite {
@@ -25,6 +26,7 @@ public class RecentStory extends Composite {
     protected PickupDragController mondayDragController;
     protected TaskStory taskStory;
     protected boolean initialised = false;
+    protected ArrayList<ActivityDTO> activites = new ArrayList<ActivityDTO>();
 
     interface RecentStoryUiBinder extends UiBinder<Widget, RecentStory> {
     }
@@ -43,6 +45,7 @@ public class RecentStory extends Composite {
         if (!initialised) {
             initialised = true;
             this.taskStory = taskStory;
+            activites.clear();
             mondayDragController = new RestorePickupDragController(RootPanel.get(), false);
             taskStory.initDragController(mondayDragController, null);
 
@@ -62,9 +65,42 @@ public class RecentStory extends Composite {
         }
     }
 
+    public void addTask(TaskNotice tn) {
+        if (initialised) {
+            if (contains(tn.getActivity())) {
+                removeCorrespondingWidget(tn.getActivity());
+            }
+            activites.add(tn.getActivity());
+            recentTasks.insert(tn, 0);
+            mondayDragController.makeDraggable(tn, tn.getMouseHandledWidget());
+        }
+    }
+
+    protected void removeCorrespondingWidget(ActivityDTO activity) {
+        for (int i = 0; i < recentTasks.getWidgetCount(); i++) {
+            final ActivityDTO tmp = ((TaskNotice) recentTasks.getWidget(i)).getActivity();
+            if (activity.getWorkPackage().equals(tmp.getWorkPackage()) && activity.getDescription().equals(tmp.getDescription())) {
+                recentTasks.remove(recentTasks.getWidget(i));
+                activites.remove(tmp);
+                return;
+            }
+        }
+    }
+
+    protected boolean contains(ActivityDTO act) {
+        for (int i = 0; i < activites.size(); i++) {
+            final ActivityDTO tmp = activites.get(i);
+            if (act.getWorkPackage().equals(tmp.getWorkPackage()) && act.getDescription().equals(tmp.getDescription())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected void addTask(ActivityDTO activity) {
         TaskNotice widget = new TaskNotice(activity, true);
         recentTasks.add(widget);
+        activites.add(activity);
 
         mondayDragController.makeDraggable(widget, widget.getMouseHandledWidget());
     }

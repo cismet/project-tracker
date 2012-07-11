@@ -4,12 +4,14 @@
  */
 package de.cismet.projecttracker.client.uicomps;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
@@ -27,7 +29,6 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -419,6 +420,21 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         };
         ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), pyear, pweek, callback);
     }
+    
+    private void refreshMyRecentTasks(TaskNotice tn){
+        final long wpId = tn.getActivity().getWorkPackage().getId();
+        if (wpId != ActivityDTO.PAUSE_ID) {
+                final TaskNotice newTaskNotice = new TaskNotice(tn.getActivity(), true);
+
+                Scheduler.get().scheduleDeferred(new Command() {
+
+                    @Override
+                    public void execute() {
+                        recent.addTask(newTaskNotice);
+                    }
+                });
+        }
+    }
 
     public Story getTimes() {
         return times;
@@ -428,12 +444,15 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     public void taskNoticeCreated(TaskStoryEvent e) {
         refreshWeeklyHoursOfWork();
         refreshAccountBalance();
+        refreshMyRecentTasks(e.getTaskNotice());
     }
 
     @Override
     public void taskNoticeChanged(TaskStoryEvent e) {
         refreshWeeklyHoursOfWork();
         refreshAccountBalance();
+        refreshMyRecentTasks(e.getTaskNotice());
+        refresh();
     }
 
     @Override

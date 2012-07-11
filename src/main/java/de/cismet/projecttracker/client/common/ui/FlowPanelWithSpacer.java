@@ -23,7 +23,7 @@ public class FlowPanelWithSpacer extends FlowPanel implements HasDoubleClickHand
 
     @Override
     public void add(Widget w) {
-        super.insert(w, getWidgetCount() - 1);
+        super.insert(w, getWidgetCount() == 0? 0: getWidgetCount() - 1);
     }
 
     @Override

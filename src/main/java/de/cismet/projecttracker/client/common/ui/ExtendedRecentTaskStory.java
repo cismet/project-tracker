@@ -4,6 +4,7 @@
  */
 package de.cismet.projecttracker.client.common.ui;
 
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RootPanel;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
@@ -29,13 +30,15 @@ public class ExtendedRecentTaskStory extends RecentStory {
             this.taskStory = taskStory;
             mondayDragController = new RestorePickupDragController(RootPanel.get(), false);
             taskStory.initDragController(mondayDragController, null);
-            
             BasicAsyncCallback<List<ActivityDTO>> callback = new BasicAsyncCallback<List<ActivityDTO>>() {
 
                 @Override
                 protected void afterExecution(List<ActivityDTO> result, boolean operationFailed) {
                     if (!operationFailed) {
                         for (ActivityDTO activity : result) {
+                            if (contains(activity)) {
+                                removeCorrespondingWidget(activity);
+                            }
                             addTask(activity);
                         }
                     }
@@ -43,6 +46,47 @@ public class ExtendedRecentTaskStory extends RecentStory {
             };
 
             ProjectTrackerEntryPoint.getProjectService(true).getLastActivitiesExceptForUser(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
+
+            Timer t = new Timer() {
+
+                public void run() {
+                    loadRecentActivites();
+                }
+            };
+
+            // Schedule the timer to run all 30 seconds.
+            t.scheduleRepeating(30000);
+
         }
     }
+
+    private void loadRecentActivites() {
+        BasicAsyncCallback<List<ActivityDTO>> callback = new BasicAsyncCallback<List<ActivityDTO>>() {
+
+            @Override
+            protected void afterExecution(List<ActivityDTO> result, boolean operationFailed) {
+                if (!operationFailed) {
+                    for (int i = 0; i < result.size(); i++) {
+                        final ActivityDTO activity = result.get(i);
+                        if (contains(activity)) {
+                            removeCorrespondingWidget(activity);
+                        }
+                        addTask(activity, i);
+                    }
+                }
+            }
+        };
+
+        ProjectTrackerEntryPoint.getProjectService(true).getLastActivitiesExceptForUser(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
+    }
+
+    private void addTask(ActivityDTO activity, int i) {
+        TaskNotice widget = new TaskNotice(activity, true);
+//        recentTasks.add(new TaskNotice(activity));
+        recentTasks.insert(new TaskNotice(activity,true), i);
+        activites.add(activity);
+
+        mondayDragController.makeDraggable(widget, widget.getMouseHandledWidget());
+    }
+    
 }
