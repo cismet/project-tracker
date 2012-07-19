@@ -120,8 +120,10 @@ body {
 }
 
 .lockedDay{
-    border-color: #00FF00 !important;
-    border-width: 2px !important;
+    /*transpareny */
+    zoom: 1;
+    filter: alpha(opacity=50);
+    opacity: 0.5;
 }
 
 .verticalScroller {
@@ -345,4 +347,8 @@ body {
 
 .lowerCtrlPanel-margin{
     padding-top: 5px;
+}
+
+.fillPreviewHorizontalPanel {
+    margin-bottom: 5px;
 }

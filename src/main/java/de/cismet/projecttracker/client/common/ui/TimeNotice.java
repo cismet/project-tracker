@@ -305,7 +305,9 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
         return end.getDay();
     }
 
-    public void setDeleteButtonEnabled(boolean aFlag) {
+    public void setEnabled(boolean aFlag) {
         close.setVisible(aFlag);
+        startTime.setEnabled(aFlag);
+        endTime.setEnabled(aFlag);
     }
 }

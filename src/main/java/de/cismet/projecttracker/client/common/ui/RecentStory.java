@@ -43,7 +43,7 @@ public class RecentStory extends Composite {
 
     public void setTaskStory(TaskStory taskStory) {
         if (!initialised) {
-            initialised = true;
+//            initialised = true;
             this.taskStory = taskStory;
             activites.clear();
             mondayDragController = new RestorePickupDragController(RootPanel.get(), false);
@@ -57,6 +57,7 @@ public class RecentStory extends Composite {
                         for (ActivityDTO activity : result) {
                             addTask(activity);
                         }
+                        initialised = true;
                     }
                 }
             };

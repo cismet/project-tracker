@@ -19,6 +19,7 @@ import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -73,7 +74,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
             addTask();
         } else if (event.getSource() == fill) {
             fillTasks();
-        } 
+        }
     }
 
     private void addTask() {
@@ -128,7 +129,11 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
 
                     if (tmp.getActivity().getWorkinghours() == 0.0) {
                         zeroTasksToChange.add(tmp);
-                    } else if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.LECTURE_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
+                    } else if (!(tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || 
+                            tmp.getActivity().getWorkPackage().getId() == ActivityDTO.LECTURE_ID || 
+                            tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID || 
+                            tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID || 
+                            tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID)) {
                         fillableBookedHours += tmp.getActivity().getWorkinghours();
                         procentualTasks.add(tmp);
                     }
@@ -137,27 +142,36 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
             }
         }
 
-        if ((timeForDay - bookedHours) <= 0.0) {
-            ProjectTrackerEntryPoint.outputBox("There is no time left to fill the tasks");
-        } else if (zeroTasksToChange.isEmpty()) {
-            for (TaskNotice tmp : procentualTasks) {
-                double fillFactor = tmp.getActivity().getWorkinghours() * 100 / fillableBookedHours;
-                double newWorkingHours = tmp.getActivity().getWorkinghours() + ((fillFactor * (timeForDay - bookedHours)) / 100);
-                tmp.getActivity().setWorkinghours(newWorkingHours);
-                tmp.refresh();
-                tmp.save();
-                taskStory.taskChanged(tmp);
-            }
-        } else {
-            if (zeroTasksToChange.size() > 0) {
-                for (TaskNotice tmp : zeroTasksToChange) {
-                    tmp.getActivity().setWorkinghours(tmp.getActivity().getWorkinghours() + (timeForDay - bookedHours) / zeroTasksToChange.size());
+        final double balance = (timeForDay - bookedHours);
+        if (balance < 0.0) {
+            doNegativeFill(new ArrayList<TaskNotice>(procentualTasks), balance, fillableBookedHours);
+
+        }else if(balance > 0){
+            
+            if (zeroTasksToChange.isEmpty()) {
+                for (TaskNotice tmp : procentualTasks) {
+                    double fillFactor = tmp.getActivity().getWorkinghours() * 100 / fillableBookedHours;
+                    double newWorkingHours = tmp.getActivity().getWorkinghours() + ((fillFactor * (timeForDay - bookedHours)) / 100);
+                    tmp.getActivity().setWorkinghours(newWorkingHours);
                     tmp.refresh();
                     tmp.save();
                     taskStory.taskChanged(tmp);
                 }
+            } else {
+                if (zeroTasksToChange.size() > 0) {
+                    for (TaskNotice tmp : zeroTasksToChange) {
+                        tmp.getActivity().setWorkinghours(tmp.getActivity().getWorkinghours() + (timeForDay - bookedHours) / zeroTasksToChange.size());
+                        tmp.refresh();
+                        tmp.save();
+                        taskStory.taskChanged(tmp);
+                    }
+                }
             }
         }
+        else{
+            ProjectTrackerEntryPoint.outputBox("There is no time left to fill the tasks");
+        }
+            
     }
 
     @Override
@@ -182,5 +196,24 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
 
     @Override
     public void timeNoticeDeleted(TimeStoryEvent e) {
+    }
+
+    private void doNegativeFill(ArrayList<TaskNotice> procentualTasks, double balance, double bookedHours) {
+        final ArrayList<TaskNotice> negativeFillPreview = new ArrayList<TaskNotice>();
+        final ArrayList<TaskNotice> real = new ArrayList<TaskNotice>();
+        for (TaskNotice tn : procentualTasks) {
+            real.add(new TaskNotice(tn.getActivity().createCopy()));
+            final ActivityDTO tmp = tn.getActivity().createCopy();
+            final double whow = tmp.getWorkinghours() ;
+            final double fillFactor = (whow * 100 / bookedHours);
+            final double newWorkingHours = whow + (fillFactor * balance / 100);
+            tmp.setWorkinghours(newWorkingHours);
+            negativeFillPreview.add(new TaskNotice(tmp));
+        }
+
+        DialogBox form = new DialogBox();
+        form.setWidget(new FillButtonPreview(form, negativeFillPreview,procentualTasks, taskStory));
+        form.setModal(false);
+        form.center();
     }
 }

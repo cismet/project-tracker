@@ -210,7 +210,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         }
         taskContentNodePanel.setHeight((newHeight) + "px");
         tasks.setHeight((newHeight) + "px");
-        newHeight += contentNodePanel.getOffsetHeight() + 105;
+        newHeight += contentNodePanel.getOffsetHeight() + 110;
         recent.setHeight(newHeight + "px");
         allRecent.setHeight(newHeight + "px");
         favs.setHeight(newHeight + "px");
@@ -363,7 +363,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             List<TaskNotice> taskList = tasks.getTasksForDay(i);
 
             for (TaskNotice tmp : taskList) {
-                hours += getWorkingHoursForActivity(tmp.getActivity());
+                if (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID) {
+                    hours += getWorkingHoursForActivity(tmp.getActivity());
+                }
             }
         }
 
@@ -400,7 +402,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 double hours = 0.0;
                 if (!operationFailed) {
                     for (ActivityDTO act : result.getActivities()) {
-                        hours += SheetsPanel.this.getWorkingHoursForActivity(act);
+                        if (act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID) {
+                            hours += SheetsPanel.this.getWorkingHoursForActivity(act);
+                        }
                     }
                     for (HolidayType holiday : result.getHolidays()) {
                         hours += holiday.getHours();
@@ -420,19 +424,19 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         };
         ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), pyear, pweek, callback);
     }
-    
-    private void refreshMyRecentTasks(TaskNotice tn){
+
+    private void refreshMyRecentTasks(TaskNotice tn) {
         final long wpId = tn.getActivity().getWorkPackage().getId();
         if (wpId != ActivityDTO.PAUSE_ID) {
-                final TaskNotice newTaskNotice = new TaskNotice(tn.getActivity(), true);
+            final TaskNotice newTaskNotice = new TaskNotice(tn.getActivity(), true);
 
-                Scheduler.get().scheduleDeferred(new Command() {
+            Scheduler.get().scheduleDeferred(new Command() {
 
-                    @Override
-                    public void execute() {
-                        recent.addTask(newTaskNotice);
-                    }
-                });
+                @Override
+                public void execute() {
+                    recent.addTask(newTaskNotice);
+                }
+            });
         }
     }
 
@@ -452,7 +456,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         refreshWeeklyHoursOfWork();
         refreshAccountBalance();
         refreshMyRecentTasks(e.getTaskNotice());
-        refresh();
     }
 
     @Override

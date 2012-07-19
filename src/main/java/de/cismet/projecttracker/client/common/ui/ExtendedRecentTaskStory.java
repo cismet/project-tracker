@@ -61,6 +61,9 @@ public class ExtendedRecentTaskStory extends RecentStory {
     }
 
     private void loadRecentActivites() {
+        mondayDragController = new RestorePickupDragController(RootPanel.get(), false);
+        taskStory.initDragController(mondayDragController, null);
+
         BasicAsyncCallback<List<ActivityDTO>> callback = new BasicAsyncCallback<List<ActivityDTO>>() {
 
             @Override
@@ -68,10 +71,14 @@ public class ExtendedRecentTaskStory extends RecentStory {
                 if (!operationFailed) {
                     for (int i = 0; i < result.size(); i++) {
                         final ActivityDTO activity = result.get(i);
-                        if (contains(activity)) {
-                            removeCorrespondingWidget(activity);
+                        if (!contains(activity)) {
+//                            removeCorrespondingWidget(activity);
+                            TaskNotice widget = new TaskNotice(activity, true);
+                            recentTasks.insert(widget,0);
+                            activites.add(activity);
+
+                            mondayDragController.makeDraggable(widget, widget.getMouseHandledWidget());;
                         }
-                        addTask(activity, i);
                     }
                 }
             }
@@ -79,14 +86,4 @@ public class ExtendedRecentTaskStory extends RecentStory {
 
         ProjectTrackerEntryPoint.getProjectService(true).getLastActivitiesExceptForUser(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
     }
-
-    private void addTask(ActivityDTO activity, int i) {
-        TaskNotice widget = new TaskNotice(activity, true);
-//        recentTasks.add(new TaskNotice(activity));
-        recentTasks.insert(new TaskNotice(activity,true), i);
-        activites.add(activity);
-
-        mondayDragController.makeDraggable(widget, widget.getMouseHandledWidget());
-    }
-    
 }

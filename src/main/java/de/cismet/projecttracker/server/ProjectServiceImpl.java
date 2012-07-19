@@ -3009,6 +3009,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             double activityWorkingHours = 0;
             //the time beetween two time slots
             double slotPauseTime = 0;
+            boolean justAbsenceTasks = true;
             for (ActivityDTO act : activities) {
                 if (act.getKindofactivity() == ActivityDTO.BEGIN_OF_DAY) {
                     lastBeginActivityTime = act.getDay();
@@ -3029,26 +3030,32 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                         pauseTimesFromActivity += act.getWorkinghours();
                     } else if (!(wpId == ActivityDTO.ILLNESS_ID || wpId == ActivityDTO.SPARE_TIME_ID || wpId == ActivityDTO.Travel_ID || wpId == ActivityDTO.HOLIDAY_ID || wpId == ActivityDTO.LECTURE_ID || wpId == ActivityDTO.SPECIAL_HOLIDAY_ID)) {
                         activityWorkingHours += act.getWorkinghours();
+                        justAbsenceTasks = false;
                     }
                 }
             }
-
-            //there is a time slot greate than 6 hours so check if a there is a pause activity of at least 45 min
-            if (pauseActivityNeeded) {
-                if (pauseTimesFromActivity >= 0.75d) {
-                    return true;
-                } else {
-                    return false;
-                }
+            
+            //if there are only absence tasks like spare time and holiday the pause policy is always fulfilled
+            if (justAbsenceTasks) {
+                return true;
             } else {
-                if (activityWorkingHours > 6d) {
-                    if (pauseTimesFromActivity + slotPauseTime >= 0.75d) {
+                //there is a time slot greate than 6 hours so check if a there is a pause activity of at least 45 min
+                if (pauseActivityNeeded) {
+                    if (pauseTimesFromActivity >= 0.75d) {
                         return true;
                     } else {
                         return false;
                     }
                 } else {
-                    return true;
+                    if (activityWorkingHours > 6d) {
+                        if (pauseTimesFromActivity + slotPauseTime >= 0.75d) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return true;
+                    }
                 }
             }
         } catch (InvalidInputValuesException ex) {

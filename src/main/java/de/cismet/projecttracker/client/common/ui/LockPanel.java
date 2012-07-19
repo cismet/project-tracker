@@ -168,21 +168,23 @@ public class LockPanel extends Composite implements ClickHandler {
             //first check if that there are no times left
             if (!checkTimeSlots(day)) {
                 ProjectTrackerEntryPoint.outputBox("The working time of the activites does not match the time for this day. You have to correct in order to lock this day");
+                lockCB.setEnabled(true);
                 lockCB.setValue(false);
+            }else{
+                BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
+
+                    @Override
+                    protected void afterExecution(Boolean result, boolean operationFailed) throws IllegalStateException {
+                        if (result) {
+                            performLock(day);
+                        } else {
+                            refuseLock(day);
+                        }
+                    }
+                };
+                ProjectTrackerEntryPoint.getProjectService(true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), day, cb);
             }
 
-            BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
-
-                @Override
-                protected void afterExecution(Boolean result, boolean operationFailed) throws IllegalStateException {
-                    if (result) {
-                        performLock(day);
-                    } else {
-                        refuseLock(day);
-                    }
-                }
-            };
-            ProjectTrackerEntryPoint.getProjectService(true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), day, cb);
         }
 
     }
@@ -191,6 +193,7 @@ public class LockPanel extends Composite implements ClickHandler {
         double hours = times.getTimeForDay(day.getDay());
         double hoursWorked = 0.0;
         List<TaskNotice> tasks = taskStory.getTasksForDay(day.getDay());
+        boolean justAbsenceTasks = true;
 
         for (TaskNotice tmp : tasks) {
             if (tmp.getActivity() != null && tmp.getActivity().getWorkPackage() != null
@@ -198,19 +201,19 @@ public class LockPanel extends Composite implements ClickHandler {
                 if (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID
                         || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID) {
                     hours -= tmp.getActivity().getWorkinghours();
+                    justAbsenceTasks = false;
                 } else if (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.HOLIDAY_ID && 
                         tmp.getActivity().getWorkPackage().getId() != ActivityDTO.ILLNESS_ID && 
                         tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID && 
                         tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPECIAL_HOLIDAY_ID) {
                     hoursWorked += tmp.getActivity().getWorkinghours();
+                    justAbsenceTasks = false;
                 }
             }
         }
         //just in case the difference is greater than 1 minute raise the error
-        if (Math.abs(
+        if (!justAbsenceTasks && Math.abs(
                 hours - hoursWorked) > 1d / 60d) {
-//            ProjectTrackerEntryPoint.outputBox("The working time of the activites does not match the time for this day. You have to correct in order to lock this day");
-//            lockCB.setValue(false);
             return false;
         }
 
@@ -387,11 +390,11 @@ public class LockPanel extends Composite implements ClickHandler {
         ArrayList<TaskNotice> tasks = (ArrayList<TaskNotice>) taskStory.getTasksForDay(day.getDay());
         for (TaskNotice tn : tasks) {
             tn.setCloseButtonVisible(!disabledStatus);
-//            if (disabledStatus) {
-//                tn.addStyleName("lockedDay");
-//            } else {
-//                tn.removeStyleName("lockedDay");
-//            }
+            if (disabledStatus) {
+                tn.addStyleName("lockedDay");
+            } else {
+                tn.removeStyleName("lockedDay");
+            }
         }
 
         //disable the delete buttons of all time slots...
@@ -399,12 +402,12 @@ public class LockPanel extends Composite implements ClickHandler {
         Iterator<TimeNotice> it = timeSlots.iterator();
         while (it.hasNext()) {
             TimeNotice slot = it.next();
-            slot.setDeleteButtonEnabled(!disabledStatus);
-//            if (disabledStatus) {
-//                slot.addStyleName("lockedDay");
-//            } else {
-//                slot.removeStyleName("lockedDay");
-//            }
+            slot.setEnabled(!disabledStatus);
+            if (disabledStatus) {
+                slot.addStyleName("lockedDay");
+            } else {
+                slot.removeStyleName("lockedDay");
+            }
         }
     }
 }
