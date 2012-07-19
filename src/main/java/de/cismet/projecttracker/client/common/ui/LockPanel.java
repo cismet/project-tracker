@@ -27,6 +27,7 @@ import java.util.List;
 public class LockPanel extends Composite implements ClickHandler {
 
     private static LockPanel.LockPanelUiBinder uiBinder = GWT.create(LockPanel.LockPanelUiBinder.class);
+    private static final String CHECKBOX_TOOLTIP = "Select this box to lock the corresponding day. If you lock a day, you cannot change the activities of this day until an administrator unlocks the day.";
     @UiField
     SimpleCheckBox monday;
     @UiField
@@ -69,6 +70,14 @@ public class LockPanel extends Composite implements ClickHandler {
         friday.addClickHandler(this);
         saturday.addClickHandler(this);
         sunday.addClickHandler(this);
+        
+        monday.setTitle(CHECKBOX_TOOLTIP);
+        tuesday.setTitle(CHECKBOX_TOOLTIP);
+        wednesday.setTitle(CHECKBOX_TOOLTIP);
+        thursday.setTitle(CHECKBOX_TOOLTIP);
+        friday.setTitle(CHECKBOX_TOOLTIP);
+        saturday.setTitle(CHECKBOX_TOOLTIP);
+        sunday.setTitle(CHECKBOX_TOOLTIP);
     }
 
     @Override
@@ -189,7 +198,10 @@ public class LockPanel extends Composite implements ClickHandler {
                 if (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID
                         || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID) {
                     hours -= tmp.getActivity().getWorkinghours();
-                } else {
+                } else if (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.HOLIDAY_ID && 
+                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.ILLNESS_ID && 
+                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID && 
+                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPECIAL_HOLIDAY_ID) {
                     hoursWorked += tmp.getActivity().getWorkinghours();
                 }
             }
