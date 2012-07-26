@@ -2945,6 +2945,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     @Override
     public Boolean isDayLocked(Date day, StaffDTO s) {
         DBManagerWrapper dbManager = new DBManagerWrapper();
+        if (day == null) {
+            //favourite tasks have null as day
+            return false;
+        }
         //TODO: change Time Restriction to same day and not same time...
         final Date d = new Date(day.getTime());
         d.setHours(5);
