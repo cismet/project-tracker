@@ -271,9 +271,17 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     lockPanel.initialise(firstDay, tasks, times, weekLockCB);
                     times.setTimes(firstDay, result.getActivities());
                     taskControlPanel.initialise(firstDay, tasks, times);
+                    /*
+                     * set the init status to false that event fired in fact of the creation of the new activities 
+                     * doesnt change the recent activities
+                     */
+                    recent.setInitialised(false);
                     tasks.setActivities(firstDay, result.getActivities(), result.getHolidays());
                     //initialise drag and drop for TaskStory
                     favs.setTaskStory(tasks);
+                    /*
+                     * this method sets the init status to true
+                     */
                     recent.setTaskStory(tasks);
                     allRecent.setTaskStory(tasks);
                     //initialise drag and drop for favourite panel
@@ -402,7 +410,10 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 double hours = 0.0;
                 if (!operationFailed) {
                     for (ActivityDTO act : result.getActivities()) {
-                        if (act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID) {
+                        if (act.getKindofactivity() == ActivityDTO.ACTIVITY 
+                                && act.getWorkPackage() != null 
+                                && act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID
+                                && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
                             hours += SheetsPanel.this.getWorkingHoursForActivity(act);
                         }
                     }

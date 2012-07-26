@@ -109,4 +109,8 @@ public class RecentStory extends Composite {
     public PickupDragController getDragController() {
         return mondayDragController;
     }
+    
+    public void setInitialised(boolean initState){
+        initialised = initState;
+    }
 }
