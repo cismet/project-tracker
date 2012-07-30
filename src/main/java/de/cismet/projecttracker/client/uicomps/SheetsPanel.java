@@ -11,9 +11,15 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import com.github.gwtbootstrap.client.ui.resources.ResourceInjector;
+import com.github.gwtbootstrap.datepicker.client.ui.resources.DatepickerResourceInjector;
+import com.github.gwtbootstrap.datepicker.client.ui.DateBox;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.*;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
@@ -29,6 +35,7 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -38,7 +45,7 @@ import java.util.logging.Logger;
  *
  * @author therter
  */
-public class SheetsPanel extends Composite implements ResizeHandler, ClickHandler, ChangeHandler, TaskStoryListener, TimeStoryListener, MenuListener {
+public class SheetsPanel extends Composite implements ResizeHandler, ClickHandler, ChangeHandler, TaskStoryListener, TimeStoryListener, MenuListener, ValueChangeHandler<Date> {
 
     private static final String WEEKLY_HOURS_OF_WORK = "Total: ";
     private static final String PREVIOUS_WEEK_BALANCE = "prev. Week Bal.: ";
@@ -52,8 +59,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private FlowPanel controlPanel = new FlowPanel();
     private FlowPanel buttonPanel = new FlowPanel();
     private TaskStoryControllerPanel taskControlPanel = new TaskStoryControllerPanel();
-    private ListBox year = new ListBox();
-    private ListBox week = new ListBox();
     private Button prevWeek = new Button("previous week", this);
     private Button nextWeek = new Button("next week", this);
     private Story times = new Story();
@@ -71,6 +76,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private long lastAccountBalanceCalc = 0;
     private static final int TRAVEL_WORK_CATEGORY = 4;
     private SimpleCheckBox weekLockCB = new SimpleCheckBox();
+    private DateBox datePicker;
 
     public SheetsPanel() {
         init();
@@ -104,20 +110,29 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         contentNodeParentPanel.add(taskContentNodePanel);
         contentNodeParentPanel.add(taskControlPanel);
         controlPanel.setStyleName("pull-center");
-        year.setStyleName("span2 inlineComponent");
-        week.setStyleName("mini inlineComponent");
         yearLab.setStyleName("formLabel");
         weekLab.setStyleName("formLabel");
-        weekDates.setStyleName("formLabel");
+        weekDates.setStyleName("formLabel weekDates");
         weekHoursLab.setStyleName("formLabel totalLab");
         weekBalanceLab.setStyleName("formLabel accountBalanceLab");
         prevWeek.addStyleName("btn primary pull-left span3");
         nextWeek.addStyleName("btn info pull-right span3");
         FlowPanel upperCtrlPanel = new FlowPanel();
-        upperCtrlPanel.add(yearLab);
-        upperCtrlPanel.add(year);
-        upperCtrlPanel.add(weekLab);
-        upperCtrlPanel.add(week);
+        //Inject the styles and js for datepicker component
+        ResourceInjector.configure();
+        DatepickerResourceInjector.configure();
+        DatepickerResourceInjector.configureWithCssFile();
+        datePicker = new DateBox();
+        datePicker.setFormat("dd-mm-yyyy");
+        datePicker.setAutoClose(true);
+        datePicker.setStyleName("datepickerTextBox");
+        datePicker.setWeekStart(1);
+        datePicker.setTitle("Click to select a week");
+        datePicker.addValueChangeHandler(this);
+        Label mondayLab = new Label("Mon.:");
+        mondayLab.setStyleName("formLabel");
+        upperCtrlPanel.add(mondayLab);
+        upperCtrlPanel.add(datePicker);
         upperCtrlPanel.add(weekDates);
         FlowPanel lowerCtrlPanel = new FlowPanel();
         lowerCtrlPanel.addStyleName("lowerCtrlPanel-margin");
@@ -145,61 +160,15 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         mainPanel.add(favs);
         mainPanel.add(pageHeaderPanel);
         mainPanel.add(contentNodeParentPanel);
-        year.addChangeHandler(this);
-        week.addChangeHandler(this);
 
-        fillYear();
-        fillWeek();
-    }
-
-    private void fillYear() {
-        int currentYear = (new Date()).getYear() + 1900;
-
-        year.clear();
-        for (int i = (currentYear + 1); i >= 2009; --i) {
-            year.addItem("" + i);
-        }
-
-        year.setSelectedIndex(year.getSelectedIndex() + 1);
-    }
-
-    private void fillWeek() {
-        int selectedWeek = getSelectedWeek();
-        Date date = new Date(getSelectedYear() - 1900, 0, 1);
-        int weekCount = DateHelper.getWeekCountForYear(date.getYear() + 1900);
-        week.clear();
-
-        if (selectedWeek == -1) {
-            selectedWeek = DateHelper.getCurrentWeek();
-        }
-
-        for (int i = 1; i <= weekCount; ++i) {
-            week.addItem("" + i);
-        }
-
-        week.setSelectedIndex(selectedWeek - 1);
     }
 
     public int getSelectedWeek() {
-        try {
-            if (week.getSelectedIndex() > -1) {
-                return Integer.parseInt(week.getItemText(week.getSelectedIndex()));
-            }
-        } catch (NumberFormatException e) {
-            //no week selected. return -1
-        }
-        return -1;
+        return DateHelper.getWeekOfYear(datePicker.getValue());
     }
 
     public int getSelectedYear() {
-        try {
-            if (year.getSelectedIndex() > -1) {
-                return Integer.parseInt(year.getItemText(year.getSelectedIndex()));
-            }
-        } catch (NumberFormatException e) {
-            ProjectTrackerEntryPoint.outputBox("NumberFormatException for number: " + year.getItemText(year.getSelectedIndex()));
-        }
-        return (new Date()).getYear() + 1900;
+        return DateHelper.getYear(datePicker.getValue());
     }
 
     @Override
@@ -219,25 +188,13 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     @Override
     public void onClick(ClickEvent event) {
         if (event.getSource() == prevWeek) {
-            if (week.getSelectedIndex() > 0) {
-                week.setSelectedIndex(week.getSelectedIndex() - 1);
-            } else {
-                if ((year.getSelectedIndex() + 1) < year.getItemCount()) {
-                    year.setSelectedIndex(year.getSelectedIndex() + 1);
-                    fillWeek();
-                    week.setSelectedIndex(week.getItemCount() - 1);
-                }
-            }
+            final Date d = datePicker.getValue();
+            DateHelper.addDays(d, -7);
+            datePicker.setValue(d);
         } else if (event.getSource() == nextWeek) {
-            if ((week.getSelectedIndex() + 1) < week.getItemCount()) {
-                week.setSelectedIndex(week.getSelectedIndex() + 1);
-            } else {
-                if (year.getSelectedIndex() > 0) {
-                    year.setSelectedIndex(year.getSelectedIndex() - 1);
-                    fillWeek();
-                    week.setSelectedIndex(0);
-                }
-            }
+            final Date d = datePicker.getValue();
+            DateHelper.addDays(d, 7);
+            datePicker.setValue(d);
         } else if (event.getSource() == weekLockCB) {
             //set the enable status to false to prevent the user from a new click during calculation
             weekLockCB.setEnabled(false);
@@ -266,13 +223,12 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     Date firstDay = DateHelper.getBeginOfWeek(syear, sweek);
                     Date lastDay = new Date(firstDay.getTime());
                     DateHelper.addDays(lastDay, 6);
-                    weekDates.setText("from: " + DateHelper.formatShortDate(firstDay) + " till: " + DateHelper.formatShortDate(lastDay));
-                    weekDates.setText("Mon.: " + DateHelper.formatShortDate(firstDay) + " - Sun.:" + DateHelper.formatShortDate(lastDay));
+                    weekDates.setText(" - Sun.:" + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
                     lockPanel.initialise(firstDay, tasks, times, weekLockCB);
                     times.setTimes(firstDay, result.getActivities());
                     taskControlPanel.initialise(firstDay, tasks, times);
                     /*
-                     * set the init status to false that event fired in fact of the creation of the new activities 
+                     * set the init status to false that event fired in fact of the creation of the new activities
                      * doesnt change the recent activities
                      */
                     recent.setInitialised(false);
@@ -371,7 +327,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             List<TaskNotice> taskList = tasks.getTasksForDay(i);
 
             for (TaskNotice tmp : taskList) {
-                if (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID) {
+                if (tmp.getActivity().getKindofactivity() == ActivityDTO.ACTIVITY && tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID) {
+                    hours += getWorkingHoursForActivity(tmp.getActivity());
+                } else if (tmp.getActivity().getKindofactivity() == ActivityDTO.HOLIDAY || tmp.getActivity().getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
                     hours += getWorkingHoursForActivity(tmp.getActivity());
                 }
             }
@@ -400,7 +358,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             pyear = getSelectedYear();
         } else {
             pyear = getSelectedYear() + 1;
-            pweek = week.getItemCount() - 1;
+            pweek = getSelectedWeek() - 1;
         }
 
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
@@ -410,8 +368,8 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 double hours = 0.0;
                 if (!operationFailed) {
                     for (ActivityDTO act : result.getActivities()) {
-                        if (act.getKindofactivity() == ActivityDTO.ACTIVITY 
-                                && act.getWorkPackage() != null 
+                        if (act.getKindofactivity() == ActivityDTO.ACTIVITY
+                                && act.getWorkPackage() != null
                                 && act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID
                                 && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
                             hours += SheetsPanel.this.getWorkingHoursForActivity(act);
@@ -437,17 +395,19 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     }
 
     private void refreshMyRecentTasks(TaskNotice tn) {
-        final long wpId = tn.getActivity().getWorkPackage().getId();
-        if (wpId != ActivityDTO.PAUSE_ID) {
-            final TaskNotice newTaskNotice = new TaskNotice(tn.getActivity(), true);
+        if (tn.getActivity().getKindofactivity() == ActivityDTO.ACTIVITY) {
+            final long wpId = tn.getActivity().getWorkPackage().getId();
+            if (wpId != ActivityDTO.PAUSE_ID) {
+                final TaskNotice newTaskNotice = new TaskNotice(tn.getActivity(), true);
 
-            Scheduler.get().scheduleDeferred(new Command() {
+                Scheduler.get().scheduleDeferred(new Command() {
 
-                @Override
-                public void execute() {
-                    recent.addTask(newTaskNotice);
-                }
-            });
+                    @Override
+                    public void execute() {
+                        recent.addTask(newTaskNotice);
+                    }
+                });
+            }
         }
     }
 
@@ -495,6 +455,15 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     @Override
     public void menuChangeEvent(MenuEvent e) {
+        refresh();
+    }
+
+    @Override
+    public void onValueChange(ValueChangeEvent<Date> event) {
+        final Date d = event.getValue();
+        if (d.getDay() != 1) {
+            datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
+        }
         refresh();
     }
 }
