@@ -154,7 +154,7 @@ public class PauseChecker extends Timer {
                             final long wpId = activity.getWorkPackage().getId();
                             if (wpId == ActivityDTO.PAUSE_ID) {
                                 pauseTime += activity.getWorkinghours();
-                            } else if (!(wpId == ActivityDTO.ILLNESS_ID || wpId == ActivityDTO.SPARE_TIME_ID || wpId == ActivityDTO.Travel_ID || wpId == ActivityDTO.HOLIDAY_ID || wpId == ActivityDTO.LECTURE_ID || wpId == ActivityDTO.SPECIAL_HOLIDAY_ID)) {
+                            } else if (!(wpId == ActivityDTO.ILLNESS_ID || wpId == ActivityDTO.SPARE_TIME_ID || wpId == ActivityDTO.HOLIDAY_ID || wpId == ActivityDTO.LECTURE_ID || wpId == ActivityDTO.SPECIAL_HOLIDAY_ID)) {
                                 workingHours += activity.getWorkinghours();
                             }
                         }

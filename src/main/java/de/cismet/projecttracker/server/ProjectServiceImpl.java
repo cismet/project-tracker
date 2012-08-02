@@ -107,7 +107,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String RECENT_ACTIVITIES_EX_QUERY = "select max(id), workpackageid, description from activity where "
             + "staffid <> %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
             + "order by max(id) desc limit 30;";
-    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(CASE WHEN workcategoryid = 4 THEN workinghours / 2 ELSE workinghours END)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414, 419);";
+    private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(workinghours)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414, 419);";
 //    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
     private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (409,410,411,419);";
     private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
@@ -3032,7 +3032,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     final long wpId = act.getWorkPackage().getId();
                     if (wpId == ActivityDTO.PAUSE_ID) {
                         pauseTimesFromActivity += act.getWorkinghours();
-                    } else if (!(wpId == ActivityDTO.ILLNESS_ID || wpId == ActivityDTO.SPARE_TIME_ID || wpId == ActivityDTO.Travel_ID || wpId == ActivityDTO.HOLIDAY_ID || wpId == ActivityDTO.LECTURE_ID || wpId == ActivityDTO.SPECIAL_HOLIDAY_ID)) {
+                    } else if (!(wpId == ActivityDTO.ILLNESS_ID || wpId == ActivityDTO.SPARE_TIME_ID || wpId == ActivityDTO.HOLIDAY_ID || wpId == ActivityDTO.LECTURE_ID || wpId == ActivityDTO.SPECIAL_HOLIDAY_ID)) {
                         activityWorkingHours += act.getWorkinghours();
                         justAbsenceTasks = false;
                     }
