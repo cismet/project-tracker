@@ -76,7 +76,10 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private long lastAccountBalanceCalc = 0;
     private static final int TRAVEL_WORK_CATEGORY = 4;
     private SimpleCheckBox weekLockCB = new SimpleCheckBox();
-    private DateBox datePicker;
+//    private DateBox datePicker;
+    private WeekDatePicker datePicker;
+    private Button datePickerButton = new Button("<i class='icon-calendar'></i>", this);
+    private boolean isDatePickerVisible = false;
 
     public SheetsPanel() {
         init();
@@ -122,18 +125,21 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         ResourceInjector.configure();
         DatepickerResourceInjector.configure();
         DatepickerResourceInjector.configureWithCssFile();
-        datePicker = new DateBox();
-        datePicker.setFormat("dd-mm-yyyy");
+        datePicker = new WeekDatePicker();
+        datePicker.setFormat("dd.mm.yyyy");
         datePicker.setAutoClose(true);
         datePicker.setStyleName("datepickerTextBox");
         datePicker.setWeekStart(1);
-        datePicker.setTitle("Click to select a week");
         datePicker.addValueChangeHandler(this);
         Label mondayLab = new Label("Mon.:");
         mondayLab.setStyleName("formLabel");
         upperCtrlPanel.add(mondayLab);
         upperCtrlPanel.add(datePicker);
         upperCtrlPanel.add(weekDates);
+        datePickerButton.setWidth("10px;");
+        datePickerButton.addStyleName("btn");
+        datePickerButton.setTitle("Click to select a week");
+        upperCtrlPanel.add(datePickerButton);
         FlowPanel lowerCtrlPanel = new FlowPanel();
         lowerCtrlPanel.addStyleName("lowerCtrlPanel-margin");
         lowerCtrlPanel.add(weekHoursLab);
@@ -207,6 +213,14 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             }
             //we dont need to refresh the whole SheetsPanel since the date has not changed..
             return;
+        } else if (event.getSource() == datePickerButton) {
+            if (isDatePickerVisible) {
+                isDatePickerVisible = false;
+                datePicker.hide();
+            } else {
+                isDatePickerVisible = true;
+                datePicker.show();
+            }
         }
         refresh();
     }
@@ -223,7 +237,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     Date firstDay = DateHelper.getBeginOfWeek(syear, sweek);
                     Date lastDay = new Date(firstDay.getTime());
                     DateHelper.addDays(lastDay, 6);
-                    weekDates.setText(" - Sun.:" + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
+                    weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
                     lockPanel.initialise(firstDay, tasks, times, weekLockCB);
                     times.setTimes(firstDay, result.getActivities());
                     taskControlPanel.initialise(firstDay, tasks, times);
@@ -460,6 +474,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     @Override
     public void onValueChange(ValueChangeEvent<Date> event) {
+        isDatePickerVisible = false;
         final Date d = event.getValue();
         if (d.getDay() != 1) {
             datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));

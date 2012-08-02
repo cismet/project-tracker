@@ -427,16 +427,45 @@ body {
     background-position: -264px -96px;
 }
 
+.icon-th {
+    background-position: -240px 0;
+}
+
+.icon-calendar {
+    background-position: -192px -120px;
+}
+
 .datepickerTextBox{
-    width: 90px;
-/*    margin-right: 5px;*/
+    width: 73px;
+    /*    margin-right: 5px;*/
     height: 27px;
     text-align: center;
+    border:none;
+    background-color: #F5F5F5;
+    color:#404040;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -webkit-transition: none;
+    cursor:text !important;
+}
+
+.datepickerbox input[disabled]{
+    cursor:text;
+}
+
+.datepickerTextBox:focus{
+    border:none;
+    background-color: #F5F5F5;
+    color:#000000;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -webkit-transition: none;
 }
 
 .datepicker {
     top: 0;
     left: 0;
+    padding-left: 50px;
     padding: 4px;
     margin-top: 1px;
     -webkit-border-radius: 4px;
