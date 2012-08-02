@@ -73,6 +73,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private Label previousWeekBalLab = new Label(PREVIOUS_WEEK_BALANCE);
     private Label weekBalanceLab = new Label(WEEK_BALANCE);
     private Label weekDates = new Label();
+    private Label weekLockLab = new Label("Lock Week: ");
     private long lastAccountBalanceCalc = 0;
     private static final int TRAVEL_WORK_CATEGORY = 4;
     private SimpleCheckBox weekLockCB = new SimpleCheckBox();
@@ -118,6 +119,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         weekDates.setStyleName("formLabel weekDates");
         weekHoursLab.setStyleName("formLabel totalLab");
         weekBalanceLab.setStyleName("formLabel accountBalanceLab");
+        weekLockLab.setStyleName("formlabel");
         prevWeek.addStyleName("btn primary pull-left span3");
         nextWeek.addStyleName("btn info pull-right span3");
         FlowPanel upperCtrlPanel = new FlowPanel();
@@ -144,6 +146,8 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         lowerCtrlPanel.addStyleName("lowerCtrlPanel-margin");
         lowerCtrlPanel.add(weekHoursLab);
         lowerCtrlPanel.add(weekBalanceLab);
+        lowerCtrlPanel.add(weekLockLab);
+        weekLockCB.setTitle("Select to lock the entire week");
         lowerCtrlPanel.add(weekLockCB);
         weekLockCB.addClickHandler(this);
 //        lowerCtrlPanel.add(previousWeekLab);
