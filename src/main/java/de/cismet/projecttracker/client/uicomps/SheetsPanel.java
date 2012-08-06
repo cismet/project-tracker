@@ -326,9 +326,11 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     } else {
                         hours += act.getWorkinghours();
                     }
-                } else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
-                    hours += act.getWorkinghours() / 2;
-                } else {
+                } 
+//                else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
+//                    hours += act.getWorkinghours();
+//                } 
+                else {
                     hours += act.getWorkinghours();
                 }
             }

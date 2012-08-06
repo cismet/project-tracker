@@ -137,7 +137,8 @@ public class DailyHoursOfWork extends Composite implements TimeStoryListener, Ta
                 } else if(tmp.getActivity().getWorkPackage().getId() != ActivityDTO.HOLIDAY_ID && 
                         tmp.getActivity().getWorkPackage().getId() != ActivityDTO.ILLNESS_ID &&
                         tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPECIAL_HOLIDAY_ID &&
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID 
+                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID &&
+                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.Travel_ID
                         ) {
                     hoursWorked += tmp.getActivity().getWorkinghours();
                 }
