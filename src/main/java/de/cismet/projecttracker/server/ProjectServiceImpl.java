@@ -3043,14 +3043,14 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             if (justAbsenceTasks) {
                 return true;
             } else {
-                //there is a time slot greate than 6 hours so check if a there is a pause activity of at least 45 min
-                if (pauseActivityNeeded) {
-                    if (pauseTimesFromActivity >= 0.75d) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
+//                //there is a time slot greate than 6 hours so check if a there is a pause activity of at least 45 min
+//                if (pauseActivityNeeded) {
+//                    if (pauseTimesFromActivity >= 0.75d) {
+//                        return true;
+//                    } else {
+//                        return false;
+//                    }
+//                } else {
                     if (activityWorkingHours > 6d) {
                         if (pauseTimesFromActivity + slotPauseTime >= 0.75d) {
                             return true;
@@ -3060,7 +3060,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     } else {
                         return true;
                     }
-                }
+//                }
             }
         } catch (InvalidInputValuesException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);

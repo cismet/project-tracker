@@ -154,14 +154,14 @@ public class ActivityDTO extends BasicDTO<ActivityDTO> implements Comparable<Act
     }
 
     /**
-     * @return the forInternalUse
+     * @deprecated wird nicht mehr genutzt und wurde durch die Lock-Aktivität ersetzt
      */
     public boolean getCommitted() {
         return committed;
     }
 
     /**
-     * @param forInternalUse the forInternalUse to set
+     * @deprecated wird nicht mehr genutzt und wurde durch die Lock-Aktivität ersetzt
      */
     public void setCommitted(boolean committed) {
         this.committed = committed;
