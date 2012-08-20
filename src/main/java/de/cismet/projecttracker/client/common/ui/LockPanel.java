@@ -11,14 +11,10 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.*;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.dto.ActivityDTO;
-import de.cismet.projecttracker.client.dto.StaffDTO;
+import de.cismet.projecttracker.client.dto.*;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -70,7 +66,7 @@ public class LockPanel extends Composite implements ClickHandler {
         friday.addClickHandler(this);
         saturday.addClickHandler(this);
         sunday.addClickHandler(this);
-        
+
         monday.setTitle(CHECKBOX_TOOLTIP);
         tuesday.setTitle(CHECKBOX_TOOLTIP);
         wednesday.setTitle(CHECKBOX_TOOLTIP);
@@ -165,12 +161,28 @@ public class LockPanel extends Composite implements ClickHandler {
             }
         } else {
             // lets lock the day...
+            //check if there are tasks with an exired wp
+            List<TaskNotice> tasks = taskStory.getTasksForDay(day.getDay());
+
+            for (TaskNotice tn : tasks) {
+                WorkPackageDTO tmp = tn.getActivity().getWorkPackage();
+
+                WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
+                if (period != null && !DateHelper.isDayInWorkPackagePeriod(day, period)) {
+                    ProjectTrackerEntryPoint.outputBox("The workpackage \""+tmp.getName()  +"\" for the task: \""+tn.getActivity().getDescription() +"\" is expired. Please contact the administrator for further instructions.");
+                    lockCB.setEnabled(true);
+                    lockCB.setValue(false);
+                    return;
+                }
+
+            }
+
             //first check if that there are no times left
             if (!checkTimeSlots(day)) {
                 ProjectTrackerEntryPoint.outputBox("The working time of the activites does not match the time for this day. You have to correct in order to lock this day");
                 lockCB.setEnabled(true);
                 lockCB.setValue(false);
-            }else{
+            } else {
                 BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
 
                     @Override
@@ -202,10 +214,10 @@ public class LockPanel extends Composite implements ClickHandler {
                         || tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID) {
                     hours -= tmp.getActivity().getWorkinghours();
                     justAbsenceTasks = false;
-                } else if (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.HOLIDAY_ID && 
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.ILLNESS_ID && 
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID && 
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPECIAL_HOLIDAY_ID) {
+                } else if (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.HOLIDAY_ID
+                        && tmp.getActivity().getWorkPackage().getId() != ActivityDTO.ILLNESS_ID
+                        && tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID
+                        && tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPECIAL_HOLIDAY_ID) {
                     hoursWorked += tmp.getActivity().getWorkinghours();
                     justAbsenceTasks = false;
                 }
