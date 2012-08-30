@@ -28,7 +28,8 @@ import java.util.List;
  */
 public class TaskNotice extends Composite implements ClickHandler {
 
-    private static final String MAIN_STYLES = "alert-message block-message timebox";
+//    private static final String MAIN_STYLES = "alert-message block-message timebox";
+    private static final String MAIN_STYLES = "alert alert-block timebox";
     private static final String[] ADDITIONAL_PROJECT_STYLES = {"proj1", "proj2", "proj3", "proj4", "proj5", "proj6", "proj7"};
     private static final HashMap<Long, Integer> projectStyle = new HashMap<Long, Integer>();
     protected HTML lab;

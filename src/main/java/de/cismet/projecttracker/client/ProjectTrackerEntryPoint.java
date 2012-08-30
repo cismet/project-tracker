@@ -1,5 +1,7 @@
 package de.cismet.projecttracker.client;
 
+import com.github.gwtbootstrap.client.ui.resources.ResourceInjector;
+import com.github.gwtbootstrap.datepicker.client.ui.resources.DatepickerResourceInjector;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

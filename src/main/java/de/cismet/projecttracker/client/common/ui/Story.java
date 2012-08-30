@@ -145,7 +145,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
         TimeNotice widget = new TimeNotice(start, end);
         widget.addListener(this);
         widget.addTimeNoticeListener(this);
-        widget.addStyleName("alert-message block-message info timebox");
+        widget.addStyleName("alert alert-block info timebox");
         columnPanel.add(widget);
         taskMap.get(columnPanel).add(widget);
         ProjectTrackerEntryPoint.getInstance().validateSize();

@@ -1,15 +1,89 @@
 /* Override some defaults */
 html, body {
     background-color: #eee; 
+}
 
-}
 body {
-    padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
+    /*    padding-top: 40px;  40px to make the container go all the way to the bottom of the topbar */
+    color: #404040;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 18px;
 }
+
+/* since bootstrap 2.1 this is necessary to avoid the div for the drop target shrinking to minimum size*/
+.dragdrop-dropTarget{
+    display:inline-block;
+}
+
+.btn{
+    font-size: 13px;
+}
+
+footer{
+    padding-top: 17px;
+}
+
+[class^="icon-"], [class*=" icon-"]{
+    background-image: url("/ProjectTracker/ProjectTracker/images/glyphicons-halflings.png");
+}
+.content-container{
+    margin-top: 40px;
+}
+
+.navbar .btn {
+    border: 0;
+}
+
+.navbar .brand{
+    color: #ffffff;
+}
+
+.navbar-inverse .navbar-inner{
+    background-color: #222222;
+    background-image: -khtml-gradient(linear, left top, left bottom, from(#333333), to(#222222));
+    background-image: -moz-linear-gradient(top, #333333, #222222);
+    background-image: -ms-linear-gradient(top, #333333, #222222);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #333333), color-stop(100%, #222222));
+    background-image: -webkit-linear-gradient(top, #333333, #222222);
+    background-image: -o-linear-gradient(top, #333333, #222222);
+    background-image: linear-gradient(top, #333333, #222222);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#222222', GradientType=0);
+    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    opacity: 0.8;
+}
+
+.navbar-form input[type=text], input[type=password]{
+    height: 27px;
+    width: 110px;
+    margin-right: 5px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid #111111;
+    border-radius: 4px 4px 4px 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.25);
+    color:  rgba(255, 255, 255, 0.75);
+}
+
+.navbar-form input[type="text"]:hover, input[type="password"]:hover{
+    background-color: rgba(255, 255, 255, 0.5);
+    color: #ffffff;
+}
+
+.navbar-form input[type=text]:focus, input[type=password]:focus{
+    border: none;
+    box-shadow: none;
+    color:#404040;
+    background-color: #ffffff
+}
+
 .container > footer p {
     text-align: center; /* center align it with the container */
 }
-.container {
+
+.container, .navbar-static-top .container, .navbar-fixed-top .container, .navbar-fixed-bottom .container {
     width: 820px; /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
 }
 
@@ -34,13 +108,68 @@ body {
     margin: -20px -20px 0px;
 }
 
+.page-header input[type="checkbox"]{
+    vertical-align: top;
+}
+
+.profile-page-header{
+    background-color: #ffffff;
+    padding: 20px 20px 5px;
+    margin: -3px -0px 0px;
+    border-radius:6px;
+    -moz-border-radius: 6px;
+    -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
+    border:#ccc solid 1px;
+    height:120px;
+}
+
+.profile-content{
+    height: auto;
+    padding-top:10px;
+}
+
+.profile-master-view{
+    float:left;
+    height:250px;
+    width:250px;
+    border-radius:6px;
+    -moz-border-radius: 6px;
+    -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
+    border:#ccc solid 1px;
+}
+
+.profile-detail-view{
+    height:auto;
+    width: auto;
+    margin-left: 270px;
+    border-radius:6px;
+    -moz-border-radius: 6px;
+    -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
+    border:#ccc solid 1px;
+}
+
 .white {
     color: #FFFFFF;
     font-size: 15px;
 }
 
+.row > [class*="span"] {
+    display: inline;
+    float: left;
+    margin-left: 20px;
+}
+
 .span1V2 {
     width: 90px;
+}
+
+.content .span12{
+    margin-left:0px;
+}
+
+.content .span3{
+    width:160px;
+    margin-left: 0px;
 }
 
 /* Give a quick and non-cross-browser friendly divider */
@@ -50,27 +179,16 @@ body {
     border-left: 1px solid #eee;
 }
 
-.topbar .btn {
-    border: 0;
-}
-
 .pull-center {
     text-align: center;
 }
 
-
 .loginPanel {
-    margin: 5px 0 0 0;
+    /*    margin: 5px 0 0 0;  wegen bootstrap 2.1 umstellung*/
     position: relative;
     -khtml-opacity: 1;
     opacity: 1;
     display: block;
-}
-
-.input-small {
-    margin-right: 5px;
-    height: 27px;
-    width: 110px;
 }
 
 .user-data {
@@ -78,8 +196,10 @@ body {
     height: 27px;
     width: 220px;
     margin-right: 10px;
+    margin-top: 6px;
     color: #FFFFFF;
     font-size: 15px;
+    vertical-align: middle;
 }
 
 .dateBoxPopup {
@@ -90,10 +210,6 @@ body {
     color: #404040;
 }
 
-.topbar {
-    text-align: center;
-    opacity:0.8;
-}
 .LabelLink {
     display: inline;
     width: 80px;
@@ -142,14 +258,14 @@ body {
 .recent-tasks {
     margin-top: 75px !important;
     margin-right: 10px !important;
-    margin-left: -260px !important;
+    margin-left: -265px !important;
     overflow-y: hidden;
 }
 
 .my-recent-tasks {
     margin-top: 75px !important;
     margin-right: 10px !important;
-    margin-left: -140px !important;
+    margin-left: -145px !important;
     overflow-y: hidden;
 }
 
@@ -160,18 +276,17 @@ body {
     overflow-y: hidden;
 }
 
-
 .fav-tasks {
     margin-top: 75px !important;
     margin-left: 10px !important;
-    margin-right: -140px !important;
+    margin-right: -145px !important;
     margin-bottom: 30px;
 }
 
 .accountBalance{
     margin-top: 18px !important;
     margin-left: 10px !important;
-    margin-right: -147px !important;
+    margin-right: -140px !important;
     margin-bottom: 30px;
 }
 
@@ -181,7 +296,6 @@ body {
 
 .controlPanel {
     text-align: right; 
-
     border-right-style: solid;
     border-left-style: solid;
     border-bottom-style: solid;
@@ -214,12 +328,16 @@ body {
     cursor: pointer;
 }
 
-.topbar {
-    background-color: #2e2e2e;    
-}
-
 .innertopbar {
     background-color: #2e2e2e;
+}
+
+.row  {
+    margin-left: 0px;
+}
+
+.no-margin{
+    margin-left:0px;
 }
 
 .TimeHeader {
@@ -233,6 +351,11 @@ body {
 .timebox {
     padding: 3px !important;
     margin-bottom: 5px;
+    background-color: #DDF4FB;
+}
+
+.time-notice{
+    border-color: #C6EDF9;
 }
 .lockBoxPadding{
     padding-left:35px;
@@ -242,6 +365,15 @@ body {
     font-size: 11px;
     width: 36px;
     padding: 0px;
+}
+
+.time-notice input[type="text"]{
+    margin-bottom:0px;
+    font-size: 11px;
+    padding: 0px;
+    height:18px;
+    color:#808080;
+    line-height: 11px;
 }
 
 .rowheader::after {
@@ -311,8 +443,37 @@ body {
     line-height: 10px;
 }
 
+.alert{
+    color: #404040;
+    border-radius: 4px 4px 4px 4px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.alert div{
+    margin-bottom: 2px;
+    margin-top:5px;
+}
+
+.alert .close{
+    right:0px;
+    top:0px;
+}
+
 .gravatar-image {
-    margin-right: 20px;    
+    margin-right: 20px; 
+    margin-top: 6px;
+}
+
+.profile-gravatar-image{
+    height: 110px;
+    width:110px;
+}
+
+.profile-name-label{
+    font-size: 20px;
+    font-weight: 200;
+    width-left:5px;
 }
 
 
@@ -355,19 +516,58 @@ body {
 
 .fillPreviewHorizontalPanel {
     margin-bottom: 5px;
+    width: 100%;
 }
 
+.modal-header{
+    padding: 5px 15px;
 
+}
 
-/*!
- * Datepicker for Bootstrap
- *
- * Copyright 2012 Stefan Petre
- * Improvements by Andrew Rowls
- * Licensed under the Apache License v2.0
- * http://www.apache.org/licenses/LICENSE-2.0
- *
-*/
+.modal-header h3{
+    line-height: 36px;
+    font-size: 18px;
+}
+
+.modal-body{
+    max-height: 350px;
+}
+
+.modal-body table th, table td {
+    line-height: 18px;
+    text-align: left;
+}
+
+.modal-body h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, cite, code, del, dfn, em, img, q, s, 
+samp, small, strike, strong, sub, sup, tt, var, dd, dl, dt, li, ol, ul, fieldset, form, label, legend, 
+button, table, caption, tbody, tfoot, thead, tr, th, td {
+    font-family: inherit;
+    font-size: 100%;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+}
+
+.modal-body select, input[type="file"]{
+    height:27px;
+    line-height: 27px;
+    margin-bottom: 0px;
+}
+
+.modal-body input[type="text"]{
+    font-size: 13px;
+    height: 22px;
+    line-height: 22px;
+    padding-bottom: 1px;
+    padding-top: 1px;
+    margin-bottom: 0px;
+}
+
+.modal-footer .btn{
+    font-size: 13px;
+}
+
+/*Datepicker */
 
 .dropdown-menu {
     position: absolute;
@@ -396,45 +596,6 @@ body {
     background-clip: padding-box;
 }
 
-.table-condensed th,
-.table-condensed td {
-    padding: 4px 5px;
-}
-
-[class^="icon-"],
-[class*=" icon-"] {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    *margin-right: .3em;
-    line-height: 14px;
-    vertical-align: text-top;
-    background-image: url("/ProjectTracker/ProjectTracker/images/glyphicons-halflings.png");
-    background-position: 14px 14px;
-    background-repeat: no-repeat;
-}
-
-[class^="icon-"]:last-child,
-[class*=" icon-"]:last-child {
-    *margin-left: 0;
-}
-
-.icon-arrow-left {
-    background-position: -240px -96px;
-}
-
-.icon-arrow-right {
-    background-position: -264px -96px;
-}
-
-.icon-th {
-    background-position: -240px 0;
-}
-
-.icon-calendar {
-    background-position: -192px -120px;
-}
-
 .datepickerTextBox{
     width: 73px;
     /*    margin-right: 5px;*/
@@ -447,6 +608,19 @@ body {
     -webkit-box-shadow: none;
     -webkit-transition: none;
     cursor:text !important;
+}
+
+.page-header input[type="text"]{
+    background-color: #f5f5f5;
+    border: medium none;
+    box-shadow: none;
+    color: #404040;
+    height: 27px;
+    font-size: inherit;
+    margin-bottom: 0px;
+    padding-left: 0px;
+    padding-bottom: 7px;
+    color:#404040;
 }
 
 .datepickerbox input[disabled]{
@@ -462,6 +636,19 @@ body {
     -webkit-transition: none;
 }
 
+.datepicker table th{
+    font-weight: bold;
+    vertical-align: middle;
+}
+/*!
+ * Datepicker for Bootstrap
+ *
+ * Copyright 2012 Stefan Petre
+ * Improvements by Andrew Rowls
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+*/
 .datepicker {
     top: 0;
     left: 0;
@@ -511,7 +698,7 @@ body {
     display: block;
 }
 .datepicker table {
-    width: 100%;
+/*    width: 100%;*/
     margin: 0;
 }
 .datepicker td,

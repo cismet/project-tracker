@@ -26,8 +26,8 @@
                             <div>There is no Begin of Work Activity for today. Would you like to create one?</div>
 			</div>
 			<div class="modal-footer">
-				<g:Button styleName="btn primary" text="OK" ui:field="okButton" />
-				<g:Button styleName="btn primary" text="Cancel" ui:field="closeButton" />
+				<g:Button styleName="btn btn-primary" text="OK" ui:field="okButton" />
+				<g:Button styleName="btn btn-primary" text="Cancel" ui:field="closeButton" />
 			</div>
 		</div>
 	</g:HTMLPanel>

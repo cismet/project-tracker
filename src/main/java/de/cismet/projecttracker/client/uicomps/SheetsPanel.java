@@ -96,7 +96,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         Label yearLab = new Label("Year:");
         Label weekLab = new Label("Week:");
         pageHeaderPanel.setStyleName("page-header");
-        contentNodeParentPanel.setStyleName("span16");
+        contentNodeParentPanel.setStyleName("span12");
         recent.setStyleName("my-recent-tasks pull-left pre prettyprint noxoverflow");
         allRecent.setStyleName("recent-tasks pull-left pre prettyprint noxoverflow");
         favs.setStyleName("fav-tasks pull-right pre prettyprint noxoverflow");
@@ -120,11 +120,12 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         weekHoursLab.setStyleName("formLabel totalLab");
         weekBalanceLab.setStyleName("formLabel accountBalanceLab");
         weekLockLab.setStyleName("formlabel");
-        prevWeek.addStyleName("btn primary pull-left span3");
-        nextWeek.addStyleName("btn info pull-right span3");
+        prevWeek.addStyleName("btn btn-primary pull-left span3");
+        nextWeek.addStyleName("btn btn-info pull-right span3");
         FlowPanel upperCtrlPanel = new FlowPanel();
         //Inject the styles and js for datepicker component
         ResourceInjector.configure();
+//        ResourceInjector.configureWithCssFile();
         DatepickerResourceInjector.configure();
         DatepickerResourceInjector.configureWithCssFile();
         datePicker = new WeekDatePicker();

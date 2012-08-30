@@ -13,7 +13,7 @@ public class FlowPanelWithSpacer extends FlowPanel implements HasDoubleClickHand
 
     public FlowPanelWithSpacer() {
         HTML spacerLabel = new HTML("<hr />");
-        spacerLabel.setStyleName("span1V2");
+        spacerLabel.setStyleName("span1V2 no-margin");
         spacerLabel.setHeight("50px");
 //        spacerLabel.setWidth("90px");
         super.add(spacerLabel);

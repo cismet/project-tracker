@@ -10,9 +10,9 @@ import com.google.gwt.user.client.ui.*;
 import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.MessageConstants;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.common.ui.LoginPanel;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
 import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
-import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @author therter
  */
-public class TopPanel extends Composite implements ClickHandler, KeyUpHandler, ChangeHandler {
+public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
     public final static int SHEETS = 1;
     public final static int REPORTS = 1;
     public final static int PROFILE = 1;
@@ -33,21 +33,15 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler, C
     private FlowPanel topPanel = new FlowPanel();
 //    private FlowPanel fillPanel = new FlowPanel();
     private FlowPanel containerPanel = new FlowPanel();
-    private FlowPanel loginPanel = new FlowPanel();
+    private LoginPanel loginPanel = new LoginPanel();
     private FlowPanel userPanel = new FlowPanel();
     private Label sheetsLab = new Label("Sheets");
     private Label reportsLab = new Label("Reports");
     private Label profileLab = new Label("Profile");
-    private Label userDataLab = new Label("");
     private Label logoLab = new Label("cismet Tracker");
     private Label activeLab = sheetsLab;
     private ListBox user = new ListBox();
     private List<MenuListener> listener = new ArrayList<MenuListener>();
-    private TextBox username = new TextBox();
-    private PasswordTextBox password = new PasswordTextBox();
-    private Button login = new Button("Sign in");
-    private Button logout = new Button("Sign out");
-    private Image gravatar = new Image();
     private List<StaffDTO> userList = new ArrayList<StaffDTO>();
 
 
@@ -64,9 +58,9 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler, C
 
     private void init() {
         user.setWidth("150px");
-        loginPanel.add(username);
-        loginPanel.add(password);
-        loginPanel.add(login);
+//        loginPanel.add(username);
+//        loginPanel.add(password);
+//        loginPanel.add(login);
         containerPanel.add(logo);
         containerPanel.add(logoLab);
         containerPanel.add(sheetsLab);
@@ -86,28 +80,21 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler, C
         
         logo.setStyleName("cismet-logo");
         logoLab.setStyleName("brand");
-        userDataLab.setStyleName("user-data");
-        username.setStyleName("input-small white");
-        password.setStyleName("input-small");
+//        username.setStyleName("input-small white");
         loginPanel.setStyleName("pull-right loginPanel");
         userPanel.setStyleName("pull-left userList");
-        gravatar.setStyleName("pull-left gravatar-image");
-        login.setStyleName("btn");
-        logout.setStyleName("btn");
 //        fillPanel.setStyleName("fill");
         containerPanel.setStyleName("container");
         sheetsLab.setStyleName("LabelLink");
         reportsLab.setStyleName("LabelLink");
         profileLab.setStyleName("LabelLink");
-        topPanel.setStyleName("fill");
+//        topPanel.setStyleName("fill");
+        topPanel.setStyleName("navbar-inner");
 //        topPanel.setStyleName("topbar");
         
         sheetsLab.addClickHandler(this);
         profileLab.addClickHandler(this);
         reportsLab.addClickHandler(this);
-        login.addClickHandler(this);
-        logout.addClickHandler(this);
-        password.addKeyUpHandler(this);
     }
 
     
@@ -155,13 +142,6 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler, C
 
     @Override
     public void onClick(ClickEvent event) {
-        if (event.getSource() == login) {
-            login();
-        } else if (event.getSource() == logout) {
-            BasicAsyncCallback<Void> callback = new BasicAsyncCallback<Void>();
-            ProjectTrackerEntryPoint.getProjectService(true).logout(callback);
-            ProjectTrackerEntryPoint.getInstance().logout();
-        } else {
             activeLab = (Label)event.getSource();
             setActiveLab();
             MenuEvent newEvent = new MenuEvent();
@@ -172,11 +152,12 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler, C
             } else if (activeLab == reportsLab) {
                 newEvent.setNumber(REPORTS);
             } else if (activeLab == profileLab) {
+                RootPanel.get("contentId").clear();
+                RootPanel.get("contentId").add(new ProfilePanel());
                 newEvent.setNumber(PROFILE);
             }
 
             fireMenuChangeEvent(newEvent);
-        }
     }
     
     public void addMenuListener(MenuListener l) {
@@ -194,46 +175,11 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler, C
     }
     
     public void setLoggedIn(boolean loggedIn, String user) {
-        if (loggedIn) {
-            userDataLab.setText(user);
-            loginPanel.clear();
-            loginPanel.add(gravatar);
-            loginPanel.add(userDataLab);
-            loginPanel.add(logout);
-        } else {
-            loginPanel.clear();
-            loginPanel.add(username);
-            loginPanel.add(password);
-            loginPanel.add(login);
-        }
-    }
-    
-    /**
-     * executes a login
-     */
-    private void login() {
-        BasicAsyncCallback<StaffDTO> callback = new BasicAsyncCallback<StaffDTO>() {
-            @Override
-            protected void afterExecution(StaffDTO result, boolean operationFailed) {
-                if (!operationFailed) {
-                    ProjectTrackerEntryPoint.getInstance().login(result, (result.getPermissions() & 0x1) == 0x1 );
-                    username.setText("");
-                    password.setText("");                    
-                }
-            }
-        };
-        ProjectTrackerEntryPoint.getProjectService(true).login(username.getText(), password.getText(), callback);
-    }
-
-    @Override
-    public void onKeyUp(KeyUpEvent event) {
-        if (event.getNativeKeyCode() == 13) {
-            login();
-        }
+        loginPanel.setLoggedIn(loggedIn, user);
     }
 
     public void setGravatar(String url) {
-        gravatar.setUrl(url);
+        loginPanel.setGravatar(url);
     }
 
     @Override

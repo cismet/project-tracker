@@ -12,10 +12,10 @@
 		<g:AbsolutePanel ui:field="boundaryPanel">
 			<g:HTMLPanel>
                           <div class="rowheader">
-                              <div class="span1V2 columns" style="text-align: center; margin-bottom: 10px; pointer: text;"><g:Label ui:field="recentLab" /></div>
+                              <div class="span1V2 columns no-margin" style="text-align: center; margin-bottom: 10px; pointer: text;"><g:Label ui:field="recentLab" /></div>
                           </div>
 			  <div class="timerow">
-					<div class="span1V2 columns">
+					<div class="span1V2 columns no-margin">
 						<t:FlowPanelWithSpacer ui:field="recentTasks" styleName="{style.taskboard}" />
 					</div>
 				</div>

@@ -7,30 +7,32 @@
 <!-- but may lead to some differences in layout.   -->
 
 <html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <link rel="shortcut icon" href="/ProjectTracker/ProjectTracker/images/favicon.ico" type="image/x-icon" >
-    <link rel="icon" type="image/x-icon" href="/ProjectTracker/ProjectTracker/images/favicon.ico">
-    <!--                                           -->
-    <!-- Any title is fine                         -->
-    <!--                                           -->
-    <title>ProjectTracker</title>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <link rel="shortcut icon" href="/ProjectTracker/ProjectTracker/images/favicon.ico" type="image/x-icon" >
+        <link rel="icon" type="image/x-icon" href="/ProjectTracker/ProjectTracker/images/favicon.ico">
+        <!--                                           -->
+        <!-- Any title is fine                         -->
+        <!--                                           -->
+        <title>ProjectTracker</title>
+
+        <!--                                           -->
+        <!-- This script loads your compiled module.   -->
+        <!-- If you add any GWT meta tags, they must   -->
+        <!-- be added before this line.                -->
+        <!--                                           -->
+        <script type="text/javascript" language="javascript" src="ProjectTracker.nocache.js"></script>
+    </head>
 
     <!--                                           -->
-    <!-- This script loads your compiled module.   -->
-    <!-- If you add any GWT meta tags, they must   -->
-    <!-- be added before this line.                -->
+    <!-- The body can have arbitrary html, or      -->
+    <!-- you can leave the body empty if you want  -->
+    <!-- to create a completely dynamic UI.        -->
     <!--                                           -->
-    <script type="text/javascript" language="javascript" src="ProjectTracker.nocache.js"></script>
-  </head>
+    <!--correct the display for the body since it is also from class .dragdrop-droptarget */-->
 
-  <!--                                           -->
-  <!-- The body can have arbitrary html, or      -->
-  <!-- you can leave the body empty if you want  -->
-  <!-- to create a completely dynamic UI.        -->
-  <!--                                           -->
-  <body style="min-width: 1450px;">
-    <script type="text/javascript" language="javascript" src="MD5.js"></script>
+    <body style="min-width: 1450px;  display:block;">
+        <script type="text/javascript" language="javascript" src="MD5.js"></script>
         <script>
             function output(msg) {
                 alert(msg);
@@ -45,38 +47,38 @@
                 }
             }
         </script>
-    <!-- OPTIONAL: include this if you want history support -->
-    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+        <!-- OPTIONAL: include this if you want history support -->
+        <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
 
-    <div class="topbar" style="opacity:0.8;" id="topbarId">
-    </div>
-    <!--div class="topbar" style="opacity:0.8;">
-        <div class="fill">
-            <div class="container">
-                <a class="brand" href="#">cismet Tracker</a>
-                <ul class="nav">
-                    <li class="active" id ="SheetsId"><a href="#Sheets">Sheets</a></li>
-                    <li class="inactive" id ="ReportsId"><a href="#Reports">Reports</a></li>
-                    <li class="inactive" id ="ProfileId"><a href="#Profile">Profile</a></li>
-                </ul>
-                <form action="LoginServlet" method="post" class="pull-right">
-                    <input class="input-small" placeholder="Username" type="text">
-                    <input class="input-small" placeholder="Password" type="password">
-                    <button class="btn" type="submit">Sign in</button>
-                </form>
-            </div>
-
+        <div id="topbarId" class="navbar navbar-inverse navbar-fixed-top" ><!--style="opacity:0.8;" >-->
         </div>
-    </div-->
-
-    <div class="container" id="containerId">
-
-        <div class="content" id="contentId">
-        </div>
-        <footer id="footer" style="margin-top:0px; border-width:0px;">
-            <p>© cismet GmbH 2012</p>
-        </footer>
-    </div> <!-- /container -->
+        <!--div class="topbar" style="opacity:0.8;">
+            <div class="fill">
+                <div class="container">
+                    <a class="brand" href="#">cismet Tracker</a>
+                    <ul class="nav">
+                        <li class="active" id ="SheetsId"><a href="#Sheets">Sheets</a></li>
+                        <li class="inactive" id ="ReportsId"><a href="#Reports">Reports</a></li>
+                        <li class="inactive" id ="ProfileId"><a href="#Profile">Profile</a></li>
+                    </ul>
+                    <form action="LoginServlet" method="post" class="pull-right">
+                        <input class="input-small" placeholder="Username" type="text">
+                        <input class="input-small" placOeholder="Password" type="password">
+                        <button class="btn" type="submit">Sign in</button>
+                    </form>
+                </div>
     
-  </body>
+            </div>
+        </div-->
+
+        <div class="container content-container" id="containerId">
+
+            <div class="content" id="contentId">
+            </div>
+            <footer id="footer" style="margin-top:0px; border-width:0px;">
+                <p>© cismet GmbH 2012</p>
+            </footer>
+        </div> <!-- /container -->
+
+    </body>
 </html>
