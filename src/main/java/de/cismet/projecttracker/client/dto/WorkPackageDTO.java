@@ -14,6 +14,7 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     private StaffDTO responsiblestaff;
     private String name;
     private String description;
+    private String expirationDescription;
     private double warnlevel;
     private double criticallevel;
     private double fullstoplevel;
@@ -30,7 +31,7 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     }
      
 
-    public WorkPackageDTO(long id, StaffDTO responsiblestaff, WorkPackageDTO workPackage, ProjectDTO project, CostCategoryDTO costCategory, String name, String description, double warnlevel, double criticallevel, double fullstoplevel, ArrayList<WorkPackageDTO> workPackages, ArrayList<WorkPackagePeriodDTO> workPackagePeriods, ArrayList<ProjectComponentTagDTO> projectComponentTags, ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts, ArrayList<WorkPackageProgressDTO> workPackageProgresses, String abbreviation, boolean issubversion) {
+    public WorkPackageDTO(long id, StaffDTO responsiblestaff, WorkPackageDTO workPackage, ProjectDTO project, CostCategoryDTO costCategory, String name, String description, double warnlevel, double criticallevel, double fullstoplevel, ArrayList<WorkPackageDTO> workPackages, ArrayList<WorkPackagePeriodDTO> workPackagePeriods, ArrayList<ProjectComponentTagDTO> projectComponentTags, ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts, ArrayList<WorkPackageProgressDTO> workPackageProgresses, String abbreviation, boolean issubversion, String expirationDescription) {
         this.id = id;
         this.responsiblestaff = responsiblestaff;
         this.workPackage = workPackage;
@@ -38,6 +39,7 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
         this.costCategory = costCategory;
         this.name = name;
         this.description = description;
+        this.expirationDescription = expirationDescription;
         this.workPackages = workPackages;
         this.workPackagePeriods = workPackagePeriods;
 //        this.activityWorkPackages = activityWorkPackages;
@@ -120,6 +122,14 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
      */
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getExpirationDescription() {
+        return expirationDescription;
+    }
+
+    public void setExpirationDescription(String expirationDescription) {
+        this.expirationDescription = expirationDescription;
     }
 
     /**
@@ -293,7 +303,7 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     
     @Override
     public WorkPackageDTO createCopy() {
-        return new WorkPackageDTO(id, getResponsiblestaff(), workPackage, project, costCategory, name, description, warnlevel, criticallevel, fullstoplevel, workPackages, workPackagePeriods, projectComponentTags, estimatedWorkPackageCosts, workPackageProgresses, abbreviation, issubversion);
+        return new WorkPackageDTO(id, getResponsiblestaff(), workPackage, project, costCategory, name, description, warnlevel, criticallevel, fullstoplevel, workPackages, workPackagePeriods, projectComponentTags, estimatedWorkPackageCosts, workPackageProgresses, abbreviation, issubversion, expirationDescription);
     }
 
     
@@ -305,6 +315,7 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
         this.project = obj.project;
         this.costCategory = obj.costCategory;
         this.name = obj.name;
+        this.description = obj.description;
         this.description = obj.description;
         this.warnlevel = obj.warnlevel;
         this.criticallevel = obj.criticallevel;

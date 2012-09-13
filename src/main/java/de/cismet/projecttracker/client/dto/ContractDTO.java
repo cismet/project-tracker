@@ -18,19 +18,21 @@ public class ContractDTO extends BasicDTO<ContractDTO> {
      private Date fromdate;
      private Date todate;
      private double whow;
+     private int vacation;
      private ArrayList<ContractDocumentDTO> contractDocuments = new ArrayList<ContractDocumentDTO>(0);
 
     public ContractDTO() {
     }
 
      
-    public ContractDTO(long id, StaffDTO staff, CompanyDTO company, Date fromdate, Date todate, double whow, ArrayList<ContractDocumentDTO> contractDocuments) {
+    public ContractDTO(long id, StaffDTO staff, CompanyDTO company, Date fromdate, Date todate, double whow, ArrayList<ContractDocumentDTO> contractDocuments,int vacation) {
         this.id = id;
         this.staff = staff;
         this.company = company;
         this.fromdate = fromdate;
         this.todate = todate;
         this.whow = whow;
+        this.vacation = vacation;
         this.contractDocuments = contractDocuments;
     }
 
@@ -104,6 +106,14 @@ public class ContractDTO extends BasicDTO<ContractDTO> {
         this.whow = whow;
     }
 
+    public int getVacation() {
+        return vacation;
+    }
+
+    public void setVacation(int vacation) {
+        this.vacation = vacation;
+    }
+    
     /**
      * @return the contractDocuments
      */
@@ -121,7 +131,7 @@ public class ContractDTO extends BasicDTO<ContractDTO> {
     
     @Override
     public ContractDTO createCopy() {
-        return new ContractDTO(id, staff, company, fromdate, todate, whow, contractDocuments);
+        return new ContractDTO(id, staff, company, fromdate, todate, whow, contractDocuments,vacation);
     }
 
 
@@ -134,6 +144,7 @@ public class ContractDTO extends BasicDTO<ContractDTO> {
         this.fromdate = obj.fromdate;
         this.todate = obj.todate;
         this.whow = obj.whow;
+        this.vacation = obj.vacation;
         this.contractDocuments = obj.contractDocuments;
     }
 
