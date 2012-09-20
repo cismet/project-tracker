@@ -16,6 +16,7 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskDeleteListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskNoticeListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
@@ -263,9 +264,9 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
             addTask(new ActivityDTO(0, null, null, null, tmp.getHours(), tmp.getName(), tmp.getDate(), true, type));
         }
     }
-    
-    public void setLockPanel(LockPanel p){
-        this.lockPanel=p;
+
+    public void setLockPanel(LockPanel p) {
+        this.lockPanel = p;
     }
 
     private void removeAllTasks() {
@@ -326,35 +327,39 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     }
 
     public void addPause(Date day) {
-        int wd = day.getDay();
+        ProfileDTO profile = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getProfile();
+        if (profile == null || profile.getAutoPauseEnabled()) {
 
-        if (wd == 0 || wd == 6) {
-            //no auto pause on saturdays and sundays
-            return;
-        }
+            int wd = day.getDay();
 
-        WorkPackageDTO wp = getPauseWP();
+            if (wd == 0 || wd == 6) {
+                //no auto pause on saturdays and sundays
+                return;
+            }
 
-        if (wp != null) {
-            final ActivityDTO activity = new ActivityDTO();
-            activity.setDay(day);
-            activity.setKindofactivity(ActivityDTO.ACTIVITY);
-            activity.setWorkPackage(wp);
-            activity.setWorkinghours(1.5);
-            activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
+            WorkPackageDTO wp = getPauseWP();
 
-            BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+            if (wp != null) {
+                final ActivityDTO activity = new ActivityDTO();
+                activity.setDay(day);
+                activity.setKindofactivity(ActivityDTO.ACTIVITY);
+                activity.setWorkPackage(wp);
+                activity.setWorkinghours(1.5);
+                activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
-                @Override
-                protected void afterExecution(Long result, boolean operationFailed) {
-                    if (!operationFailed) {
-                        activity.setId(result);
-                        addTask(activity);
+                BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+
+                    @Override
+                    protected void afterExecution(Long result, boolean operationFailed) {
+                        if (!operationFailed) {
+                            activity.setId(result);
+                            addTask(activity);
+                        }
                     }
-                }
-            };
+                };
 
-            ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
+                ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
+            }
         }
     }
 

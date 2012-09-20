@@ -168,6 +168,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         };
 
         ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
+        sheets.setLockComponents();
         sheets.refresh();
         topPanel.addMenuListener(sheets);
         if (staff.getEmail() != null) {
@@ -427,7 +428,8 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 
     public void logout() {
         topPanel.setLoggedIn(false, "");
-        RootPanel.get("contentId").remove(sheets);
+//        RootPanel.get("contentId").remove(sheets);
+        RootPanel.get("contentId").clear();
         topPanel.removeMenuListener(sheets);
         topPanel.removeUserList();
         windowResize.removeHandler();

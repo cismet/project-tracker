@@ -24,10 +24,11 @@ import java.util.List;
  * @author therter
  */
 public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
+
     public final static int SHEETS = 1;
-    public final static int REPORTS = 1;
-    public final static int PROFILE = 1;
-    private final static MessageConstants MESSAGES = (MessageConstants)GWT.create(MessageConstants.class);
+    public final static int REPORTS = 2;
+    public final static int PROFILE = 3;
+    private final static MessageConstants MESSAGES = (MessageConstants) GWT.create(MessageConstants.class);
     private Image logo = new Image(ImageConstants.INSTANCE.cLogo());
 //    private HorizontalPanel topPanel = new HorizontalPanel();
     private FlowPanel topPanel = new FlowPanel();
@@ -43,24 +44,19 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
     private ListBox user = new ListBox();
     private List<MenuListener> listener = new ArrayList<MenuListener>();
     private List<StaffDTO> userList = new ArrayList<StaffDTO>();
-
+    private ProfilePanel profilePanel =null;
+    private boolean loggedIn = false;
 
     public TopPanel() {
         init();
-//        topPanel.add(logo);
-//        topPanel.setCellHorizontalAlignment(logo, HorizontalPanel.ALIGN_LEFT);
         topPanel.setWidth("100%");
         setActiveLab();
         initWidget(topPanel);
         user.addChangeHandler(this);
     }
 
-
     private void init() {
         user.setWidth("150px");
-//        loginPanel.add(username);
-//        loginPanel.add(password);
-//        loginPanel.add(login);
         containerPanel.add(logo);
         containerPanel.add(logoLab);
         containerPanel.add(sheetsLab);
@@ -69,35 +65,22 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         containerPanel.add(userPanel);
         containerPanel.add(loginPanel);
         topPanel.add(containerPanel);
-//        topPanel.add(fillPanel);
-//        fillPanel.add(containerPanel);
-        
-//        topPanel.setStyleName("innerTopPanel");
-        
-//        topPanel.setCellWidth(homeLab, "100px");
-//        topPanel.setCellWidth(basicLab, "100px");
-//        topPanel.setCellWidth(reportLab, "100px");
-        
+
         logo.setStyleName("cismet-logo");
         logoLab.setStyleName("brand");
-//        username.setStyleName("input-small white");
         loginPanel.setStyleName("pull-right loginPanel");
         userPanel.setStyleName("pull-left userList");
-//        fillPanel.setStyleName("fill");
         containerPanel.setStyleName("container");
         sheetsLab.setStyleName("LabelLink");
         reportsLab.setStyleName("LabelLink");
         profileLab.setStyleName("LabelLink");
-//        topPanel.setStyleName("fill");
         topPanel.setStyleName("navbar-inner");
-//        topPanel.setStyleName("topbar");
-        
+
         sheetsLab.addClickHandler(this);
         profileLab.addClickHandler(this);
         reportsLab.addClickHandler(this);
     }
 
-    
     public void fillUser() {
         user.clear();
         if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
@@ -105,6 +88,7 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         }
 
         BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
+
             @Override
             protected void afterExecution(ArrayList<StaffDTO> result, boolean operationFailed) {
                 int i = 0;
@@ -126,15 +110,14 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         ProjectTrackerEntryPoint.getProjectService(true).getCurrentEmployees(callback);
         userPanel.add(user);
     }
-    
+
     private void setActiveLab() {
         sheetsLab.removeStyleDependentName("active");
         reportsLab.removeStyleDependentName("active");
         profileLab.removeStyleDependentName("active");
-        
+
         activeLab.addStyleDependentName("active");
     }
-
 
     public void addSignOutListener(ClickHandler handler) {
 //        signOut.addClickHandler(handler);
@@ -142,7 +125,8 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
 
     @Override
     public void onClick(ClickEvent event) {
-            activeLab = (Label)event.getSource();
+        if (loggedIn) {
+            activeLab = (Label) event.getSource();
             setActiveLab();
             MenuEvent newEvent = new MenuEvent();
             newEvent.setSource(this);
@@ -152,14 +136,21 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
             } else if (activeLab == reportsLab) {
                 newEvent.setNumber(REPORTS);
             } else if (activeLab == profileLab) {
-                RootPanel.get("contentId").clear();
-                RootPanel.get("contentId").add(new ProfilePanel());
+                if(profilePanel == null){
+                    profilePanel = new ProfilePanel();
+                    this.addMenuListener(profilePanel);
+                }
+//                RootPanel.get("contentId").clear();
+//                RootPanel.get("contentId").add(new ProfilePanel());
                 newEvent.setNumber(PROFILE);
             }
 
             fireMenuChangeEvent(newEvent);
+        }else{
+            ProjectTrackerEntryPoint.outputBox("Please first log in!");
+        }
     }
-    
+
     public void addMenuListener(MenuListener l) {
         listener.add(l);
     }
@@ -167,15 +158,16 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
     public void removeMenuListener(MenuListener l) {
         listener.remove(l);
     }
-    
+
     public void fireMenuChangeEvent(MenuEvent e) {
         for (MenuListener l : listener) {
             l.menuChangeEvent(e);
         }
     }
-    
+
     public void setLoggedIn(boolean loggedIn, String user) {
         loginPanel.setLoggedIn(loggedIn, user);
+        this.loggedIn = true;
     }
 
     public void setGravatar(String url) {
@@ -189,10 +181,10 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         e.setSource(this);
         fireMenuChangeEvent(e);
     }
-    
+
     private StaffDTO getSelectedStaff() {
         try {
-            long value = Long.parseLong( user.getValue( user.getSelectedIndex() ) );
+            long value = Long.parseLong(user.getValue(user.getSelectedIndex()));
             for (StaffDTO staff : userList) {
                 if (staff.getId() == value) {
                     return staff;
@@ -201,12 +193,11 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         } catch (NumberFormatException e) {
             //should not happen
         }
-        
+
         return null;
     }
-    
+
     public void removeUserList() {
         userPanel.remove(user);
     }
 }
-

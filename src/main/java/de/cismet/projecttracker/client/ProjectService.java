@@ -752,7 +752,14 @@ public interface ProjectService extends RemoteService {
      * @throws NoSessionException 
      */
     public List<ReportDTO> getReportsForActivity(ActivityDTO activity) throws InvalidInputValuesException, DataRetrievalException, PersistentLayerException, PermissionDenyException, NoSessionException;
-
+    
+    public Double getVacationCarryOver(Date d, StaffDTO staff);
+    
+    public Double getVacationDaysTaken(Date d, StaffDTO staff);
+    
+    public Double getVacationDaysPlanned(Date d, StaffDTO staff);
+    
+    public List<Date> getUnlockedDays(StaffDTO s);
     /**
      * Deletes the given contract document.
      * @param document the document that should be deleted

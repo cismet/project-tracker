@@ -40,6 +40,10 @@ footer{
     color: #ffffff;
 }
 
+.noDisplay{
+    display:none;
+}
+
 .navbar-inverse .navbar-inner{
     background-color: #222222;
     background-image: -khtml-gradient(linear, left top, left bottom, from(#333333), to(#222222));
@@ -56,7 +60,7 @@ footer{
     opacity: 0.8;
 }
 
-.navbar-form input[type=text], input[type=password]{
+.navbar-form input[type=text],.navbar-form input[type=password]{
     height: 27px;
     width: 110px;
     margin-right: 5px;
@@ -67,12 +71,12 @@ footer{
     color:  rgba(255, 255, 255, 0.75);
 }
 
-.navbar-form input[type="text"]:hover, input[type="password"]:hover{
+.navbar-form input[type="text"]:hover,.navbar-form input[type="password"]:hover{
     background-color: rgba(255, 255, 255, 0.5);
     color: #ffffff;
 }
 
-.navbar-form input[type=text]:focus, input[type=password]:focus{
+.navbar-form input[type=text]:focus, .navbar-form input[type=password]:focus{
     border: none;
     box-shadow: none;
     color:#404040;
@@ -120,7 +124,7 @@ footer{
     -moz-border-radius: 6px;
     -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
     border:#ccc solid 1px;
-    height:120px;
+    height:140px;
 }
 
 .profile-content{
@@ -130,12 +134,12 @@ footer{
 
 .profile-master-view{
     float:left;
-    height:250px;
+    /*    height:250px;*/
     width:250px;
-    border-radius:6px;
-    -moz-border-radius: 6px;
-    -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
-    border:#ccc solid 1px;
+    /*    border-radius:6px;
+        -moz-border-radius: 6px;
+        -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
+        border:#ccc solid 1px;*/
 }
 
 .profile-detail-view{
@@ -146,6 +150,54 @@ footer{
     -moz-border-radius: 6px;
     -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
     border:#ccc solid 1px;
+    padding: 15px;
+}
+
+.profile-detail-view .form-horizontal .control-group:before, .form-horizontal .control-group:after {
+    display: inline-block;
+}
+
+.profile-detail-view input[type=password]{
+    height: 27px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid #CCCCCC;
+    border-radius: 4px 4px 4px 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.25);
+    color: #999999;
+    width:210px;
+}
+
+.profile-detail-view input[type="password"]:hover{
+/*    background-color: rgba(255, 255, 255, 0.5);
+    color: #ffffff;*/
+}
+
+.page-header-holidays{
+    margin-right:20px;
+    width:200px;
+}
+
+.page-header-acc-bal{
+    width: 200px;
+}
+
+.page-header-title{
+    font-weight: bold;
+    margin-bottom: 10px;
+    display:block;
+}
+
+.page-header-spacer hr{
+    margin: 10px 0;
+}
+
+.page-header-row{
+    margin-right:80px;
+    width:100px;
+}
+
+.clear{
+    clear:both;
 }
 
 .white {
@@ -473,7 +525,7 @@ footer{
 .profile-name-label{
     font-size: 20px;
     font-weight: 200;
-    width-left:5px;
+    margin-left: 10px;
 }
 
 
@@ -538,17 +590,20 @@ footer{
     text-align: left;
 }
 
-.modal-body h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, cite, code, del, dfn, em, img, q, s, 
-samp, small, strike, strong, sub, sup, tt, var, dd, dl, dt, li, ol, ul, fieldset, form, label, legend, 
-button, table, caption, tbody, tfoot, thead, tr, th, td {
+.modal-body, .modal-body h1,.modal-body h2,.modal-body h3,.modal-body h4,.modal-body h5,.modal-body h6,.modal-body p,
+.modal-body blockquote,.modal-body pre,.modal-body a,.modal-body abbr,.modal-body acronym,.modal-body address,
+.modal-body cite,.modal-body code,.modal-body del,.modal-body dfn,.modal-body em,.modal-body img,.modal-body q,
+.modal-body s,.modal-body samp,.modal-body small,.modal-body strike,.modal-body strong,.modal-body sub,.modal-body sup,
+.modal-body tt,.modal-body var,.modal-body dd,.modal-body dl.modal-body, dt,.modal-body li,.modal-body ol,.modal-body ul,
+.modal-body fieldset,.modal-body form,.modal-body label,.modal-body legend,.modal-body button,.modal-body table,
+.modal-body caption,.modal-body tbody,.modal-body tfoot,.modal-body thead,.modal-body tr,.modal-body th,.modal-body td{
     font-family: inherit;
-    font-size: 100%;
+    font-size: 13px;
     font-style: normal;
     font-weight: normal;
-    line-height: 1;
 }
 
-.modal-body select, input[type="file"]{
+.modal-body select, .modal-body input[type="file"]{
     height:27px;
     line-height: 27px;
     margin-bottom: 0px;
@@ -640,6 +695,11 @@ button, table, caption, tbody, tfoot, thead, tr, th, td {
     font-weight: bold;
     vertical-align: middle;
 }
+
+.datepicker table td {
+    border-top: 1px solid #DDDDDD;
+    vertical-align: top;
+}
 /*!
  * Datepicker for Bootstrap
  *
@@ -698,7 +758,7 @@ button, table, caption, tbody, tfoot, thead, tr, th, td {
     display: block;
 }
 .datepicker table {
-/*    width: 100%;*/
+    /*    width: 100%;*/
     margin: 0;
 }
 .datepicker td,
@@ -709,7 +769,9 @@ button, table, caption, tbody, tfoot, thead, tr, th, td {
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
+    font-size: 13px;
 }
+
 .datepicker td.day:hover {
     background: #eeeeee;
     cursor: pointer;

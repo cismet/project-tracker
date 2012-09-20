@@ -169,7 +169,11 @@ public class LockPanel extends Composite implements ClickHandler {
 
                 WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
                 if (period != null && !DateHelper.isDayInWorkPackagePeriod(day, period)) {
-                    ProjectTrackerEntryPoint.outputBox("The workpackage \""+tmp.getName()  +"\" for the task: \""+tn.getActivity().getDescription() +"\" is expired. Please contact the administrator for further instructions.");
+                    if (tmp.getExpirationDescription() != null && !tmp.getExpirationDescription().equals("")) {
+                        ProjectTrackerEntryPoint.outputBox("The workpackage \"" + tmp.getName() + "\" for the task: \"" + tn.getActivity().getDescription() + "\" is expired. The administrators adice is: "+tmp.getExpirationDescription());
+                    } else {
+                        ProjectTrackerEntryPoint.outputBox("The workpackage \"" + tmp.getName() + "\" for the task: \"" + tn.getActivity().getDescription() + "\" is expired. Please contact the administrator for further instructions.");
+                    }
                     lockCB.setEnabled(true);
                     lockCB.setValue(false);
                     return;

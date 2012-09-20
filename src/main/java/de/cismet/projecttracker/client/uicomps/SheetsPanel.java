@@ -18,8 +18,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.github.gwtbootstrap.client.ui.resources.ResourceInjector;
 import com.github.gwtbootstrap.datepicker.client.ui.resources.DatepickerResourceInjector;
-import com.github.gwtbootstrap.datepicker.client.ui.DateBox;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.*;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
@@ -30,12 +28,13 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.common.ui.listener.TimeStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
+import de.cismet.projecttracker.client.dto.ProfileDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
-import de.cismet.projecttracker.client.types.HolidayType;
-import java.text.SimpleDateFormat;
+import de.cismet.projecttracker.client.utilities.TimeCalculator;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -151,7 +150,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         weekLockCB.setTitle("Select to lock the entire week");
         lowerCtrlPanel.add(weekLockCB);
         weekLockCB.addClickHandler(this);
-//        lowerCtrlPanel.add(previousWeekLab);
         controlPanel.add(upperCtrlPanel);
         controlPanel.add(lowerCtrlPanel);
         buttonPanel.add(prevWeek);
@@ -267,6 +265,8 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                     refreshWeeklyHoursOfWork();
                     refreshPrevWeekBalance();
                     refreshAccountBalance();
+//                    setLockComponents();
+
                     ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
                 }
             }
@@ -296,50 +296,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         }
     }
 
-    private double getWorkingHoursForActivity(ActivityDTO act) {
-        double hours = 0.0;
-        double dhow = 0.0;
-
-        ContractDTO contract = null;
-        try {
-            contract = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay());
-        } catch (InvalidInputValuesException ex) {
-            Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid Contract for Staff "
-                    + ProjectTrackerEntryPoint.getInstance().getStaff() + " and Date " + act.getDay(), ex);
-        }
-        if (contract != null) {
-            dhow = contract.getWhow() / 5;
-        }
-
-        if (act.getKindofactivity() == ActivityDTO.HOLIDAY || act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
-            hours += act.getWorkinghours();
-        } else {
-            if (act.getWorkPackage() != null && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                if (act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || act.getWorkPackage().getId() == ActivityDTO.LECTURE_ID) {
-                    if (act.getWorkinghours() == 0 && dhow > 0) {
-                        hours += dhow;
-                    } else {
-                        hours += act.getWorkinghours();
-                    }
-                } else if (act.getWorkPackage().getId() == ActivityDTO.ILLNESS_ID) {
-                    if (act.getWorkinghours() == 0 && dhow > 0) {
-                        hours += dhow;
-                    } else {
-                        hours += act.getWorkinghours();
-                    }
-                } 
-//                else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
-//                    hours += act.getWorkinghours();
-//                } 
-                else {
-                    hours += act.getWorkinghours();
-                }
-            }
-        }
-
-        return hours;
-    }
-
     private void refreshWeeklyHoursOfWork() {
         double hours = 0.0;
         double weekDebit = 0.0;
@@ -349,9 +305,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
             for (TaskNotice tmp : taskList) {
                 if (tmp.getActivity().getKindofactivity() == ActivityDTO.ACTIVITY && tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID) {
-                    hours += getWorkingHoursForActivity(tmp.getActivity());
+                    hours += TimeCalculator.getWorkingHoursForActivity(tmp.getActivity());
                 } else if (tmp.getActivity().getKindofactivity() == ActivityDTO.HOLIDAY || tmp.getActivity().getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
-                    hours += getWorkingHoursForActivity(tmp.getActivity());
+                    hours += TimeCalculator.getWorkingHoursForActivity(tmp.getActivity());
                 }
             }
         }
@@ -382,37 +338,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             pweek = getSelectedWeek() - 1;
         }
 
-        BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
-
-            @Override
-            protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
-                double hours = 0.0;
-                if (!operationFailed) {
-                    for (ActivityDTO act : result.getActivities()) {
-                        if (act.getKindofactivity() == ActivityDTO.ACTIVITY
-                                && act.getWorkPackage() != null
-                                && act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID
-                                && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                            hours += SheetsPanel.this.getWorkingHoursForActivity(act);
-                        }
-                    }
-                    for (HolidayType holiday : result.getHolidays()) {
-                        hours += holiday.getHours();
-                    }
-
-                    double weekDebit = 0.0;
-                    try {
-                        weekDebit = hours - ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear()).getWhow();
-                    } catch (InvalidInputValuesException ex) {
-                        Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
-                                + "Contract for Staff " + ProjectTrackerEntryPoint.getInstance().getStaff()
-                                + " and Week/year" + getSelectedWeek() + "/" + getSelectedYear(), ex);
-                    }
-                    previousWeekBalLab.setText(PREVIOUS_WEEK_BALANCE + DateHelper.doubleToHours(weekDebit) + " h");
-                }
-            }
-        };
-        ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), pyear, pweek, callback);
+        TimeCalculator.getWorkingBalanceForWeek(pyear, pweek, ProjectTrackerEntryPoint.getInstance().getStaff(), previousWeekBalLab, PREVIOUS_WEEK_BALANCE);
     }
 
     private void refreshMyRecentTasks(TaskNotice tn) {
@@ -476,7 +402,11 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     @Override
     public void menuChangeEvent(MenuEvent e) {
-        refresh();
+        if (e.getNumber() == TopPanel.SHEETS) {
+            RootPanel.get("contentId").clear();
+            RootPanel.get("contentId").add(this);
+            refresh();
+        }
     }
 
     @Override
@@ -487,5 +417,26 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
         }
         refresh();
+    }
+
+    public void setLockComponents() {
+        final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
+        if (staff != null) {
+            final ProfileDTO profile = staff.getProfile();
+            if (profile != null) {
+                if (profile.getWeekLockMode()) {
+//                    contentNodeParentPanel.remove(lockPanel);
+                    lockPanel.addStyleName("noDisplay");
+                    weekLockCB.removeStyleName("noDisplay");
+                    weekLockLab.removeStyleName("noDisplay");
+                } else {
+//                    lowerCtrlPanel.remove(weekLockCB);
+//                    lowerCtrlPanel.remove(weekLockLab);
+                    lockPanel.removeStyleName("noDisplay");
+                    weekLockCB.addStyleName("noDisplay");
+                    weekLockLab.addStyleName("noDisplay");
+                }
+            }
+        }
     }
 }

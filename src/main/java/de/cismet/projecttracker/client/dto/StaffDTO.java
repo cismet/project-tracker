@@ -20,6 +20,7 @@ public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO>
     private String username;
     private String email;
     private ArrayList<ContractDTO> contracts = new ArrayList<ContractDTO>(0);
+    private ProfileDTO profile;
 
 
      public StaffDTO() {
@@ -27,7 +28,7 @@ public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO>
 
 
 
-    public StaffDTO(long id, String firstname, String name, int permissions, String username, String email, ArrayList<ContractDTO> contracts) {
+    public StaffDTO(long id, String firstname, String name, int permissions, String username, String email, ArrayList<ContractDTO> contracts, ProfileDTO profile) {
         this.id = id;
         this.firstname = firstname;
         this.name = name;
@@ -35,6 +36,7 @@ public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO>
         this.username = username;
         this.email = email;
         this.contracts = contracts;
+        this.profile = profile;
     }
 
 
@@ -122,9 +124,18 @@ public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO>
         this.contracts = contracts;
     }
 
+    public ProfileDTO getProfile() {
+        return profile;
+    }
+
+    public void setProfile(ProfileDTO profile) {
+        this.profile = profile;
+    }
+    
+
     @Override
     public StaffDTO createCopy() {
-        return new StaffDTO(id, firstname, name, permissions, username, email, contracts);
+        return new StaffDTO(id, firstname, name, permissions, username, email, contracts,profile);
     }
 
     @Override
@@ -136,6 +147,7 @@ public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO>
         this.username = obj.username;
         this.email = obj.email;
         this.contracts = obj.contracts;
+        this.profile = obj.profile;
     }
 
 

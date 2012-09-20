@@ -1,0 +1,43 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:t="urn:import:de.cismet.projecttracker.client.common.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui">
+    <ui:style>
+        .formTextBox{
+        font-size:14px;
+        line-height:20px;
+        height:20px;
+            
+        }
+
+    </ui:style>
+    <g:HTMLPanel>
+        <legend>Auto Pause</legend>
+        <b:Form type="HORIZONTAL">
+            <b:ControlGroup>
+                <b:ControlLabel>Add Autopause</b:ControlLabel>
+                <b:Controls>
+                    <b:CheckBox ui:field="autoPauseCBO"> enable </b:CheckBox>
+                </b:Controls>
+            </b:ControlGroup>
+            
+            <b:Legend>Pause Lock Mode</b:Legend>
+            
+            <b:ControlGroup>
+                <b:ControlLabel>Week Lock Mode</b:ControlLabel>
+                <b:Controls>
+                    <b:RadioButton ui:field="weekLockRB" name="weekLockMode"> Week Lock Mode</b:RadioButton>
+                    <b:RadioButton ui:field="dayLockRB" name="weekLockMode">Day Lock Mode</b:RadioButton>
+                </b:Controls>
+            </b:ControlGroup>
+           
+            <b:ControlGroup>
+                <b:Controls>
+                    <b:SubmitButton ui:field="submitBtn" addStyleNames="btn btn-info">Submit</b:SubmitButton>
+                </b:Controls>
+            </b:ControlGroup>  
+        </b:Form>
+
+    </g:HTMLPanel>
+</ui:UiBinder>

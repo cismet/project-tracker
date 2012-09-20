@@ -4,7 +4,6 @@ import de.cismet.projecttracker.utilities.DBManagerWrapper;
 import de.cismet.projecttracker.utilities.DTOManager;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import de.cismet.projecttracker.client.ProjectService;
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.FavouriteTaskStory;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.BasicDTO;
@@ -39,7 +38,6 @@ import de.cismet.projecttracker.client.exceptions.NoSessionException;
 import de.cismet.projecttracker.client.exceptions.PermissionDenyException;
 import de.cismet.projecttracker.client.exceptions.PersistentLayerException;
 import de.cismet.projecttracker.client.exceptions.ReportNotFoundException;
-import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.types.ReportType;
@@ -47,25 +45,7 @@ import de.cismet.projecttracker.client.types.TimePeriod;
 import de.cismet.projecttracker.report.ProjectTrackerReport;
 import de.cismet.projecttracker.report.ReportManager;
 import de.cismet.projecttracker.report.commons.HolidayEvaluator;
-import de.cismet.projecttracker.report.db.entities.Activity;
-import de.cismet.projecttracker.report.db.entities.Company;
-import de.cismet.projecttracker.report.db.entities.Contract;
-import de.cismet.projecttracker.report.db.entities.ContractDocument;
-import de.cismet.projecttracker.report.db.entities.CostCategory;
-import de.cismet.projecttracker.report.db.entities.EstimatedComponentCost;
-import de.cismet.projecttracker.report.db.entities.EstimatedComponentCostMonth;
-import de.cismet.projecttracker.report.db.entities.Funding;
-import de.cismet.projecttracker.report.db.entities.Project;
-import de.cismet.projecttracker.report.db.entities.ProjectBody;
-import de.cismet.projecttracker.report.db.entities.ProjectCategory;
-import de.cismet.projecttracker.report.db.entities.ProjectCosts;
-import de.cismet.projecttracker.report.db.entities.RealOverhead;
-import de.cismet.projecttracker.report.db.entities.Report;
-import de.cismet.projecttracker.report.db.entities.Staff;
-import de.cismet.projecttracker.report.db.entities.Travel;
-import de.cismet.projecttracker.report.db.entities.TravelDocument;
-import de.cismet.projecttracker.report.db.entities.WorkCategory;
-import de.cismet.projecttracker.report.db.entities.WorkPackage;
+import de.cismet.projecttracker.report.db.entities.*;
 import de.cismet.projecttracker.report.exceptions.UserNotFoundException;
 import de.cismet.projecttracker.report.helper.CalendarHelper;
 import de.cismet.projecttracker.utilities.LanguageBundle;
@@ -115,6 +95,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             + "case when description is null then true else description = '%3$s' end";
     private static final String CHECK_BEGIN_OF_DAY_QUERY = "select max(day) from activity where staffid = %1$s and date_trunc('day', day) = '%2$s' and kindofactivity=1";
     private static final String CHECK_KIND_OF_LAST_ACTIVITY = "select kindofactivity, day from activity where staffid = %1$s and day = (select max(day) from activity where staffid = %1$s and date_trunc('day',day) ='%2$s')";
+    private static final String COUNT_VACATION_DAYS = "select * from activity where staffid=%1$s and workpackageid = 409 and day>='%2$s' and day <='%3$s'";
+    private static final String UNLOCKED_DAYS ="select distinct(date_trunc('day',day))  from \"public\".activity  where staffid = %1$s and day>='01-03-2012' except select distinct(date_trunc('day',day)) from \"public\".activity where staffid=%1$s and day>='01-03-2012' and kindofactivity = 3 order by date_trunc desc;";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
     private static boolean initialised = false;
@@ -700,6 +682,18 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             // was never sent to the client-side and so the received staff object doesn't contain the password
             Staff original = getStaffById(staff.getId());
             staffHib.setPassword(original.getPassword());
+
+            if(staff.getProfile() != null){
+                if(staff.getProfile().getId() !=0){
+                    dbManager.saveObject(dtoManager.merge(staff.getProfile()));
+                }else{
+                    Profile p  = (Profile) dtoManager.merge(staff.getProfile());
+                    long id = (Long) dbManager.createObject(p);
+                    p.setId(id);
+                    staffHib.setProfile(p);
+                }
+            }
+            
             dbManager.saveObject(staffHib);
             return (StaffDTO) dtoManager.clone(staffHib);
         } finally {
@@ -994,10 +988,13 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         checkAdminPermission();
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             Company comp = (Company) dbManager.getObject(Company.class, company.getId());
 
-            if (comp.getContracts() == null || comp.getContracts().size() == 0) {
+            if (comp.getContracts()
+                    == null || comp.getContracts().size() == 0) {
                 dbManager.deleteObject(comp);
             } else {
                 throw new PersistentLayerException(LanguageBundle.THERE_ARE_STILL_CONTRACTS_ASSIGNED_TO_THE_COMPANY);
@@ -1031,6 +1028,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("get project bodies");
         checkAdminPermission();
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
         try {
             List<ProjectBodyDTO> result = dbManager.getAllObjects(ProjectBody.class);
@@ -1092,7 +1091,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             ProjectBody body = (ProjectBody) dtoManager.merge(projectBody);
             Project pro = (Project) dbManager.getObjectByAttribute(Project.class, "projectBody", body);
 
-            if (pro != null) {
+            if (pro
+                    != null) {
                 throw new PersistentLayerException(LanguageBundle.CANNOT_DELETE_PROJECT_BODY);
             }
 
@@ -1247,6 +1247,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         checkAdminPermission();
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             List<ProjectCostsDTO> result = dbManager.getObjectsByAttribute(ProjectCosts.class, "project", dtoManager.merge(project));
             logger.debug(result.size() + " project costs found");
@@ -1289,7 +1291,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     add(Restrictions.and(Restrictions.eq("staff", user), Restrictions.between("day", from.getTime(), till.getTime()))).
                     list();
             List<Activity> result = new ArrayList<Activity>();
-
             for (Activity tmp : res) {
                 if (tmp.getKindofactivity() == ActivityDTO.ACTIVITY) {
                     if (!isSameDay(tmp.getDay(), till.getTime())) {
@@ -1349,7 +1350,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     list();
 
             List<Activity> result = new ArrayList<Activity>();
-
             for (Activity tmp : res) {
                 if (tmp.getKindofactivity() == ActivityDTO.ACTIVITY) {
                     if (!isSameDay(tmp.getDay(), till.getTime())) {
@@ -1384,7 +1384,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     tmp.setHours(getHoursOfWorkPerWeek(user, tmp.getDate()) / 5);
                 }
             }
-
             return resp;
         } catch (Throwable t) {
             logger.error("Error:", t);
@@ -1432,11 +1431,13 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     add(Restrictions.eq("staff", user)).
                     addOrder(Order.desc("day")).setMaxResults(1).uniqueResult();
 
-            if (result != null) {
+            if (result
+                    != null) {
                 logger.debug("activity with id " + result.getId() + " is last activity");
             }
             // convert the server version of the Project type to the client version of the Project type
-            if (result != null) {
+            if (result
+                    != null) {
                 return (ActivityDTO) dtoManager.clone(result);
             } else {
                 return null;
@@ -1600,7 +1601,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             if (criteria instanceof BasicDTO) {
                 criteria = dtoManager.merge((BasicDTO) criteria);
             }
-
             if (criteria instanceof Project) {
                 crit.createCriteria("workPackage").add(Restrictions.eq("project", criteria));
             } else if (criteria instanceof WorkPackage) {
@@ -1610,8 +1610,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             } else {
                 throw new DataRetrievalException("The criteria has a not supported type");
             }
-
             List<Activity> result = crit.list();
+
             logger.debug(result.size() + " activities found");
 
             // convert the server version of the Project type to the client version of the Project type
@@ -1760,7 +1760,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             if (activityHib.getStaff().getId() != getUserId() && activityHib.getDay() != null) {
                 sendChangedActivityEmail(activityHib, actText, activityHib.getStaff().getEmail());
             }
-
             return activity;
         } finally {
             dbManager.closeSession();
@@ -1879,7 +1878,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             Set<Report> reportSet = act.getReports();
             List<ReportDTO> reports = dtoManager.clone(new ArrayList(reportSet));
-
             return reports;
         } finally {
             dbManager.closeSession();
@@ -1936,7 +1934,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             ProjectCategory cat = (ProjectCategory) dtoManager.merge(projectCategory);
             Project p = (Project) dbManager.getObjectByAttribute(Project.class, "projectCategory", cat);
 
-            if (p != null) {
+            if (p
+                    != null) {
                 throw new PersistentLayerException(LanguageBundle.CANNOT_REMOVE_PROJECT_CATEGORY);
             }
 
@@ -1995,7 +1994,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             WorkCategory wc = (WorkCategory) dtoManager.merge(workCategory);
             Activity act = (Activity) dbManager.getObjectByAttribute(Activity.class, "workCategory", wc);
 
-            if (act == null) {
+            if (act
+                    == null) {
                 dbManager.deleteObject(wc);
             } else {
                 throw new PersistentLayerException(LanguageBundle.THE_WORK_CATEGORY_IS_USED_BY_ACTIVITIES);
@@ -2014,6 +2014,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         checkSession();
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             List<WorkCategory> result = (List<WorkCategory>) dbManager.getAllObjects(WorkCategory.class);
             logger.debug(result.size() + " work categories found");
@@ -2030,6 +2032,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("get work category");
         checkSession();
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
         try {
             WorkCategory result = (WorkCategory) dbManager.getObject(WorkCategory.class, id);
@@ -2050,6 +2054,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         checkUserOrAdminPermission(contract.getStaff().getId());
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             List<ContractDocument> result = (List<ContractDocument>) dbManager.getObjectsByAttribute(ContractDocument.class, "contract", dtoManager.merge(contract));
 
@@ -2068,6 +2074,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("get contract documents");
         checkUserOrAdminPermission(travel.getStaff().getId());
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
         try {
             List<TravelDocumentDTO> result = (List<TravelDocumentDTO>) dbManager.getObjectsByAttribute(TravelDocument.class, "travel", dtoManager.merge(travel));
@@ -2127,9 +2135,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         checkAdminPermission();
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             List<Funding> result = (List<Funding>) dbManager.getObjectsByAttribute(Funding.class, "company", dtoManager.merge(company));
-            logger.debug("fundings found " + result.size());
+            logger.debug(
+                    "fundings found " + result.size());
 
             return (ArrayList<FundingDTO>) dtoManager.clone(result);
         } finally {
@@ -2152,16 +2163,16 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             Criteria crit = hibernateSession.createCriteria(Report.class).
                     add(Restrictions.eq("generatorname", reportGenerator));
 
-            if (staff != null) {
+            if (staff
+                    != null) {
                 crit.add(Restrictions.or(Restrictions.eq("staff", dtoManager.merge(staff)),
                         Restrictions.isNull("staff")));
             }
-
-            if (year != 0) {
+            if (year
+                    != 0) {
                 int dateObjectYear = year - 1900;
                 crit.add(Restrictions.between("creationtime", new Date(dateObjectYear, 0, 1), new Date(dateObjectYear, 11, 31, 23, 59, 59)));
             }
-
             List<Report> result = crit.list();
 
             return dtoManager.clone(result);
@@ -2307,6 +2318,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         checkAdminPermission();
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             //            SQLQuery query = hibernateSession.createSQLQuery("delete from activity_report where reportid=" + report.getId());
             //            query.executeUpdate();
@@ -2369,7 +2382,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 //            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
             Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
-            if (staff != null) {
+            if (staff
+                    != null) {
                 HttpSession session = getThreadLocalRequest().getSession();
                 SessionInformation sessionInfo = new SessionInformation();
                 sessionInfo.setCurrentUser(staff);
@@ -2822,7 +2836,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 nominalWorkingDays = calculateNominalWorkingDays(contractFromDateCal, contractToDateCal);
                 nominalWorkingTime += (whow / 5) * nominalWorkingDays;
             }
-
         } catch (SQLException ex) {
             logger.error("Error during determining Real_Working_Time. AccountBalance may not be correct", ex);
             throw new DataRetrievalException(ex.getMessage());
@@ -2985,8 +2998,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             crit = dbManager.getSession().createCriteria(Activity.class).add(Restrictions.and(Restrictions.eq("staff", dtoManager.merge(staff)), dateRestriction));
             crit.addOrder(Order.asc("day"));
             List list = crit.list();
-
-
             final Iterator it = list.iterator();
 
             while (it.hasNext()) {
@@ -3038,7 +3049,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     }
                 }
             }
-            
+
             //if there are only absence tasks like spare time and holiday the pause policy is always fulfilled
             if (justAbsenceTasks) {
                 return true;
@@ -3091,5 +3102,158 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
 
         return faultyDays;
+    }
+
+    @Override
+    public Double getVacationDaysTaken(Date d, StaffDTO staff) {
+        final Date firstDayInYear = new Date(d.getYear(), 0, 1);
+        return getVacationDays(firstDayInYear, d, staff);
+//        final DBManagerWrapper dbManager = new DBManagerWrapper();
+//        try {
+//            Statement s = dbManager.getDatabaseConnection().createStatement();
+//            SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+//            ResultSet rs = s.executeQuery(String.format(COUNT_VACATION_DAYS, staff.getId(), df.format(firstDayInYear), df.format(d)));
+//
+//            if (rs != null) {
+//                while (rs.next()) {
+//                    return rs.getInt(1);
+//                }
+//            }
+//
+//        } catch (SQLException ex) {
+//            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return null;
+    }
+
+    @Override
+    public Double getVacationDaysPlanned(Date d, StaffDTO staff) {
+        final Date lastDayInYear = new Date(d.getYear(), 11, 31);
+
+        return getVacationDays(d, lastDayInYear, staff);
+//        final DBManagerWrapper dbManager = new DBManagerWrapper();
+//        try {
+//            Statement s = dbManager.getDatabaseConnection().createStatement();
+//            SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+//            ResultSet rs = s.executeQuery(String.format(COUNT_VACATION_DAYS, staff.getId(), df.format(d), df.format(lastDayInYear)));
+//
+//            if (rs != null) {
+//                while (rs.next()) {
+//                    return rs.getInt(1);
+//                }
+//            }
+//
+//        } catch (SQLException ex) {
+//            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return null;
+    }
+
+    private ArrayList<ContractDTO> getContractforIntervall(final Date from, final Date to, final StaffDTO staff) {
+        ArrayList<ContractDTO> result = new ArrayList<ContractDTO>();
+
+        final ArrayList<ContractDTO> contracts = staff.getContracts();
+
+        for (ContractDTO c : contracts) {
+            if (c.getFromdate().after(from) && c.getFromdate().before(to)) {
+                result.add(c);
+            } else if (c.getTodate() == null) {
+                if(c.getFromdate().before(from)){
+                    result.add(c);
+                    break;
+                }
+            }
+             else if (c.getTodate() != null && c.getTodate().after(from) && c.getTodate().before(to)) {
+                result.add(c);
+            }
+        }
+
+        return result;
+    }
+
+    private Double getVacationDays(Date from, Date to, StaffDTO staff) {
+        final DBManagerWrapper dbManager = new DBManagerWrapper();
+        final ArrayList<ContractDTO> contracts = getContractforIntervall(from, to, staff);
+        double result = 0;
+
+        for (ContractDTO c : contracts) {
+            final double whPerWeek = c.getWhow();
+            Date f;
+            Date t;
+
+            if (c.getFromdate().before(from)) {
+                if (c.getTodate() != null && c.getTodate().before(to)) {
+                    //calculate from from til c.getTodate()
+                    f = from;
+                    t = c.getTodate();
+                } else {
+                    //calculate from from til to
+                    f = from;
+                    t = to;
+                }
+            } else {
+                if (c.getFromdate().before(to) && c.getTodate().before(to)) {
+                    //calculate from c.getFromDate til c.getTodate 
+                    f = c.getFromdate();
+                    t = c.getTodate();
+                } else {
+                    //calculate from c.getFromDate til to
+                    f = c.getFromdate();
+                    t = to;
+                }
+            }
+
+            try {
+                Statement s = dbManager.getDatabaseConnection().createStatement();
+                SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+                ResultSet rs = s.executeQuery(String.format(COUNT_VACATION_DAYS, staff.getId(), df.format(f), df.format(t)));
+
+                if (rs != null) {
+                    while (rs.next()) {
+                        final double wh = rs.getDouble("workinghours");
+                        if (wh == 0) {
+                            result += 1;
+                        } else {
+                            result += wh / (whPerWeek/5);
+                        }
+                    }
+                }
+
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public Double getVacationCarryOver(Date d, StaffDTO staff) {
+        final Date firstDayYearBefore = new Date(d.getYear() - 1, 0, 1);
+        final Date lastDayYearBefore = new Date(d.getYear() - 1, 11, 31);
+
+        return getVacationDays(firstDayYearBefore, lastDayYearBefore, staff);
+    }
+
+    @Override
+    public List<Date> getUnlockedDays(StaffDTO staff) {
+         final DBManagerWrapper dbManager = new DBManagerWrapper();
+         final ArrayList<Date> result = new ArrayList<Date>();
+       try {
+                Statement s = dbManager.getDatabaseConnection().createStatement();
+                SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+                ResultSet rs = s.executeQuery(String.format(UNLOCKED_DAYS, staff.getId()));
+
+                if (rs != null) {
+                    while (rs.next()) {
+                          final Date d = rs.getDate(1);
+                          result.add(d);
+                    }
+                }
+
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+       return result;
     }
 }
