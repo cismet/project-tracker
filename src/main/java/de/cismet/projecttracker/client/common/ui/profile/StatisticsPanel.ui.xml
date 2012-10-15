@@ -13,7 +13,6 @@
 
     </ui:style>
     <g:HTMLPanel>
-        <legend>Account Statistics</legend>
         <g:FlowPanel ui:field="mainPanel">
             <b:Legend>Unlocked Days</b:Legend>
             

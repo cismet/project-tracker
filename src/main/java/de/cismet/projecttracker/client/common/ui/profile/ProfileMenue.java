@@ -44,6 +44,8 @@ public class ProfileMenue extends Composite implements ClickHandler {
         initWidget(uiBinder.createAndBindUi(this));
         detailContainer = detailView;
         menu.addStyleName("nav-stacked");
+        changePassword = new ChangePasswordForm();
+        detailContainer.add(changePassword);
     }
 
     @UiHandler(value = {"accountLink", "passwordLink", "statisticsLink"})

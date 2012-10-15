@@ -12,6 +12,7 @@ import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.profile.ProfileMenue;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
 import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
+import de.cismet.projecttracker.client.common.ui.profile.ChangePasswordForm;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
@@ -101,7 +102,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         pageHeaderPanel.add(gravatar);
 
         final String s = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getFirstname()
-                + ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getName();
+                + " " + ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getName();
         final Label nameLabel = new Label(s);
 
         nameLabel.setStyleName("profile-name-label");
@@ -123,7 +124,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         FlowPanel w3 = new FlowPanel();
         w3.setStyleName("clear");
         final Label w3Key = new Label("current week-2:");
-//        w3Key.setStyleName("page-header-row");
+        w3Key.setStyleName("profile-header-label");
         w3Content.setStyleName("pull-right");
         w3.add(w3Key);
         w3.add(w3Content);
@@ -132,7 +133,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         FlowPanel w2 = new FlowPanel();
         w2.setStyleName("clear");
         final Label w2Key = new Label("current week-1:");
-//        w2Key.setStyleName("page-header-row");
+        w2Key.setStyleName("profile-header-label");
         w2Content.setStyleName("pull-right");
         w2.add(w2Key);
         w2.add(w2Content);
@@ -141,7 +142,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         final FlowPanel w1 = new FlowPanel();
         w1.setStyleName("clear");
         final Label w1Key = new Label("current week:");
-//        w1Key.setStyleName("page-header-row");
+        w1Key.setStyleName("profile-header-label");
         w1Content.setStyleName("pull-right");
         w1.add(w1Key);
         w1.add(w1Content);
@@ -187,7 +188,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         FlowPanel total = new FlowPanel();
         total.setStyleName("clear");
         final Label totalKey = new Label("Total:");
-//        totalKey.setStyleName("page-header-row");
+        totalKey.setStyleName("profile-header-label");
         totalVacationContent.setStyleName("pull-right");
         total.add(totalKey);
         total.add(totalVacationContent);
@@ -195,7 +196,7 @@ public class ProfilePanel extends Composite implements MenuListener {
 
         
         carryOver.setStyleName("clear");
-        carryOverContent.setStyleName("pull-right");
+        carryOverContent.setStyleName("pull-right profile-header-label");
         carryOver.add(carryOverKey);
         carryOver.add(carryOverContent);
         pageHeaderHolidayPanel.add(carryOver);
@@ -203,7 +204,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         FlowPanel taken = new FlowPanel();
         taken.setStyleName("clear");
         final Label takenKey = new Label("Taken:");
-//        takenKey.setStyleName("page-header-row");
+        takenKey.setStyleName("profile-header-labelw");
 
         vacationTakenContent.setStyleName("pull-right");
         taken.add(takenKey);
@@ -213,7 +214,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         final FlowPanel planned = new FlowPanel();
         planned.setStyleName("clear");
         final Label plannedKey = new Label("Planned:");
-//        plannedKey.setStyleName("page-header-row");
+        plannedKey.setStyleName("profile-header-label");
         vacationPlannedContent.setStyleName("pull-right");
         planned.add(plannedKey);
         planned.add(vacationPlannedContent);

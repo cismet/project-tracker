@@ -117,7 +117,7 @@ footer{
 }
 
 .profile-page-header{
-    background-color: #ffffff;
+    background-color: #F5F5F5;
     padding: 20px 20px 5px;
     margin: -3px -0px 0px;
     border-radius:6px;
@@ -127,12 +127,19 @@ footer{
     height:140px;
 }
 
+.profile-header-label{
+    background-color: inherit;
+    color:#000000;
+    text-shadow: none;
+}
+
 .profile-content{
     height: auto;
     padding-top:10px;
 }
 
 .profile-master-view{
+
     float:left;
     /*    height:250px;*/
     width:250px;
@@ -142,7 +149,12 @@ footer{
         border:#ccc solid 1px;*/
 }
 
+.nav-stacked > li{
+    background-color: #F5F5F5;
+}
+
 .profile-detail-view{
+    background-color: #F5F5F5;
     height:auto;
     width: auto;
     margin-left: 270px;
@@ -151,6 +163,14 @@ footer{
     -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
     border:#ccc solid 1px;
     padding: 15px;
+}
+
+.nav-stacked > li > a{
+    color:#404040;
+}
+
+.nav-stacked > li > a:hover{
+    color:#555566;
 }
 
 .profile-detail-view .form-horizontal .control-group:before, .form-horizontal .control-group:after {
@@ -168,8 +188,8 @@ footer{
 }
 
 .profile-detail-view input[type="password"]:hover{
-/*    background-color: rgba(255, 255, 255, 0.5);
-    color: #ffffff;*/
+    /*    background-color: rgba(255, 255, 255, 0.5);
+        color: #ffffff;*/
 }
 
 .page-header-holidays{
@@ -194,6 +214,17 @@ footer{
 .page-header-row{
     margin-right:80px;
     width:100px;
+}
+
+.statistic_unlocked_days{
+    margin-right: 20px;
+}
+
+.statistic_label{
+    display: block;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-bottom: 5px;
 }
 
 .clear{

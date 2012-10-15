@@ -10,6 +10,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
@@ -31,25 +32,37 @@ public class StatisticsPanel extends Composite {
 
     private void init() {
         BasicAsyncCallback<List<Date>> callback = new BasicAsyncCallback<List<Date>>() {
-
             @Override
             protected void afterExecution(List<Date> result, boolean operationFailed) {
-                if(!operationFailed){
-                    if(!result.isEmpty()){
-                        final VerticalPanel pnl = new VerticalPanel();
-                        for(Date d: result){
-                            final Label l = new Label(DateHelper.formatDate(d));
-                            pnl.add(l);
+                if (!operationFailed) {
+                    if (!result.isEmpty()) {
+                        final HorizontalPanel hrPnl = new HorizontalPanel();
+                        int count = 0;
+                        VerticalPanel pnl = new VerticalPanel();
+                        pnl.setStyleName("statistic_unlocked_days");
+                        for (Date d : result) {
+                            if (count == 10) {
+                                count = 0;
+                                hrPnl.add(pnl);
+                                pnl = new VerticalPanel();
+                                pnl.setStyleName("statistic_unlocked_days");
+                            } else {
+                                final Label l = new Label(DateHelper.formatDate(d));
+                                l.setStyleName("statistic_label");
+                                pnl.add(l);
+                                count ++;
+                            }
+                            
                         }
-                        mainPanel.add(pnl);
-                    }else{
+                        hrPnl.add(pnl);
+                        mainPanel.add(hrPnl);
+                    } else {
                         mainPanel.add(new Label("all days are locked"));
                     }
                 }
             }
-            
         };
-        
+
         ProjectTrackerEntryPoint.getProjectService(true).getUnlockedDays(ProjectTrackerEntryPoint.getInstance().getLoggedInStaff(), callback);
     }
 
