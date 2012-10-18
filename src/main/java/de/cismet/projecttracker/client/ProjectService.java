@@ -757,6 +757,10 @@ public interface ProjectService extends RemoteService {
     
     public Double getVacationDaysTaken(Date d, StaffDTO staff);
     
+    public List<ActivityDTO> getVacationActivitiesTaken(Date d, StaffDTO staff);
+    
+    public List<ActivityDTO> getVacationActivitiesPlanned(Date d, StaffDTO staff);
+    
     public Double getVacationDaysPlanned(Date d, StaffDTO staff);
     
     public List<Date> getUnlockedDays(StaffDTO s);

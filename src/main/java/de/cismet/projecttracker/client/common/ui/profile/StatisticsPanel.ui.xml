@@ -15,7 +15,13 @@
     <g:HTMLPanel>
         <g:FlowPanel ui:field="mainPanel">
             <b:Legend>Unlocked Days</b:Legend>
+            <g:HorizontalPanel ui:field="unlockedDaysPnl"></g:HorizontalPanel>
             
+            <b:Legend>Holidays Taken</b:Legend>
+            <g:HorizontalPanel ui:field="holidaysTakenPnl"></g:HorizontalPanel>
+            
+            <b:Legend>Holidays Planned</b:Legend>
+            <g:HorizontalPanel ui:field="holidaysPlannedPnl"></g:HorizontalPanel>
         </g:FlowPanel>
 
     </g:HTMLPanel>
