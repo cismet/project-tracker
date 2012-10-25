@@ -171,6 +171,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         sheets.setLockComponents();
         sheets.refresh();
         topPanel.addMenuListener(sheets);
+        topPanel.addChangeListener(sheets);
         if (staff.getEmail() != null) {
             topPanel.setGravatar(GRAVATAR_URL_PREFIX + md5(staff.getEmail()) + "?s=30");
         }

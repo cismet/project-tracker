@@ -5,7 +5,10 @@
 package de.cismet.projecttracker.client.uicomps;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.*;
 import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.MessageConstants;
@@ -44,8 +47,9 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
     private ListBox user = new ListBox();
     private List<MenuListener> listener = new ArrayList<MenuListener>();
     private List<StaffDTO> userList = new ArrayList<StaffDTO>();
-    private ProfilePanel profilePanel =null;
+    private ProfilePanel profilePanel = null;
     private boolean loggedIn = false;
+    private List<ChangeHandler> changeListeners = new ArrayList<ChangeHandler>();
 
     public TopPanel() {
         init();
@@ -88,7 +92,6 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         }
 
         BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
-
             @Override
             protected void afterExecution(ArrayList<StaffDTO> result, boolean operationFailed) {
                 int i = 0;
@@ -103,6 +106,13 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
                     ++i;
                 }
                 user.setSelectedIndex(index);
+                //fire the change event since setSelected item does not
+                Scheduler.get().scheduleDeferred(new Command() {
+                    @Override
+                    public void execute() {
+                        DomEvent.fireNativeEvent(Document.get().createChangeEvent(), user);
+                    }
+                });
                 userList = result;
             }
         };
@@ -136,7 +146,7 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
             } else if (activeLab == reportsLab) {
                 newEvent.setNumber(REPORTS);
             } else if (activeLab == profileLab) {
-                if(profilePanel == null){
+                if (profilePanel == null) {
                     profilePanel = new ProfilePanel();
                     this.addMenuListener(profilePanel);
                 }
@@ -146,7 +156,7 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
             }
 
             fireMenuChangeEvent(newEvent);
-        }else{
+        } else {
             ProjectTrackerEntryPoint.outputBox("Please first log in!");
         }
     }
@@ -165,6 +175,20 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         }
     }
 
+    public void addChangeListener(ChangeHandler l) {
+        changeListeners.add(l);
+    }
+
+    public void removeChangeListener(ChangeHandler l) {
+        changeListeners.remove(l);
+    }
+
+    public void fireChangeEvent(ChangeEvent e) {
+        for (ChangeHandler l : changeListeners) {
+            l.onChange(e);
+        }
+    }
+
     public void setLoggedIn(boolean loggedIn, String user) {
         loginPanel.setLoggedIn(loggedIn, user);
         this.loggedIn = true;
@@ -180,6 +204,7 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         MenuEvent e = new MenuEvent();
         e.setSource(this);
         fireMenuChangeEvent(e);
+        fireChangeEvent(event);
     }
 
     private StaffDTO getSelectedStaff() {
