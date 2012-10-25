@@ -4,17 +4,49 @@
  */
 package de.cismet.projecttracker.utilities;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author therter
  */
 public class EMailContent {
+
     private String address;
     private String subject;
-    private String body;
+    private String text;
     private GregorianCalendar timeToSend;
+    private String prefix;
+    private String suffix;
+
+    public EMailContent() {
+        //parse the html file...
+        InputStreamReader reader = new InputStreamReader(EMailContent.class.getResourceAsStream("/de/cismet/projecttracker/utilities/activityChangedMail.html"));
+        BufferedReader br = new BufferedReader(reader);
+        StringBuilder file = null;
+         String line;
+        try {
+            line = br.readLine();
+       
+        file = new StringBuilder();
+        while(line != null){
+            file.append(line);
+            line = br.readLine();
+        }
+         } catch (IOException ex) {
+            Logger.getLogger(EMailContent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        String[] splitFile = file.toString().split("<!--insert here-->");
+        prefix = splitFile[0];
+        suffix = splitFile[1];
+        
+    }
 
     /**
      * @return the address
@@ -48,14 +80,15 @@ public class EMailContent {
      * @return the body
      */
     public String getBody() {
-        return body;
+        return prefix+text+suffix;
     }
 
-    /**
-     * @param body the body to set
-     */
-    public void setBody(String body) {
-        this.body = body;
+    public String getText(){
+        return text;
+    }
+    
+    public void setText(String text){
+        this.text = text;
     }
 
     /**

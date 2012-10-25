@@ -1,6 +1,5 @@
 package de.cismet.projecttracker.utilities;
 
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -72,10 +71,11 @@ public class Utilities {
             //the "from" address may be set in code, or set in the
             //config file under "mail.from" ; here, the latter style is used
             //message.setFrom( new InternetAddress(aFromEmailAddr) );
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
-//            message.addRecipient(Message.RecipientType.BCC, new InternetAddress(ADMIN_MAIL_ADDRESS));
+//            message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
+            message.addRecipient(Message.RecipientType.BCC, new InternetAddress(ADMIN_MAIL_ADDRESS));
             message.setSubject(subject);
-            message.setText(body);
+//            message.setText(body);
+            message.setContent(body, "text/html");
             Transport.send(message);
         } catch (MessagingException ex) {
             logger.error("Cannot send email.", ex);
@@ -94,13 +94,14 @@ public class Utilities {
             mail = new EMailContent();
             mail.setAddress(address);
             mail.setSubject(subject);
-            mail.setBody(body);
+            mail.setText(body);
             toSend.put(address, mail);
         } else {
-            mail.setBody(mail.getBody() + "\n\n\n" + body);
+            mail.setText(mail.getText() + "\n\n\n" + body);
         }
 
-        mail.setTimeToSend(time);
+//        mail.setTimeToSend(time);
+        mail.setTimeToSend(new GregorianCalendar());
     }
 
     /**

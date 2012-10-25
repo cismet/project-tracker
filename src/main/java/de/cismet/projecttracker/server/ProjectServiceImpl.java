@@ -51,6 +51,7 @@ import de.cismet.projecttracker.report.helper.CalendarHelper;
 import de.cismet.projecttracker.utilities.LanguageBundle;
 import de.cismet.projecttracker.utilities.Utilities;
 import de.cismet.projecttracker.report.timetracker.TimetrackerQuery;
+import de.cismet.projecttracker.utilities.EmailTaskNotice;
 import de.cismet.web.timetracker.types.HoursOfWork;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -586,8 +587,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
     /**
      * @param project
-     * @return any cost category for the given project. If the given project have no cost category, a new one will be
-     * created.
+     * @return any cost category for the given project. If the given project have no cost category, a new one will be created.
      */
     private CostCategory getAnyCostCategory(Project project, DBManagerWrapper dbManager) throws DataRetrievalException, PersistentLayerException {
         if (project != null) {
@@ -1576,8 +1576,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     /**
      *
      * @param staff the staff, whose activities should be retrieved
-     * @param criteria an further criteria for the activities, which shluld be retrieved. This can be an object of the
-     * type WorkPackage, WorkCategory or Project
+     * @param criteria an further criteria for the activities, which shluld be retrieved. This can be an object of the type
+     * WorkPackage, WorkCategory or Project
      * @return all activities, which fulfil the given criterias
      * @throws DataRetrievalException
      * @throws PermissionDenyException
@@ -1738,7 +1738,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         try {
             warningSystem.saveActivity(activityHib);
             final Activity act = (Activity) dbManager.getObject(Activity.class, new Long(activityHib.getId()));
-
+            final ActivityDTO tmp = (ActivityDTO)dtoManager.clone(act);
+            final Activity origAct = (Activity)dtoManager.merge(tmp.createCopy());
+            
             if (act.getCommitted()) {
                 try {
                     checkAdminPermission();
@@ -1759,7 +1761,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             dbManager = new DBManagerWrapper();
             dbManager.saveObject(activityHib);
             if (activityHib.getStaff().getId() != getUserId() && activityHib.getDay() != null) {
-                sendChangedActivityEmail(activityHib, actText, activityHib.getStaff().getEmail());
+                sendChangedActivityEmail(activityHib, origAct, activityHib.getStaff().getEmail());
             }
             return activity;
         } finally {
@@ -1772,20 +1774,42 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
      * @param activity
      * @param originalActivity The description of the original activity. If null, a new activity was created
      */
-    private void sendChangedActivityEmail(Activity activity, String originalActivity, String email) {
-        try {
+    private void sendChangedActivityEmail(Activity activity, Activity origActivity, String email){
+         try {
             if (email != null) {
                 Staff s = getStaffById(getUserId());
                 String text;
+                text="<div class=\"container\">"
+                        +"<div style=\"margin-bottom:15px\">";
                 if (activity == null) {
-                    text = s.getFirstname() + " " + s.getName() + " has deleted the following actvitiy:\n" + originalActivity;
-                } else if (originalActivity != null) {
-                    text = s.getFirstname() + " " + s.getName() + " has changed the following actvitiy:\n" + originalActivity;
-                    text += "\n\nto\n\n" + activity.toString();
+                    text += s.getFirstname() + " " + s.getName() + " has <b>deleted</b> the following actvitiy:</div>";
+                    text += "<div style=\"float:left\">" ;
+                    EmailTaskNotice tn = new EmailTaskNotice(origActivity);
+                    text += tn.toString();
+                    text+="</div>";
+                } else if (origActivity != null) {
+                    text += s.getFirstname() + " " + s.getName() + " has <b>changed</b> the following actvitiy:</div>";
+                    text += "<div style=\"float:left\">"
+                            + "<div>from</div>" ;
+                    EmailTaskNotice origTN = new EmailTaskNotice(origActivity);
+                    text += origTN.toString();
+                    text+="</div>";
+                    
+                    text += "<div style=\"float:right\">"
+                            + "<div>to</div>" ;
+                    EmailTaskNotice updatedTN = new EmailTaskNotice(activity);
+                    text += updatedTN.toString();
+                    text+="</div>";
+                    
                 } else {
-                    text = s.getFirstname() + " " + s.getName() + " has added the following actvitiy:\n" + activity.toString();
+                     text += s.getFirstname() + " " + s.getName() + " has <b>added</b> the following actvitiy:</div>";
+                    text += "<div style=\"float:left\">" ;
+                    EmailTaskNotice tn = new EmailTaskNotice(activity);
+                    text += tn.toString();
+                    text+="</div>";
                 }
-
+                
+                text +="</div>";
                 Utilities.sendCollectedEmail(email, "Activity changed", text);
             } else {
                 logger.warn("Cannot send the email, because there is no email address");
@@ -1802,7 +1826,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public void deleteActivity(ActivityDTO activity) throws InvalidInputValuesException, DataRetrievalException, PersistentLayerException, PermissionDenyException, NoSessionException {
         logger.debug("delete activity");
         DBManagerWrapper dbManager = new DBManagerWrapper();
-
+        final Activity deletedActivity =(Activity) dtoManager.merge(activity.createCopy());
         try {
             Activity act = (Activity) dbManager.getObject(Activity.class, new Long(activity.getId()));
             checkUserOrAdminPermission(act.getStaff().getId());
@@ -1827,7 +1851,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             dbManager.deleteObject(act);
 
             if (st != null && st.getId() != getUserId() && day != null) {
-                sendChangedActivityEmail(null, actText, st.getEmail());
+                sendChangedActivityEmail(null, deletedActivity, st.getEmail());
             }
         } finally {
             dbManager.closeSession();
@@ -2670,8 +2694,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     /**
-     * this method throws an exception, if the current user has no admin rights and the given user is not the current
-     * user
+     * this method throws an exception, if the current user has no admin rights and the given user is not the current user
      *
      * @param userId the id of the user data that should be changed
      * @throws PermissionDenyException
@@ -3189,7 +3212,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             } catch (SQLException ex) {
                 java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }finally{
+            } finally {
                 dbManager.closeSession();
             }
         }
@@ -3223,8 +3246,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally{
+        } finally {
             dbManager.closeSession();
         }
         return result;
@@ -3254,7 +3276,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidInputValuesException ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }finally {
+        } finally {
             dbManager.closeSession();
         }
         return null;

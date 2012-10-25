@@ -5,20 +5,25 @@
 package de.cismet.projecttracker.client.common.ui.profile;
 
 import com.github.gwtbootstrap.client.ui.Label;
-import com.github.gwtbootstrap.client.ui.Legend;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.common.ui.TaskNotice;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,11 +60,11 @@ public class StatisticsPanel extends Composite {
                                 unlockedDaysPnl.add(pnl);
                                 pnl = new VerticalPanel();
                                 pnl.setStyleName("statistic_unlocked_days");
-                            } 
-                                final Label l = new Label(DateHelper.formatDate(d));
-                                l.setStyleName("statistic_label");
-                                pnl.add(l);
-                                count++;
+                            }
+                            final Label l = new Label(DateHelper.formatDate(d));
+                            l.setStyleName("statistic_label");
+                            pnl.add(l);
+                            count++;
                         }
                         unlockedDaysPnl.add(pnl);
                     } else {
@@ -74,6 +79,37 @@ public class StatisticsPanel extends Composite {
         getHolidaysTaken();
 
         getHolidaysPlanned();
+
+        addMailButton();
+    }
+
+    //TODO remove method since it was just to test a feature
+    private void addMailButton() {
+//        final Button mailButton = new Button("send Test Mail");
+//        mailButton.addClickHandler(new ClickHandler() {
+//            @Override
+//            public void onClick(ClickEvent event) {
+//                //lets take some activites and send them per mail...
+//                final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
+//
+//                final BasicAsyncCallback<ArrayList<ActivityDTO>> callback = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
+//                    @Override
+//                    protected void afterExecution(ArrayList<ActivityDTO> result, boolean operationFailed) {
+//                        BasicAsyncCallback<Void> cb = new BasicAsyncCallback<Void>();
+//                        String text = "";
+//                        for (ActivityDTO act : result) {
+//                            TaskNotice tn = new TaskNotice(act);
+//                            tn.setCloseButtonVisible(false);
+//                            text += tn.toString() + "</br></br></br>";
+//                        }
+//                        ProjectTrackerEntryPoint.getProjectService(true).sendTestMail(text,result.get(0), cb);
+//                    }
+//                };
+//
+//                ProjectTrackerEntryPoint.getProjectService(true).getActivityByDay(staff, new Date(new Date().getYear(), 9, 15), callback);
+//            }
+//        });
+//        mainPanel.add(mailButton);
     }
 
     interface StatisticsPanelUiBinder extends UiBinder<Widget, StatisticsPanel> {
@@ -102,18 +138,18 @@ public class StatisticsPanel extends Composite {
 
                             }
                             double wh = act.getWorkinghours();
-                            double whPerDay =0;
+                            double whPerDay = 0;
                             try {
-                                whPerDay = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay()).getWhow()/5;
+                                whPerDay = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay()).getWhow() / 5;
                             } catch (InvalidInputValuesException ex) {
                                 Logger.getLogger(StatisticsPanel.class.getName()).log(Level.SEVERE, null, ex);
                             }
                             if (wh == 0) {
-                                    wh =  whPerDay;
+                                wh = whPerDay;
                             }
                             final Date d = act.getDay();
 
-                            final Label l = new Label(DateHelper.formatDate(d) + ": " + wh/whPerDay + " Days");
+                            final Label l = new Label(DateHelper.formatDate(d) + ": " + wh / whPerDay + " Days");
                             l.setStyleName("statistic_label");
                             pnl.add(l);
                             count++;
@@ -147,18 +183,18 @@ public class StatisticsPanel extends Composite {
                                 pnl.setStyleName("statistic_unlocked_days");
                             }
                             double wh = act.getWorkinghours();
-                            double whPerDay =0;
+                            double whPerDay = 0;
                             try {
-                                whPerDay = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay()).getWhow()/5;
+                                whPerDay = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay()).getWhow() / 5;
                             } catch (InvalidInputValuesException ex) {
                                 Logger.getLogger(StatisticsPanel.class.getName()).log(Level.SEVERE, null, ex);
                             }
                             if (wh == 0) {
-                                    wh =  whPerDay;
+                                wh = whPerDay;
                             }
                             final Date d = act.getDay();
 
-                            final Label l = new Label(DateHelper.formatDate(d) + ": " + wh/whPerDay + " Days");
+                            final Label l = new Label(DateHelper.formatDate(d) + ": " + wh / whPerDay + " Days");
                             l.setStyleName("statistic_label");
                             pnl.add(l);
                             count++;
