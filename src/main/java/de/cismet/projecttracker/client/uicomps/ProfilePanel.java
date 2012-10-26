@@ -6,24 +6,22 @@ package de.cismet.projecttracker.client.uicomps;
 
 import com.github.gwtbootstrap.client.ui.Label;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.*;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.profile.ProfileMenue;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
 import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
-import de.cismet.projecttracker.client.common.ui.profile.ChangePasswordForm;
-import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import de.cismet.projecttracker.client.types.ActivityResponseType;
-import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.utilities.TimeCalculator;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author dmeiers
  */
-public class ProfilePanel extends Composite implements MenuListener {
+public class ProfilePanel extends Composite implements MenuListener, ChangeHandler {
 
     private FlowPanel mainPanel = new FlowPanel();
     private FlowPanel pageHeaderPanel = new FlowPanel();
@@ -41,6 +39,8 @@ public class ProfilePanel extends Composite implements MenuListener {
     private FlowPanel masterView = new FlowPanel();
     private FlowPanel detailView = new FlowPanel();
     private Image gravatar = new Image();
+    private ProfileMenue menue;
+    private Label nameLabel = new Label();
     private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
     double remainingVacation = 0;
     //HolidayLabels
@@ -68,7 +68,8 @@ public class ProfilePanel extends Composite implements MenuListener {
         contentPanel.setStyleName("profile-content");
         masterView.setStyleName("profile-master-view");
         detailView.setStyleName("profile-detail-view");
-        masterView.add(new ProfileMenue(detailView));
+        menue = new ProfileMenue(detailView);
+        masterView.add(menue);
         contentPanel.add(masterView);
         contentPanel.add(detailView);
         mainPanel.add(pageHeaderPanel);
@@ -81,6 +82,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         if (e.getNumber() == TopPanel.PROFILE) {
             RootPanel.get("contentId").clear();
             RootPanel.get("contentId").add(this);
+            menue.refreshDetailContainer();
             refresh();
         }
     }
@@ -91,22 +93,10 @@ public class ProfilePanel extends Composite implements MenuListener {
         pageHeaderHolidayPanel.setStyleName("pull-right page-header-holidays");
 
         gravatar.setStyleName("pull-left profile-gravatar-image");
-//        ProjectTrackerEntryPoint.getInstance().
-        final String email = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getEmail();
-        if (email != null) {
-            gravatar.setUrl(GRAVATAR_URL_PREFIX
-                    + ProjectTrackerEntryPoint.getInstance().md5(email)
-                    + "?s=110");
-        }
-
-        pageHeaderPanel.add(gravatar);
-
-        final String s = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getFirstname()
-                + " " + ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getName();
-        final Label nameLabel = new Label(s);
-
         nameLabel.setStyleName("profile-name-label");
-        pageHeaderPanel.add(nameLabel);
+
+        refreshProfileImage();
+
         Label accountBalanceLabel = new Label("Account Balance");
         accountBalanceLabel.setStyleName("h3 page-header-title");
         pageHeaderAccBalPanel.add(accountBalanceLabel);
@@ -162,9 +152,8 @@ public class ProfilePanel extends Composite implements MenuListener {
     }
 
     private void refreshAccountBalanceLables() {
-        final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
+        final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
         final BasicAsyncCallback<Double> callback = new BasicAsyncCallback<Double>() {
-
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
                 if (!operationFailed) {
@@ -194,7 +183,7 @@ public class ProfilePanel extends Composite implements MenuListener {
         total.add(totalVacationContent);
         pageHeaderHolidayPanel.add(total);
 
-        
+
         carryOver.setStyleName("clear");
         carryOverContent.setStyleName("pull-right profile-header-label");
         carryOver.add(carryOverKey);
@@ -235,69 +224,110 @@ public class ProfilePanel extends Composite implements MenuListener {
     }
 
     private void refreshHolidayBalanceLabels() {
-        try {
-            ContractDTO contract = ProjectTrackerEntryPoint.getInstance().getContractForStaff(new Date());
-            remainingVacation = contract.getVacation();
-            totalVacationContent.setText(contract.getVacation() + " Days");
-        } catch (InvalidInputValuesException ex) {
-            Logger.getLogger(ProfilePanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
 
-        final BasicAsyncCallback<Double> callback = new BasicAsyncCallback<Double>() {
-
+        final BasicAsyncCallback<Double> vacationDaysTakenCallback = new BasicAsyncCallback<Double>() {
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
                 if (!operationFailed) {
                     remainingVacation -= result;
-                    holidayBalContent.setText(remainingVacation + " Days");
-                    vacationTakenContent.setText("- "+result + " Days");
+                    holidayBalContent.setText(formatDays(remainingVacation) + " Days");
+                    vacationTakenContent.setText("- " + formatDays(result) + " Days");
                 }
             }
         };
 
 
 
-        final BasicAsyncCallback<Double> cb = new BasicAsyncCallback<Double>() {
-
+        final BasicAsyncCallback<Double> vacationDaysPlannedCallback = new BasicAsyncCallback<Double>() {
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
                 if (!operationFailed) {
                     remainingVacation -= result;
-                    holidayBalContent.setText(remainingVacation + " Days");
-                    vacationPlannedContent.setText("- "+result + " Days");
+                    holidayBalContent.setText(formatDays(remainingVacation) + " Days");
+                    vacationPlannedContent.setText("- " + formatDays(result) + " Days");
                 }
             }
         };
 
         final BasicAsyncCallback<Double> carryOverCallback = new BasicAsyncCallback<Double>() {
-
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
                 if (!operationFailed) {
                     if (result > 0) {
                         remainingVacation += result;
-                        carryOverContent.setText("+ "+result + " Days");
-                    }else{
+                        carryOverContent.setText("+ " + formatDays(result) + " Days");
+                    } else {
                         pageHeaderHolidayPanel.remove(carryOver);
                     }
-                    ProjectTrackerEntryPoint.getProjectService(true).getVacationDaysTaken(new Date(), ProjectTrackerEntryPoint.getInstance().getLoggedInStaff(), callback);
-                    ProjectTrackerEntryPoint.getProjectService(true).getVacationDaysPlanned(new Date(), ProjectTrackerEntryPoint.getInstance().getLoggedInStaff(), cb);
+                    ProjectTrackerEntryPoint.getProjectService(true).getVacationDaysTaken(new Date(), staff, vacationDaysTakenCallback);
+                    ProjectTrackerEntryPoint.getProjectService(true).getVacationDaysPlanned(new Date(), staff, vacationDaysPlannedCallback);
                 }
             }
         };
 
-        ProjectTrackerEntryPoint.getProjectService(true).getVacationCarryOver(new Date(), ProjectTrackerEntryPoint.getInstance().getLoggedInStaff(), carryOverCallback);
+
+
+        BasicAsyncCallback<Double> totalCB = new BasicAsyncCallback<Double>() {
+            @Override
+            protected void afterExecution(Double result, boolean operationFailed) {
+                if (!operationFailed) {
+                    remainingVacation = result;
+                    totalVacationContent.setText(formatDays(result) + " Days");
+                }
+
+                ProjectTrackerEntryPoint.getProjectService(
+                        true).getVacationCarryOver(new Date(), staff, carryOverCallback);
+            }
+        };
+
+        ProjectTrackerEntryPoint.getProjectService(
+                true).getTotalVacationForYear(staff, new Date(), totalCB);
+
+    }
+
+    private void refreshProfileImage() {
+        pageHeaderPanel.remove((gravatar));
+        pageHeaderPanel.remove(nameLabel);
+        final String email = ProjectTrackerEntryPoint.getInstance().getStaff().getEmail();
+        if (email != null) {
+            gravatar.setUrl(GRAVATAR_URL_PREFIX
+                    + ProjectTrackerEntryPoint.getInstance().md5(email)
+                    + "?s=110");
+        }
+
+        pageHeaderPanel.add(gravatar);
+
+        final String s = ProjectTrackerEntryPoint.getInstance().getStaff().getFirstname()
+                + " " + ProjectTrackerEntryPoint.getInstance().getStaff().getName();
+        nameLabel = new Label(s);
+
+
+        pageHeaderPanel.add(nameLabel);
 
     }
 
     private void refresh() {
         Scheduler.get().scheduleDeferred(new Command() {
-
             @Override
             public void execute() {
                 refreshAccountBalanceLables();
                 refreshHolidayBalanceLabels();
             }
         });
+    }
+
+    private String formatDays(double d) {
+        return NumberFormat.getFormat("#.##").format(d);
+    }
+
+    /*
+     * called when an administrator changes the user in the users box
+     */
+    @Override
+    public void onChange(ChangeEvent event) {
+        refreshProfileImage();
+        refresh();
+        menue.refreshDetailContainer();
     }
 }

@@ -956,4 +956,6 @@ public interface ProjectService extends RemoteService {
      * @throws PersistentLayerException 
      */
     public boolean isDataChanged() throws DataRetrievalException, NoSessionException, InvalidInputValuesException, PermissionDenyException, PersistentLayerException;
+    
+    public double getTotalVacationForYear(StaffDTO staff, Date Year);
 }

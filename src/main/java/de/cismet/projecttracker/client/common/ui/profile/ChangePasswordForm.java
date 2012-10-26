@@ -57,7 +57,7 @@ public class ChangePasswordForm extends Composite implements ClickHandler {
                     }
                 }
             };
-            ProjectTrackerEntryPoint.getProjectService(true).changePassword(ProjectTrackerEntryPoint.getInstance().getLoggedInStaff(), pwBox.getText(), callback);
+            ProjectTrackerEntryPoint.getProjectService(true).changePassword(ProjectTrackerEntryPoint.getInstance().getStaff(), pwBox.getText(), callback);
         } else {
             ProjectTrackerEntryPoint.outputBox("the confirm password doesn't match the new password");
         }

@@ -45,12 +45,13 @@ public class ChangeChecker extends Timer {
     @Override
     public void run() {
         BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
-
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
-                if (result) {
-                    for (ServerDataChangeListener l : listenerList) {
-                        l.dataChanged();
+                if (!operationFailed) {
+                    if (result) {
+                        for (ServerDataChangeListener l : listenerList) {
+                            l.dataChanged();
+                        }
                     }
                 }
             }

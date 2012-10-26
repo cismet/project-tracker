@@ -148,6 +148,7 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
             } else if (activeLab == profileLab) {
                 if (profilePanel == null) {
                     profilePanel = new ProfilePanel();
+                    this.addChangeListener(profilePanel);
                     this.addMenuListener(profilePanel);
                 }
 //                RootPanel.get("contentId").clear();
@@ -192,6 +193,7 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
     public void setLoggedIn(boolean loggedIn, String user) {
         loginPanel.setLoggedIn(loggedIn, user);
         this.loggedIn = true;
+        profilePanel = null;
     }
 
     public void setGravatar(String url) {

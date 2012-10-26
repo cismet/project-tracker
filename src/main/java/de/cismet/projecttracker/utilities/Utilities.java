@@ -29,7 +29,6 @@ public class Utilities {
     static {
         sendTimer = new Timer(true);
         sendTimer.schedule(new TimerTask() {
-
             @Override
             public void run() {
                 checkCollectedEmails();
@@ -72,7 +71,9 @@ public class Utilities {
             //config file under "mail.from" ; here, the latter style is used
             //message.setFrom( new InternetAddress(aFromEmailAddr) );
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
-            message.addRecipient(Message.RecipientType.BCC, new InternetAddress(ADMIN_MAIL_ADDRESS));
+            if (!address.equals(ADMIN_MAIL_ADDRESS)) {
+                message.addRecipient(Message.RecipientType.BCC, new InternetAddress(ADMIN_MAIL_ADDRESS));
+            }
             message.setSubject(subject);
 //            message.setText(body);
             message.setContent(body, "text/html");

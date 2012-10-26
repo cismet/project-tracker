@@ -26,6 +26,7 @@ public class ProfileMenue extends Composite implements ClickHandler {
     private AccountSettingsForm accountSettings;
     private ChangePasswordForm changePassword;
     private StatisticsPanel statistics;
+    private String selectedPage;
     @UiField
     NavTabs menu;
     @UiField
@@ -46,6 +47,7 @@ public class ProfileMenue extends Composite implements ClickHandler {
         menu.addStyleName("nav-stacked");
         changePassword = new ChangePasswordForm();
         detailContainer.add(changePassword);
+        selectedPage = passwordLink.getText();
     }
 
     @UiHandler(value = {"accountLink", "passwordLink", "statisticsLink"})
@@ -53,26 +55,28 @@ public class ProfileMenue extends Composite implements ClickHandler {
     public void onClick(ClickEvent event) {
         if (event.getSource() instanceof IconAnchor) {
             final String text = ((IconAnchor) event.getSource()).getText();
-            detailContainer.clear();
-            if (text.equals(accountLink.getText())) {
-                if(accountSettings == null){
-                    accountSettings = new AccountSettingsForm();
-                }
-                detailContainer.add(accountSettings);
-            } else if (text.equals(passwordLink.getText())) {
-                if(changePassword == null){
-                    changePassword = new ChangePasswordForm();
-                }
-                detailContainer.add(changePassword);
-            } 
-//            else if (text.equals(designLink.getText())) {
-//            } 
-            else if (text.equals(statisticsLink.getText())) {
-                if(statistics == null){
-                    statistics = new StatisticsPanel();
-                }
-                detailContainer.add(statistics);
+            selectedPage = text;
+            refreshDetailContainer();
+        }
+    }
+
+    public void refreshDetailContainer() {
+        detailContainer.clear();
+        if (selectedPage.equals(accountLink.getText())) {
+            if (accountSettings == null) {
+                accountSettings = new AccountSettingsForm();
             }
+            detailContainer.add(accountSettings);
+        } else if (selectedPage.equals(passwordLink.getText())) {
+            if (changePassword == null) {
+                changePassword = new ChangePasswordForm();
+            }
+            detailContainer.add(changePassword);
+        } //            else if (text.equals(designLink.getText())) {
+        //            } 
+        else if (selectedPage.equals(statisticsLink.getText())) {
+            statistics = new StatisticsPanel();
+            detailContainer.add(statistics);
         }
     }
 }

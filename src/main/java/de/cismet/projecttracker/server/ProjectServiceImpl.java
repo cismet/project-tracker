@@ -72,6 +72,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.*;
+import org.hibernate.hql.ast.tree.OrderByClause;
 
 /**
  *
@@ -97,7 +98,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static final String CHECK_BEGIN_OF_DAY_QUERY = "select max(day) from activity where staffid = %1$s and date_trunc('day', day) = '%2$s' and kindofactivity=1";
     private static final String CHECK_KIND_OF_LAST_ACTIVITY = "select kindofactivity, day from activity where staffid = %1$s and day = (select max(day) from activity where staffid = %1$s and date_trunc('day',day) ='%2$s')";
     private static final String COUNT_VACATION_DAYS = "select * from activity where staffid=%1$s and workpackageid = 409 and day>='%2$s' and day <='%3$s'";
-    private static final String VACATION_DAYS_QUERY = "select * from activity where staffid=%1&s and day >= '%2&s' and day <= '%3&s' and workpackageid = 409";
     private static final String UNLOCKED_DAYS = "select distinct(date_trunc('day',day))  from \"public\".activity  where staffid = %1$s and day>='01-03-2012' except select distinct(date_trunc('day',day)) from \"public\".activity where staffid=%1$s and day>='01-03-2012' and kindofactivity = 3 order by date_trunc desc;";
     private static ReportManager reportManager;
     private static WarningSystem warningSystem;
@@ -3149,7 +3149,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         for (ContractDTO c : contracts) {
             if (c.getFromdate().after(from) && c.getFromdate().before(to)) {
                 result.add(c);
-            } else if (c.getTodate() == null) {
+            } else if (c.getTodate() == null || c.getTodate().after(to)) {
                 if (c.getFromdate().before(from)) {
                     result.add(c);
                     break;
@@ -3183,7 +3183,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     t = to;
                 }
             } else {
-                if (c.getFromdate().before(to) && c.getTodate().before(to)) {
+                if (c.getFromdate().before(to) && c.getTodate() != null && c.getTodate().before(to)) {
                     //calculate from c.getFromDate til c.getTodate 
                     f = c.getFromdate();
                     t = c.getTodate();
@@ -3219,13 +3219,47 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         return result;
     }
+    
+    private double getPartialVacationDays(Date from, Date to, ContractDTO contract){
+        final long difference = to.getTime() - from.getTime();
+        final double days = difference /1000 /60/60/24;
+        final double vacationDaysPerYear = contract.getVacation();
+        
+        return (days*vacationDaysPerYear)/days;
+    }
+    
+    private double getTotalVacationDaysForYear(Date year, StaffDTO staff){
+        final Date firstDayYearBefore = new Date(year.getYear() , 0, 1);
+        final Date lastDayYearBefore = new Date(year.getYear(), 11, 31);
+        final ArrayList<ContractDTO> contracts = getContractforIntervall(firstDayYearBefore, lastDayYearBefore, staff);
+        double totalVacationDays=0;
+        if(contracts.size()>1){
+            for(ContractDTO c : contracts){
+                if(c.getFromdate().before(firstDayYearBefore)){
+                    //calculate from firstDayYeaqrBefore til c.getToDate
+                    totalVacationDays += getPartialVacationDays(firstDayYearBefore,c.getTodate(), c);
+                }else{
+                    if(c.getTodate()!= null && c.getTodate().before(lastDayYearBefore)){
+                        //calculate from c.getFrom til c.getTo
+                        totalVacationDays += getPartialVacationDays(c.getFromdate(),c.getTodate(), c);
+                    }else{
+                        //calculate from c.getFrom til lastDayYearBefore
+                        totalVacationDays += getPartialVacationDays(c.getFromdate(),lastDayYearBefore, c);
+                    }
+                }
+            }
+        }else if (contracts.size()==1){
+            totalVacationDays=contracts.get(0).getVacation();
+        }
+        return totalVacationDays;
+    }
 
     @Override
-    public Double getVacationCarryOver(Date d, StaffDTO staff) {
-        final Date firstDayYearBefore = new Date(d.getYear() - 1, 0, 1);
-        final Date lastDayYearBefore = new Date(d.getYear() - 1, 11, 31);
-
-        return getVacationDays(firstDayYearBefore, lastDayYearBefore, staff);
+    public Double getVacationCarryOver(Date year, StaffDTO staff) {
+        final Date firstDayYearBefore = new Date(year.getYear() - 1, 0, 1);
+        final Date lastDayYearBefore = new Date(year.getYear() - 1, 11, 31);
+        double totalVacationDays=getTotalVacationDaysForYear(new Date(year.getYear() - 1, 0, 1), staff);
+        return totalVacationDays - getVacationDays(firstDayYearBefore, lastDayYearBefore, staff);
     }
 
     @Override
@@ -3266,6 +3300,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             Criterion wpRestriction = Restrictions.and(Restrictions.eq("staff.id", staff.getId()), Restrictions.eq("workPackage.id", wpDTO.getId()));
             Criteria crit = hibernateSession.createCriteria(Activity.class).
                     add(Restrictions.and(wpRestriction, dateRestriction));
+            crit.addOrder(Property.forName("day").asc());
             List<Activity> result = crit.list();
 
             logger.debug(result.size() + " activities found");
@@ -3312,4 +3347,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
         return null;
     }
+
+    @Override
+    public double getTotalVacationForYear(StaffDTO staff, Date year) {
+       return getTotalVacationDaysForYear(year, staff);
+    }
+    
+    
 }

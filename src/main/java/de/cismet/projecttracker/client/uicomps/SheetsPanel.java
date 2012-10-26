@@ -405,6 +405,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         if (e.getNumber() == TopPanel.SHEETS) {
             RootPanel.get("contentId").clear();
             RootPanel.get("contentId").add(this);
+            setLockComponents();
             refresh();
         }
     }

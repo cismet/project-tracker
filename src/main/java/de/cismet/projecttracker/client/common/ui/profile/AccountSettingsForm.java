@@ -46,7 +46,7 @@ public class AccountSettingsForm extends Composite implements ClickHandler {
     }
 
     private void init() {
-        final ProfileDTO p = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getProfile();
+        final ProfileDTO p = ProjectTrackerEntryPoint.getInstance().getStaff().getProfile();
 
         if (p != null) {
             profile = p;
@@ -67,7 +67,7 @@ public class AccountSettingsForm extends Composite implements ClickHandler {
     @Override
     @UiHandler("submitBtn")
     public void onClick(ClickEvent event) {
-        final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
+        final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
         profile.setAutoPauseEnabled(autoPauseCBO.getValue());
         if(weekLockRB.getValue()){
             profile.setWeekLockMode(true);
@@ -81,7 +81,8 @@ public class AccountSettingsForm extends Composite implements ClickHandler {
             @Override
             protected void afterExecution(StaffDTO result, boolean operationFailed) {
                 if(!operationFailed){
-                    ProjectTrackerEntryPoint.outputBox("Profile succesfully updatet!");
+                    ProjectTrackerEntryPoint.getInstance().setStaff(result);
+                    ProjectTrackerEntryPoint.outputBox("Profile succesfully updated!");
                 }
             }
             
