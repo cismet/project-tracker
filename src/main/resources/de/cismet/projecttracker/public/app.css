@@ -533,8 +533,6 @@ footer{
     border-radius: 4px 4px 4px 4px;
     border-style: solid;
     border-width: 1px;
-    width:90px;
-    word-wrap:break-word;
 }
 
 .alert div{
@@ -636,6 +634,11 @@ footer{
     font-size: 13px;
     font-style: normal;
     font-weight: normal;
+}
+
+.modal-body .alert{
+    width:90px;
+    word-wrap:break-word;
 }
 
 .modal-body select, .modal-body input[type="file"]{
