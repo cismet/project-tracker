@@ -301,7 +301,7 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
         final String s = ProjectTrackerEntryPoint.getInstance().getStaff().getFirstname()
                 + " " + ProjectTrackerEntryPoint.getInstance().getStaff().getName();
         nameLabel = new Label(s);
-
+        nameLabel.setStyleName("profile-name-label");
 
         pageHeaderPanel.add(nameLabel);
 
