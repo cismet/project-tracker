@@ -71,7 +71,7 @@ public class Utilities {
             //the "from" address may be set in code, or set in the
             //config file under "mail.from" ; here, the latter style is used
             //message.setFrom( new InternetAddress(aFromEmailAddr) );
-//            message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
             message.addRecipient(Message.RecipientType.BCC, new InternetAddress(ADMIN_MAIL_ADDRESS));
             message.setSubject(subject);
 //            message.setText(body);
