@@ -3225,7 +3225,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final double days = difference /1000 /60/60/24;
         final double vacationDaysPerYear = contract.getVacation();
         
-        return (days*vacationDaysPerYear)/days;
+        return (days*vacationDaysPerYear)/365;
     }
     
     private double getTotalVacationDaysForYear(Date year, StaffDTO staff){
