@@ -7,6 +7,7 @@ package de.cismet.projecttracker.client.common.ui;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -45,7 +46,7 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
 
     @Override
     public void onKeyUp(KeyUpEvent event) {
-        if (event.getNativeKeyCode() == 13) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER && !ProjectTrackerEntryPoint.getInstance().isLoggedIn()) {
             login();
         }
     }
@@ -66,9 +67,11 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
         loginPanel.add(login);
         username.setStyleName("input-small white");
         password.setStyleName("input-small");
+        password.addKeyUpHandler(this);
         login.setStyleName("btn");
         logout.setStyleName("btn");
         logout.addClickHandler(this);
+        login.addKeyUpHandler(this);
         login.addClickHandler(this);
         userDataLab.setStyleName("user-data");
         gravatar.setStyleName("pull-left gravatar-image");
