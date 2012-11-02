@@ -144,6 +144,8 @@ public class EmailTaskNotice {
 
             double hours = Math.round(activity.getWorkinghours() * 100) / 100.0;
             text.append("<br />").append(desc);
+            text.append("<br/> at <br/>");
+            text.append(dateFormat.format(activity.getDay()));
             if (hours != 0.0) {
                 text.append("<br />").append(doubleToHours(hours)).append(" hours");
             }
