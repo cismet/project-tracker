@@ -347,9 +347,9 @@ public class DateHelper {
         date.setTime(date.getTime() + (week * DAY_IN_MILLIS * DAYS_PER_WEEK));
 
         //TODO: folgendes if entfernen. Das if ist ausschliesslich zu Debugzwecken enthalten
-        if (getWeekOfYear(date) != origWeek) {
-            ProjectTrackerEntryPoint.outputBox("error in method getBeginOfWeek");
-        }
+//        if (getWeekOfYear(date) != origWeek) {
+//            ProjectTrackerEntryPoint.outputBox("error in method getBeginOfWeek");
+//        }
 
         return date;
     }
