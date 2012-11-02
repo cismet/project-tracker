@@ -163,7 +163,7 @@ footer{
     border:#ccc solid 1px;
     padding: 15px;
     overflow-y: auto;
-    max-height: 550px;
+    /*max-height: 550px;*/
 
 }
 

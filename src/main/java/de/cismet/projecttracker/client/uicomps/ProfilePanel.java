@@ -8,28 +8,28 @@ import com.github.gwtbootstrap.client.ui.Label;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.profile.ProfileMenue;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
 import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
-import de.cismet.projecttracker.client.dto.ContractDTO;
+import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
-import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.utilities.TimeCalculator;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author dmeiers
  */
-public class ProfilePanel extends Composite implements MenuListener, ChangeHandler {
+public class ProfilePanel extends Composite implements MenuListener, ChangeHandler, ResizeHandler {
 
     private FlowPanel mainPanel = new FlowPanel();
     private FlowPanel pageHeaderPanel = new FlowPanel();
@@ -46,7 +46,7 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
     //HolidayLabels
     final Label vacationPlannedContent = new Label(" Days");
     FlowPanel carryOver = new FlowPanel();
-    final Label carryOverKey = new Label("Carryover:");
+    Label carryOverKey;
     final Label carryOverContent = new Label(" Days");
     final Label totalVacationContent = new Label(" Days");
     final Label holidayBalContent = new Label(" Days");
@@ -74,6 +74,8 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
         contentPanel.add(detailView);
         mainPanel.add(pageHeaderPanel);
         mainPanel.add(contentPanel);
+        Window.addResizeHandler(this);
+        resize(Window.getClientHeight());
 
     }
 
@@ -183,7 +185,8 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
         total.add(totalVacationContent);
         pageHeaderHolidayPanel.add(total);
 
-
+        final int lastYear = DateHelper.getYear(new Date()) - 1;
+        carryOverKey = new Label("Remaining from " + lastYear);
         carryOver.setStyleName("clear");
         carryOverContent.setStyleName("pull-right profile-header-label");
         carryOver.add(carryOverKey);
@@ -232,7 +235,7 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
                 if (!operationFailed) {
                     remainingVacation -= result;
                     holidayBalContent.setText(formatDays(remainingVacation) + " Days");
-                    vacationTakenContent.setText("- " + formatDays(result) + " Days");
+                    vacationTakenContent.setText(formatDays(result) + " Days");
                 }
             }
         };
@@ -245,7 +248,7 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
                 if (!operationFailed) {
                     remainingVacation -= result;
                     holidayBalContent.setText(formatDays(remainingVacation) + " Days");
-                    vacationPlannedContent.setText("- " + formatDays(result) + " Days");
+                    vacationPlannedContent.setText(formatDays(result) + " Days");
                 }
             }
         };
@@ -272,12 +275,35 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
                 if (!operationFailed) {
+                    //TODO if current year = 2012 take the carry over from the profile
                     remainingVacation = result;
                     totalVacationContent.setText(formatDays(result) + " Days");
-                }
 
+                    if (DateHelper.getYear(new Date()) != 2012) {
+                        //automatic calculation of remaining vacation
                 ProjectTrackerEntryPoint.getProjectService(
                         true).getVacationCarryOver(new Date(), staff, carryOverCallback);
+                    } else {
+                        final ProfileDTO profile = ProjectTrackerEntryPoint.getInstance().getStaff().getProfile();
+                        final double residualVacLastYear;
+                        if (profile != null) {
+                            residualVacLastYear = profile.getResidualVacation();
+                        } else {
+                            residualVacLastYear = 0;
+                        }
+
+                        if (residualVacLastYear > 0) {
+                            remainingVacation += residualVacLastYear;
+                            carryOver.removeStyleName("noDisplay");
+                            carryOverContent.setText(formatDays(residualVacLastYear) + " Days");
+
+                        } else {
+                            carryOver.addStyleName("noDisplay");
+                        }
+                        ProjectTrackerEntryPoint.getProjectService(true).getVacationDaysTaken(new Date(), staff, vacationDaysTakenCallback);
+                        ProjectTrackerEntryPoint.getProjectService(true).getVacationDaysPlanned(new Date(), staff, vacationDaysPlannedCallback);
+                    }
+                }
             }
         };
 
@@ -329,5 +355,24 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
         refreshProfileImage();
         refresh();
         menue.refreshDetailContainer();
+    }
+
+    @Override
+    public void onResize(ResizeEvent event) {
+        resize(event.getHeight());
+    }
+
+    private void resize(int heigth) {
+
+        int newHeight = heigth - 300;
+        if (newHeight < 150) {
+            newHeight = 150;
+        }
+
+//        contentPanel.setHeight(newHeight+"px");
+        contentPanel.getElement().getStyle().setProperty("maxHeight", newHeight + "px");
+        final int nh = newHeight - 20;
+//        detailView.setHeight(nh+"px");
+        detailView.getElement().getStyle().setProperty("maxHeight", nh + "px");
     }
 }
