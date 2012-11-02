@@ -11,15 +11,22 @@ package de.cismet.projecttracker.client.dto;
 public class ProfileDTO extends BasicDTO<ProfileDTO> {
 
     private boolean autoPauseEnabled;
-    private boolean weekLockMode;
+    private boolean weekLockModeEnabled;
+    private boolean dayLockModeEnabled;
+    private double autoPauseDuration;
+    private double residualVacation;
+    
     private long id;
     
     public ProfileDTO(){
     }
 
-    public ProfileDTO( boolean autoPauseEnabled, boolean weekLockMode) {
+    public ProfileDTO( boolean autoPauseEnabled, boolean weekLockModeEnabled, boolean dayLockModeEnabled, double pauseDuration, double residualVacation) {
         this.autoPauseEnabled = autoPauseEnabled;
-        this.weekLockMode = weekLockMode;
+        this.weekLockModeEnabled = weekLockModeEnabled;
+        this.dayLockModeEnabled = dayLockModeEnabled;
+        this.autoPauseDuration = pauseDuration;
+        this.residualVacation = residualVacation;
     }
 
     public boolean getAutoPauseEnabled() {
@@ -29,23 +36,52 @@ public class ProfileDTO extends BasicDTO<ProfileDTO> {
     public void setAutoPauseEnabled(boolean autoPauseEnabled) {
         this.autoPauseEnabled = autoPauseEnabled;
     }
-
-    public boolean getWeekLockMode() {
-        return weekLockMode;
+    
+     public boolean getWeekLockModeEnabled() {
+        return weekLockModeEnabled;
     }
 
-    public void setWeekLockMode(boolean weekLockMode) {
-        this.weekLockMode = weekLockMode;
+    public void setWeekLockModeEnabled(boolean weekLockModeEnabled) {
+        this.weekLockModeEnabled = weekLockModeEnabled;
+    }
+
+    public boolean getDayLockModeEnabled() {
+        return dayLockModeEnabled;
+    }
+
+    public void setDayLockModeEnabled(boolean dayLockModeEnabled) {
+        this.dayLockModeEnabled = dayLockModeEnabled;
+    }
+
+    public double getAutoPauseDuration() {
+        return autoPauseDuration;
+    }
+
+    public void setAutoPauseDuration(double autoPauseDuration) {
+        this.autoPauseDuration = autoPauseDuration;
+    }
+
+    public double getResidualVacation() {
+        return residualVacation;
+    }
+
+    public void setResidualVacation(double residualVacation) {
+        this.residualVacation = residualVacation;
     }
 
     @Override
     public ProfileDTO createCopy() {
-        return new ProfileDTO(autoPauseEnabled, weekLockMode);
+        return new ProfileDTO(autoPauseEnabled, weekLockModeEnabled, dayLockModeEnabled, autoPauseDuration, residualVacation);
     }
 
     @Override
     public void reset(ProfileDTO obj) {
         this.autoPauseEnabled = obj.autoPauseEnabled;
-        this.weekLockMode = obj.autoPauseEnabled;
+        this.weekLockModeEnabled = obj.autoPauseEnabled;
+        this.dayLockModeEnabled = obj.dayLockModeEnabled;
+        this.autoPauseDuration  = obj.autoPauseDuration;
+        this.residualVacation = obj.residualVacation;
+        
     }
+
 }

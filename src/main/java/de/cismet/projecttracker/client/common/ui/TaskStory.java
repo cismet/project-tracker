@@ -134,7 +134,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         for (FlowPanelWithSpacer columnPanel : daysOfWeek) {
             if (columnPanel != except) {
                 FlowPanelDropController widgetDropController = new FlowPanelDropController(columnPanel) {
-
                     @Override
                     public void onDrop(DragContext context) {
                         if (context.finalDropController == null) {
@@ -177,7 +176,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                         activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
                                         BasicAsyncCallback<Boolean> freezeDayCallback = new BasicAsyncCallback<Boolean>() {
-
                                             @Override
                                             protected void afterExecution(Boolean result, boolean operationFailed) {
                                                 if (!operationFailed) {
@@ -187,7 +185,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                                         }
 
                                                         BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
-
                                                             @Override
                                                             protected void afterExecution(Long result, boolean operationFailed) {
                                                                 if (!operationFailed) {
@@ -305,7 +302,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     public void onDoubleClick(DoubleClickEvent event) {
         final TaskNotice notice = (TaskNotice) ((Widget) event.getSource()).getParent().getParent();
         BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
-
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
                 if (!operationFailed) {
@@ -344,11 +340,14 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                 activity.setDay(day);
                 activity.setKindofactivity(ActivityDTO.ACTIVITY);
                 activity.setWorkPackage(wp);
-                activity.setWorkinghours(1.5);
+                if (profile != null) {
+                    activity.setWorkinghours(profile.getAutoPauseDuration());
+                } else {
+                    activity.setWorkinghours(1.5);
+                }
                 activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
                 BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
-
                     @Override
                     protected void afterExecution(Long result, boolean operationFailed) {
                         if (!operationFailed) {

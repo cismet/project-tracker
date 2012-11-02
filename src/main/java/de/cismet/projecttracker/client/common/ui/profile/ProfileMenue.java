@@ -8,8 +8,10 @@ import com.github.gwtbootstrap.client.ui.NavLink;
 import com.github.gwtbootstrap.client.ui.NavTabs;
 import com.github.gwtbootstrap.client.ui.base.IconAnchor;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -63,20 +65,19 @@ public class ProfileMenue extends Composite implements ClickHandler {
     public void refreshDetailContainer() {
         detailContainer.clear();
         if (selectedPage.equals(accountLink.getText())) {
-            if (accountSettings == null) {
-                accountSettings = new AccountSettingsForm();
-            }
+            accountSettings = new AccountSettingsForm();
             detailContainer.add(accountSettings);
         } else if (selectedPage.equals(passwordLink.getText())) {
             if (changePassword == null) {
                 changePassword = new ChangePasswordForm();
             }
             detailContainer.add(changePassword);
-        } //            else if (text.equals(designLink.getText())) {
-        //            } 
-        else if (selectedPage.equals(statisticsLink.getText())) {
+        } else if (selectedPage.equals(statisticsLink.getText())) {
             statistics = new StatisticsPanel();
             detailContainer.add(statistics);
         }
+        //            else if (text.equals(designLink.getText())) {
+        //            } 
+
     }
 }

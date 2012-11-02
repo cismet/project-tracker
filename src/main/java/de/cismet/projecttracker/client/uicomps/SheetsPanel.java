@@ -133,6 +133,10 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         datePicker.setStyleName("datepickerTextBox");
         datePicker.setWeekStart(1);
         datePicker.addValueChangeHandler(this);
+        datePicker.setValue(DateHelper.getBeginOfWeek(DateHelper.getYear(new Date()), DateHelper.getWeekOfYear(new Date())));
+        final Date lastDay = new Date(datePicker.getValue().getTime());
+        DateHelper.addDays(lastDay,6);
+        weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
         Label mondayLab = new Label("Mon.:");
         mondayLab.setStyleName("formLabel");
         upperCtrlPanel.add(mondayLab);
@@ -200,10 +204,16 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             final Date d = datePicker.getValue();
             DateHelper.addDays(d, -7);
             datePicker.setValue(d);
+            Date lastDay = new Date(datePicker.getValue().getTime());
+            DateHelper.addDays(lastDay, 6);
+            weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
         } else if (event.getSource() == nextWeek) {
             final Date d = datePicker.getValue();
             DateHelper.addDays(d, 7);
             datePicker.setValue(d);
+            Date lastDay = new Date(datePicker.getValue().getTime());
+            DateHelper.addDays(lastDay, 6);
+            weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
         } else if (event.getSource() == weekLockCB) {
             //set the enable status to false to prevent the user from a new click during calculation
             weekLockCB.setEnabled(false);
@@ -233,14 +243,12 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         final int syear = getSelectedYear();
 
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
-
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
                 if (!operationFailed) {
                     Date firstDay = DateHelper.getBeginOfWeek(syear, sweek);
                     Date lastDay = new Date(firstDay.getTime());
                     DateHelper.addDays(lastDay, 6);
-                    weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
                     lockPanel.initialise(firstDay, tasks, times, weekLockCB);
                     times.setTimes(firstDay, result.getActivities());
                     taskControlPanel.initialise(firstDay, tasks, times);
@@ -281,7 +289,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     private void refreshAccountBalance() {
         final BasicAsyncCallback<Double> callback = new BasicAsyncCallback<Double>() {
-
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
                 if (!operationFailed) {
@@ -348,7 +355,6 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 final TaskNotice newTaskNotice = new TaskNotice(tn.getActivity(), true);
 
                 Scheduler.get().scheduleDeferred(new Command() {
-
                     @Override
                     public void execute() {
                         recent.addTask(newTaskNotice);
@@ -417,6 +423,9 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         if (d.getDay() != 1) {
             datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
         }
+        final Date lastDay = new Date(datePicker.getValue().getTime());
+        DateHelper.addDays(lastDay,6);
+        weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
         refresh();
     }
 
@@ -425,17 +434,18 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         if (staff != null) {
             final ProfileDTO profile = staff.getProfile();
             if (profile != null) {
-                if (profile.getWeekLockMode()) {
-//                    contentNodeParentPanel.remove(lockPanel);
-                    lockPanel.addStyleName("noDisplay");
+                if (profile.getWeekLockModeEnabled()) {
                     weekLockCB.removeStyleName("noDisplay");
                     weekLockLab.removeStyleName("noDisplay");
                 } else {
-//                    lowerCtrlPanel.remove(weekLockCB);
-//                    lowerCtrlPanel.remove(weekLockLab);
-                    lockPanel.removeStyleName("noDisplay");
                     weekLockCB.addStyleName("noDisplay");
                     weekLockLab.addStyleName("noDisplay");
+                }
+
+                if (profile.getDayLockModeEnabled()) {
+                    lockPanel.removeStyleName("noDisplay");
+                } else {
+                    lockPanel.addStyleName("noDisplay");
                 }
             }
         }

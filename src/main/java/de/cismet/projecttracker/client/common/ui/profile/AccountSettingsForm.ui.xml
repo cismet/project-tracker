@@ -20,15 +20,27 @@
                 <b:Controls>
                     <b:CheckBox ui:field="autoPauseCBO"> enable </b:CheckBox>
                 </b:Controls>
+                <b:ControlLabel>Pause Duration</b:ControlLabel>
+                <b:Controls>
+                    <b:TextBox ui:field="pauseDuration">Pause Duration: </b:TextBox>
+                </b:Controls>
             </b:ControlGroup>
             
             <b:Legend>Pause Lock Mode</b:Legend>
             
             <b:ControlGroup>
-                <b:ControlLabel>Week Lock Mode</b:ControlLabel>
+                <b:ControlLabel>Lock Mode</b:ControlLabel>
                 <b:Controls>
-                    <b:RadioButton ui:field="weekLockRB" name="weekLockMode"> Week Lock Mode</b:RadioButton>
-                    <b:RadioButton ui:field="dayLockRB" name="weekLockMode">Day Lock Mode</b:RadioButton>
+                    <b:CheckBox ui:field="weekLockCB" name="weekLockMode"> Show Week Lock Box</b:CheckBox>
+                    <b:CheckBox ui:field="dayLockCB" name="weekLockMode">Show Day Lock bar</b:CheckBox>
+                </b:Controls>
+            </b:ControlGroup>
+            
+            <b:Legend ui:field="residualVacLegend">Remaining Vacation 2011</b:Legend>
+            <b:ControlGroup ui:field="residualVacationGroup">
+                <b:ControlLabel>Remaining days</b:ControlLabel>
+                <b:Controls>
+                    <b:TextBox ui:field="residualVacation"></b:TextBox>
                 </b:Controls>
             </b:ControlGroup>
            
