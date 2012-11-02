@@ -210,6 +210,10 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         return loggedInStaff;
     }
     
+    public void setLoggedInStaff(StaffDTO staff){
+        this.loggedInStaff = staff;
+    }
+    
     public ContractDTO getContractForStaff(Date d) throws InvalidInputValuesException{
         if(d == null){
             throw new InvalidInputValuesException("Date must not be null!");
