@@ -35,8 +35,8 @@
                             <g:CheckBox ui:field="travel" styleName="{style.input-component-margin}" />
 			</div>
 			<div class="modal-footer">
-				<g:Button styleName="btn btn-primary" text="Cancel" ui:field="cancelButton" />
-				<g:Button styleName="btn btn-primary" text="Create" ui:field="button" />
+				<g:Button styleName="btn btn-success" text="Create" ui:field="button" />
+				<g:Button styleName="btn btn-danger" text="Cancel" ui:field="cancelButton" />
 			</div>
 		</div>
 	</g:HTMLPanel>
