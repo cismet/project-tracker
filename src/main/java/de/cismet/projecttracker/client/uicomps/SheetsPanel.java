@@ -18,6 +18,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.github.gwtbootstrap.client.ui.resources.ResourceInjector;
 import com.github.gwtbootstrap.datepicker.client.ui.resources.DatepickerResourceInjector;
+import com.google.gwt.user.client.Timer;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.*;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
@@ -240,11 +241,11 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     public void refresh() {
         final int sweek = getSelectedWeek();
-        final int syear = getSelectedWeek()==1?getSelectedYear()+1:getSelectedYear();
+        final int syear = getSelectedWeek() == 1 ? getSelectedYear() + 1 : getSelectedYear();
         final Date firstDay = datePicker.getValue();
         final Date lastDay = new Date(firstDay.getTime());
-        DateHelper.addDays(lastDay,6);
-        
+        DateHelper.addDays(lastDay, 6);
+
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
@@ -412,10 +413,21 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     @Override
     public void menuChangeEvent(MenuEvent e) {
         if (e.getNumber() == TopPanel.SHEETS) {
-            RootPanel.get("contentId").clear();
-            RootPanel.get("contentId").add(this);
-            setLockComponents();
-            refresh();
+            Timer t = new Timer() {
+                @Override
+                public void run() {
+                    RootPanel.get("contentId").clear();
+                    RootPanel.get("contentId").add(SheetsPanel.this);
+                    setLockComponents();
+                    refresh();
+                }
+            };
+            /*
+             * workaround 
+             * fixes the exception that is throwed if changes in the profile 
+             * panel are made and then quickly switched to sheets panel
+             */
+            t.schedule(500);
         }
     }
 
