@@ -192,7 +192,12 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
 
     public void setLoggedIn(boolean loggedIn, String user) {
         loginPanel.setLoggedIn(loggedIn, user);
-        this.loggedIn = true;
+        if (loggedIn == false) {
+            activeLab = sheetsLab;
+            setActiveLab();
+        } else {
+            this.loggedIn = true;
+        }
         profilePanel = null;
     }
 
