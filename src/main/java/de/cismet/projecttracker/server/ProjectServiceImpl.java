@@ -587,7 +587,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
     /**
      * @param project
-     * @return any cost category for the given project. If the given project have no cost category, a new one will be created.
+     * @return any cost category for the given project. If the given project
+     * have no cost category, a new one will be created.
      */
     private CostCategory getAnyCostCategory(Project project, DBManagerWrapper dbManager) throws DataRetrievalException, PersistentLayerException {
         if (project != null) {
@@ -665,6 +666,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
 
         DBManagerWrapper dbManager = new DBManagerWrapper();
+        final Staff staffHib;
 
         try {
             for (ContractDTO c : staff.getContracts()) {
@@ -678,7 +680,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 }
             }
 
-            Staff staffHib = (Staff) dtoManager.merge(staff);
+            staffHib = (Staff) dtoManager.merge(staff);
             // the password must be copied to the staff object that should be saved, because the password
             // was never sent to the client-side and so the received staff object doesn't contain the password
             Staff original = getStaffById(staff.getId());
@@ -696,10 +698,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             }
 
             dbManager.saveObject(staffHib);
-            return (StaffDTO) dtoManager.clone(staffHib);
         } finally {
             dbManager.closeSession();
         }
+        return (StaffDTO) dtoManager.clone(staffHib);
     }
 
     /**
@@ -1394,6 +1396,74 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
     }
 
+    public ActivityResponseType getActivityDataByWeek(StaffDTO staff, Date firstDayOfWeek, Date lastDayOfweek) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException {
+        logger.debug("get activities by week: " + firstDayOfWeek.toString() + "-" + lastDayOfweek.toString());
+        Session hibernateSession = null;
+        Staff user;
+
+        if (staff == null) {
+            user = getStaffById(getUserId());
+        } else {
+            user = getStaffById(staff.getId());
+        }
+        DBManagerWrapper dbManager = new DBManagerWrapper();
+
+        try {
+            GregorianCalendar from = new GregorianCalendar();
+            from.setTime(firstDayOfWeek);
+            GregorianCalendar till = new GregorianCalendar();
+            till.setTime(lastDayOfweek);
+            till.add(GregorianCalendar.DAY_OF_MONTH, 1);
+
+            hibernateSession = dbManager.getSession();
+            List<Activity> res = hibernateSession.createCriteria(Activity.class).
+                    add(Restrictions.and(Restrictions.eq("staff", user), Restrictions.between("day", from.getTime(), till.getTime()))).
+                    list();
+
+            List<Activity> result = new ArrayList<Activity>();
+            for (Activity tmp : res) {
+                if (tmp.getKindofactivity() == ActivityDTO.ACTIVITY) {
+                    if (!isSameDay(tmp.getDay(), till.getTime())) {
+                        result.add(tmp);
+                    }
+                } else {
+                    if (isSameDay(tmp.getDay(), from.getTime())) {
+                        if (tmp.getDay().getHours() >= 4) {
+                            result.add(tmp);
+                        }
+                    } else if (isSameDay(tmp.getDay(), till.getTime())) {
+                        if (tmp.getDay().getHours() < 4) {
+                            result.add(tmp);
+                        }
+                    } else {
+                        result.add(tmp);
+                    }
+                }
+            }
+
+            logger.debug(result.size() + " activities found!!");
+
+            ActivityResponseType resp = new ActivityResponseType();
+
+            resp.setActivities((List<ActivityDTO>) dtoManager.clone(result));
+            resp.setHolidays(getHolidaysByWeek(firstDayOfWeek));
+
+            for (HolidayType tmp : resp.getHolidays()) {
+                if (tmp.isHalfHoliday()) {
+                    tmp.setHours(getHoursOfWorkPerWeek(user, tmp.getDate()) / 10);
+                } else {
+                    tmp.setHours(getHoursOfWorkPerWeek(user, tmp.getDate()) / 5);
+                }
+            }
+            return resp;
+        } catch (Throwable t) {
+            logger.error("Error:", t);
+            throw new DataRetrievalException(t.getMessage(), t);
+        } finally {
+            dbManager.closeSession();
+        }
+    }
+
     private double getHoursOfWorkPerWeek(Staff user, Date day) {
         Set<Contract> c = user.getContracts();
 
@@ -1576,8 +1646,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     /**
      *
      * @param staff the staff, whose activities should be retrieved
-     * @param criteria an further criteria for the activities, which shluld be retrieved. This can be an object of the type
-     * WorkPackage, WorkCategory or Project
+     * @param criteria an further criteria for the activities, which shluld be
+     * retrieved. This can be an object of the type WorkPackage, WorkCategory or
+     * Project
      * @return all activities, which fulfil the given criterias
      * @throws DataRetrievalException
      * @throws PermissionDenyException
@@ -1738,9 +1809,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         try {
             warningSystem.saveActivity(activityHib);
             final Activity act = (Activity) dbManager.getObject(Activity.class, new Long(activityHib.getId()));
-            final ActivityDTO tmp = (ActivityDTO)dtoManager.clone(act);
-            final Activity origAct = (Activity)dtoManager.merge(tmp.createCopy());
-            
+            final ActivityDTO tmp = (ActivityDTO) dtoManager.clone(act);
+            final Activity origAct = (Activity) dtoManager.merge(tmp.createCopy());
+
             if (act.getCommitted()) {
                 try {
                     checkAdminPermission();
@@ -1772,44 +1843,45 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     /**
      *
      * @param activity
-     * @param originalActivity The description of the original activity. If null, a new activity was created
+     * @param originalActivity The description of the original activity. If
+     * null, a new activity was created
      */
-    private void sendChangedActivityEmail(Activity activity, Activity origActivity, String email){
-         try {
+    private void sendChangedActivityEmail(Activity activity, Activity origActivity, String email) {
+        try {
             if (email != null) {
                 Staff s = getStaffById(getUserId());
                 String text;
-                text="<div class=\"container\">"
-                        +"<div style=\"margin-bottom:15px\">";
+                text = "<div class=\"container\">"
+                        + "<div style=\"margin-bottom:15px\">";
                 if (activity == null) {
                     text += s.getFirstname() + " " + s.getName() + " has <b>deleted</b> the following actvitiy:</div>";
-                    text += "<div style=\"float:left\">" ;
+                    text += "<div style=\"float:left\">";
                     EmailTaskNotice tn = new EmailTaskNotice(origActivity);
                     text += tn.toString();
-                    text+="</div>";
+                    text += "</div>";
                 } else if (origActivity != null) {
                     text += s.getFirstname() + " " + s.getName() + " has <b>changed</b> the following actvitiy:</div>";
                     text += "<div style=\"float:left\">"
-                            + "<div>from</div>" ;
+                            + "<div>from</div>";
                     EmailTaskNotice origTN = new EmailTaskNotice(origActivity);
                     text += origTN.toString();
-                    text+="</div>";
-                    
+                    text += "</div>";
+
                     text += "<div style=\"float:right\">"
-                            + "<div>to</div>" ;
+                            + "<div>to</div>";
                     EmailTaskNotice updatedTN = new EmailTaskNotice(activity);
                     text += updatedTN.toString();
-                    text+="</div>";
-                    
+                    text += "</div>";
+
                 } else {
-                     text += s.getFirstname() + " " + s.getName() + " has <b>added</b> the following actvitiy:</div>";
-                    text += "<div style=\"float:left\">" ;
+                    text += s.getFirstname() + " " + s.getName() + " has <b>added</b> the following actvitiy:</div>";
+                    text += "<div style=\"float:left\">";
                     EmailTaskNotice tn = new EmailTaskNotice(activity);
                     text += tn.toString();
-                    text+="</div>";
+                    text += "</div>";
                 }
-                
-                text +="</div>";
+
+                text += "</div>";
                 Utilities.sendCollectedEmail(email, "Activity changed", text);
             } else {
                 logger.warn("Cannot send the email, because there is no email address");
@@ -1826,7 +1898,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public void deleteActivity(ActivityDTO activity) throws InvalidInputValuesException, DataRetrievalException, PersistentLayerException, PermissionDenyException, NoSessionException {
         logger.debug("delete activity");
         DBManagerWrapper dbManager = new DBManagerWrapper();
-        final Activity deletedActivity =(Activity) dtoManager.merge(activity.createCopy());
+        final Activity deletedActivity = (Activity) dtoManager.merge(activity.createCopy());
         try {
             Activity act = (Activity) dbManager.getObject(Activity.class, new Long(activity.getId()));
             checkUserOrAdminPermission(act.getStaff().getId());
@@ -2674,6 +2746,29 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         return holidays;
     }
 
+    public List<HolidayType> getHolidaysByWeek(Date firstDayOfWeek) throws InvalidInputValuesException, DataRetrievalException {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(firstDayOfWeek);
+        HolidayEvaluator eval = new HolidayEvaluator();
+        List<HolidayType> holidays = new ArrayList<HolidayType>();
+
+        do {
+            int holTmp = eval.isHoliday(cal);
+
+            if (holTmp != HolidayEvaluator.WORKDAY) {
+                HolidayType holiday = new HolidayType();
+                holiday.setDate(cal.getTime());
+                holiday.setHalfHoliday(holTmp == HolidayEvaluator.HALF_HOLIDAY);
+                holiday.setName(eval.getNameOfHoliday(cal));
+
+                holidays.add(holiday);
+            }
+            cal.add(GregorianCalendar.DATE, 1);
+        } while (cal.get(GregorianCalendar.DAY_OF_WEEK) != GregorianCalendar.SATURDAY);
+
+        return holidays;
+    }
+
     /**
      * checks if the current user has admin rights
      *
@@ -2694,7 +2789,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     /**
-     * this method throws an exception, if the current user has no admin rights and the given user is not the current user
+     * this method throws an exception, if the current user has no admin rights
+     * and the given user is not the current user
      *
      * @param userId the id of the user data that should be changed
      * @throws PermissionDenyException
@@ -3219,37 +3315,37 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         return result;
     }
-    
-    private double getPartialVacationDays(Date from, Date to, ContractDTO contract){
+
+    private double getPartialVacationDays(Date from, Date to, ContractDTO contract) {
         final long difference = to.getTime() - from.getTime();
-        final double days = difference /1000 /60/60/24;
+        final double days = difference / 1000 / 60 / 60 / 24;
         final double vacationDaysPerYear = contract.getVacation();
-        
-        return (days*vacationDaysPerYear)/365;
+
+        return (days * vacationDaysPerYear) / 365;
     }
-    
-    private double getTotalVacationDaysForYear(Date year, StaffDTO staff){
-        final Date firstDayYearBefore = new Date(year.getYear() , 0, 1);
+
+    private double getTotalVacationDaysForYear(Date year, StaffDTO staff) {
+        final Date firstDayYearBefore = new Date(year.getYear(), 0, 1);
         final Date lastDayYearBefore = new Date(year.getYear(), 11, 31);
         final ArrayList<ContractDTO> contracts = getContractforIntervall(firstDayYearBefore, lastDayYearBefore, staff);
-        double totalVacationDays=0;
-        if(contracts.size()>1){
-            for(ContractDTO c : contracts){
-                if(c.getFromdate().before(firstDayYearBefore)){
+        double totalVacationDays = 0;
+        if (contracts.size() > 1) {
+            for (ContractDTO c : contracts) {
+                if (c.getFromdate().before(firstDayYearBefore)) {
                     //calculate from firstDayYeaqrBefore til c.getToDate
-                    totalVacationDays += getPartialVacationDays(firstDayYearBefore,c.getTodate(), c);
-                }else{
-                    if(c.getTodate()!= null && c.getTodate().before(lastDayYearBefore)){
+                    totalVacationDays += getPartialVacationDays(firstDayYearBefore, c.getTodate(), c);
+                } else {
+                    if (c.getTodate() != null && c.getTodate().before(lastDayYearBefore)) {
                         //calculate from c.getFrom til c.getTo
-                        totalVacationDays += getPartialVacationDays(c.getFromdate(),c.getTodate(), c);
-                    }else{
+                        totalVacationDays += getPartialVacationDays(c.getFromdate(), c.getTodate(), c);
+                    } else {
                         //calculate from c.getFrom til lastDayYearBefore
-                        totalVacationDays += getPartialVacationDays(c.getFromdate(),lastDayYearBefore, c);
+                        totalVacationDays += getPartialVacationDays(c.getFromdate(), lastDayYearBefore, c);
                     }
                 }
             }
-        }else if (contracts.size()==1){
-            totalVacationDays=contracts.get(0).getVacation();
+        } else if (contracts.size() == 1) {
+            totalVacationDays = contracts.get(0).getVacation();
         }
         return totalVacationDays;
     }
@@ -3258,7 +3354,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public Double getVacationCarryOver(Date year, StaffDTO staff) {
         final Date firstDayYearBefore = new Date(year.getYear() - 1, 0, 1);
         final Date lastDayYearBefore = new Date(year.getYear() - 1, 11, 31);
-        double totalVacationDays=getTotalVacationDaysForYear(new Date(year.getYear() - 1, 0, 1), staff);
+        double totalVacationDays = getTotalVacationDaysForYear(new Date(year.getYear() - 1, 0, 1), staff);
         return totalVacationDays - getVacationDays(firstDayYearBefore, lastDayYearBefore, staff);
     }
 
@@ -3350,8 +3446,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
     @Override
     public double getTotalVacationForYear(StaffDTO staff, Date year) {
-       return getTotalVacationDaysForYear(year, staff);
+        return getTotalVacationDaysForYear(year, staff);
     }
-    
-    
 }

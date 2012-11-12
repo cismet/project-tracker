@@ -135,7 +135,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         datePicker.addValueChangeHandler(this);
         datePicker.setValue(DateHelper.getBeginOfWeek(DateHelper.getYear(new Date()), DateHelper.getWeekOfYear(new Date())));
         final Date lastDay = new Date(datePicker.getValue().getTime());
-        DateHelper.addDays(lastDay,6);
+        DateHelper.addDays(lastDay, 6);
         weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
         Label mondayLab = new Label("Mon.:");
         mondayLab.setStyleName("formLabel");
@@ -240,8 +240,11 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
     public void refresh() {
         final int sweek = getSelectedWeek();
-        final int syear = getSelectedYear();
-
+        final int syear = getSelectedWeek()==1?getSelectedYear()+1:getSelectedYear();
+        final Date firstDay = datePicker.getValue();
+        final Date lastDay = new Date(firstDay.getTime());
+        DateHelper.addDays(lastDay,6);
+        
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
@@ -279,7 +282,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 }
             }
         };
-        ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), syear, sweek, callback);
+        ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), firstDay, lastDay, callback);
     }
 
     @Override
@@ -424,7 +427,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
             datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
         }
         final Date lastDay = new Date(datePicker.getValue().getTime());
-        DateHelper.addDays(lastDay,6);
+        DateHelper.addDays(lastDay, 6);
         weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
         refresh();
     }

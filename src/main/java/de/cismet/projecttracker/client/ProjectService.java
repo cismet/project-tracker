@@ -494,6 +494,8 @@ public interface ProjectService extends RemoteService {
      * @throws NoSessionException 
      */
     public ActivityResponseType getActivityDataByWeek(StaffDTO staff, int year, int week) throws InvalidInputValuesException,DataRetrievalException, PermissionDenyException, NoSessionException;
+    
+    public ActivityResponseType getActivityDataByWeek(StaffDTO staff, Date firstDayOfWeek, Date lastDayOfWeek) throws InvalidInputValuesException,DataRetrievalException, PermissionDenyException, NoSessionException;
 
     /**
      * @param staff the activities of this user will be returned. If the staff is null, the activities of the current users will be returned
@@ -946,6 +948,8 @@ public interface ProjectService extends RemoteService {
 
     public List<HolidayType> getHolidaysByWeek(int year, int week) throws InvalidInputValuesException, DataRetrievalException;
 
+    public List<HolidayType> getHolidaysByWeek(Date firstDayOfWeek) throws InvalidInputValuesException, DataRetrievalException;
+    
     /**
      * checks, if the user data was changed by the quickbooking service
      * @return
