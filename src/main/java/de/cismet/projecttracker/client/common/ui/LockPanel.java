@@ -108,7 +108,6 @@ public class LockPanel extends Composite implements ClickHandler {
         StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
 
         BasicAsyncCallback<ArrayList<ActivityDTO>> callback = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
-
             @Override
             protected void afterExecution(ArrayList<ActivityDTO> result, boolean operationFailed) {
                 if (!operationFailed) {
@@ -116,7 +115,6 @@ public class LockPanel extends Composite implements ClickHandler {
                         if (activity.getKindofactivity() == ActivityDTO.LOCKED_DAY) {
                             final ActivityDTO lockTask = activity;
                             BasicAsyncCallback<Void> callback = new BasicAsyncCallback<Void>() {
-
                                 @Override
                                 protected void afterExecution(Void result, boolean operationFailed) {
                                 }
@@ -162,23 +160,10 @@ public class LockPanel extends Composite implements ClickHandler {
         } else {
             // lets lock the day...
             //check if there are tasks with an exired wp
-            List<TaskNotice> tasks = taskStory.getTasksForDay(day.getDay());
-
-            for (TaskNotice tn : tasks) {
-                WorkPackageDTO tmp = tn.getActivity().getWorkPackage();
-
-                WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
-                if (period != null && !DateHelper.isDayInWorkPackagePeriod(day, period)) {
-                    if (tmp.getExpirationDescription() != null && !tmp.getExpirationDescription().equals("")) {
-                        ProjectTrackerEntryPoint.outputBox("The workpackage \"" + tmp.getName() + "\" for the task: \"" + tn.getActivity().getDescription() + "\" is expired. The administrators adice is: "+tmp.getExpirationDescription());
-                    } else {
-                        ProjectTrackerEntryPoint.outputBox("The workpackage \"" + tmp.getName() + "\" for the task: \"" + tn.getActivity().getDescription() + "\" is expired. Please contact the administrator for further instructions.");
-                    }
-                    lockCB.setEnabled(true);
-                    lockCB.setValue(false);
-                    return;
-                }
-
+            if (!checkWorkpackagePeriods(day)) {
+                lockCB.setEnabled(true);
+                lockCB.setValue(false);
+                return;
             }
 
             //first check if that there are no times left
@@ -188,7 +173,6 @@ public class LockPanel extends Composite implements ClickHandler {
                 lockCB.setValue(false);
             } else {
                 BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
-
                     @Override
                     protected void afterExecution(Boolean result, boolean operationFailed) throws IllegalStateException {
                         if (result) {
@@ -301,6 +285,28 @@ public class LockPanel extends Composite implements ClickHandler {
         this.weekLockCB = weekLockCB;
     }
 
+    private boolean checkWorkpackagePeriods(Date d) {
+        //check if there are tasks with an exired wp
+        List<TaskNotice> tasks = taskStory.getTasksForDay(d.getDay());
+
+        for (TaskNotice tn : tasks) {
+            WorkPackageDTO tmp = tn.getActivity().getWorkPackage();
+            if (tmp != null) {
+                WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
+                if (period != null && !DateHelper.isDayInWorkPackagePeriod(d, period)) {
+                    if (tmp.getExpirationDescription() != null && !tmp.getExpirationDescription().equals("")) {
+                        ProjectTrackerEntryPoint.outputBox("The workpackage \"" + tmp.getName() + "\" for the task: \"" + tn.getActivity().getDescription() + "\" is expired. The administrators adice is: " + tmp.getExpirationDescription());
+                    } else {
+                        ProjectTrackerEntryPoint.outputBox("The workpackage \"" + tmp.getName() + "\" for the task: \"" + tn.getActivity().getDescription() + "\" is expired. Please contact the administrator for further instructions.");
+                    }
+                    return false;
+                }
+
+            }
+        }
+        return true;
+    }
+
     public void lockAllDaysInWeek() {
         //check for all Days, that there are no times left...
         final Date d = new Date(firstDayOfWeek.getTime());
@@ -308,6 +314,13 @@ public class LockPanel extends Composite implements ClickHandler {
         final ArrayList<Date> faultyTimeSlotsDays = new ArrayList<Date>();
         DateHelper.addDays(sunday, 6);
         for (int i = 0; i < days.length; i++) {
+            //check if there tasks with an expired workpackage
+            if (!checkWorkpackagePeriods(i == 0 ? sunday : d)) {
+                weekLockCB.setValue(false);
+                weekLockCB.setEnabled(true);
+                return;
+            }
+
             if (i == 0) {
                 if (!checkTimeSlots(sunday)) {
                     faultyTimeSlotsDays.add(sunday);
@@ -336,7 +349,6 @@ public class LockPanel extends Composite implements ClickHandler {
         }
 
         BasicAsyncCallback<ArrayList<Date>> callback = new BasicAsyncCallback<ArrayList<Date>>() {
-
             @Override
             protected void afterExecution(ArrayList<Date> result, boolean operationFailed) {
                 if (!operationFailed && result.isEmpty()) {
