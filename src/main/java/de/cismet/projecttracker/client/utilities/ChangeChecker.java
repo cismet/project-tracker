@@ -45,6 +45,13 @@ public class ChangeChecker extends Timer {
     @Override
     public void run() {
         BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
+
+            @Override
+            public void onFailure(Throwable caught) {
+               //do nothing
+            }
+            
+            
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
                 if (!operationFailed) {

@@ -16,6 +16,8 @@ import java.util.List;
  * @author therter
  */
 public class ExtendedRecentTaskStory extends RecentStory {
+    
+    private Timer refreshTimer;
 
     @Override
     protected void setLabels() {
@@ -47,7 +49,7 @@ public class ExtendedRecentTaskStory extends RecentStory {
 
             ProjectTrackerEntryPoint.getProjectService(true).getLastActivitiesExceptForUser(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
 
-            Timer t = new Timer() {
+            refreshTimer = new Timer() {
 
                 public void run() {
                     loadRecentActivites();
@@ -55,7 +57,7 @@ public class ExtendedRecentTaskStory extends RecentStory {
             };
 
             // Schedule the timer to run all 30 seconds.
-            t.scheduleRepeating(30000);
+            refreshTimer.scheduleRepeating(30000);
 
         }
     }
@@ -65,6 +67,12 @@ public class ExtendedRecentTaskStory extends RecentStory {
         taskStory.initDragController(mondayDragController, null);
 
         BasicAsyncCallback<List<ActivityDTO>> callback = new BasicAsyncCallback<List<ActivityDTO>>() {
+
+            @Override
+            public void onFailure(Throwable caught) {
+               //do nothing TODO logging?
+            }
+            
 
             @Override
             protected void afterExecution(List<ActivityDTO> result, boolean operationFailed) {
@@ -80,6 +88,8 @@ public class ExtendedRecentTaskStory extends RecentStory {
                             mondayDragController.makeDraggable(widget, widget.getMouseHandledWidget());;
                         }
                     }
+                }else{
+                    refreshTimer.cancel();
                 }
             }
         };
