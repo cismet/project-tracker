@@ -3312,8 +3312,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 dbManager.closeSession();
             }
         }
-
-        return result;
+        return Math.rint(result*2)/2;
     }
 
     private double getPartialVacationDays(Date from, Date to, ContractDTO contract) {
@@ -3347,7 +3346,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         } else if (contracts.size() == 1) {
             totalVacationDays = contracts.get(0).getVacation();
         }
-        return totalVacationDays;
+        return Math.rint(totalVacationDays*2)/2;
     }
 
     @Override
