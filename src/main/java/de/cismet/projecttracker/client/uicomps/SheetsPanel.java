@@ -81,6 +81,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     private WeekDatePicker datePicker;
     private Button datePickerButton = new Button("<i class='icon-calendar'></i>", this);
     private boolean isDatePickerVisible = false;
+    private int requestNumber = 0;
 
     public SheetsPanel() {
         init();
@@ -204,17 +205,25 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         if (event.getSource() == prevWeek) {
             final Date d = datePicker.getValue();
             DateHelper.addDays(d, -7);
-            datePicker.setValue(d);
-            Date lastDay = new Date(datePicker.getValue().getTime());
+            if (d.getDay() != 1) {
+                //this should never happen
+                datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
+            }
+            Date lastDay = (Date)d.clone();
             DateHelper.addDays(lastDay, 6);
             weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
+            datePicker.setValue(d);
         } else if (event.getSource() == nextWeek) {
             final Date d = datePicker.getValue();
             DateHelper.addDays(d, 7);
-            datePicker.setValue(d);
-            Date lastDay = new Date(datePicker.getValue().getTime());
+            if (d.getDay() != 1) {
+                //this should never happen
+                datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
+            }
+            Date lastDay = (Date)d.clone();
             DateHelper.addDays(lastDay, 6);
             weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
+            datePicker.setValue(d);
         } else if (event.getSource() == weekLockCB) {
             //set the enable status to false to prevent the user from a new click during calculation
             weekLockCB.setEnabled(false);
@@ -240,46 +249,45 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
     }
 
     public void refresh() {
-        final int sweek = getSelectedWeek();
-        final int syear = getSelectedWeek() == 1 ? getSelectedYear() + 1 : getSelectedYear();
         final Date firstDay = datePicker.getValue();
         final Date lastDay = new Date(firstDay.getTime());
         DateHelper.addDays(lastDay, 6);
-
+        final int request = ++requestNumber;
+        
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
-                if (!operationFailed) {
-                    Date firstDay = DateHelper.getBeginOfWeek(syear, sweek);
-                    Date lastDay = new Date(firstDay.getTime());
-                    DateHelper.addDays(lastDay, 6);
-                    lockPanel.initialise(firstDay, tasks, times, weekLockCB);
-                    times.setTimes(firstDay, result.getActivities());
-                    taskControlPanel.initialise(firstDay, tasks, times);
-                    /*
-                     * set the init status to false that event fired in fact of the creation of the new activities
-                     * doesnt change the recent activities
-                     */
-                    recent.setInitialised(false);
-                    tasks.setActivities(firstDay, result.getActivities(), result.getHolidays());
-                    //initialise drag and drop for TaskStory
-                    favs.setTaskStory(tasks);
-                    /*
-                     * this method sets the init status to true
-                     */
-                    recent.setTaskStory(tasks);
-                    allRecent.setTaskStory(tasks);
-                    //initialise drag and drop for favourite panel
-                    favs.registerDropController(recent.getDragController());
-                    favs.registerDropController(allRecent.getDragController());
-                    favs.registerDropControllers(tasks.getDragControllers());
-                    dailyHours.initialise(firstDay, times, tasks);
-                    refreshWeeklyHoursOfWork();
-                    refreshPrevWeekBalance();
-                    refreshAccountBalance();
-//                    setLockComponents();
+                if (request == requestNumber) {
+                    if (!operationFailed) {
+                        DateHelper.addDays(lastDay, 6);
+                        lockPanel.initialise(firstDay, tasks, times, weekLockCB);
+                        times.setTimes(firstDay, result.getActivities());
+                        taskControlPanel.initialise(firstDay, tasks, times);
+                        /*
+                        * set the init status to false that event fired in fact of the creation of the new activities
+                        * doesnt change the recent activities
+                        */
+                        recent.setInitialised(false);
+                        tasks.setActivities(firstDay, result.getActivities(), result.getHolidays());
+                        //initialise drag and drop for TaskStory
+                        favs.setTaskStory(tasks);
+                        /*
+                        * this method sets the init status to true
+                        */
+                        recent.setTaskStory(tasks);
+                        allRecent.setTaskStory(tasks);
+                        //initialise drag and drop for favourite panel
+                        favs.registerDropController(recent.getDragController());
+                        favs.registerDropController(allRecent.getDragController());
+                        favs.registerDropControllers(tasks.getDragControllers());
+                        dailyHours.initialise(firstDay, times, tasks);
+                        refreshWeeklyHoursOfWork();
+                        refreshPrevWeekBalance();
+                        refreshAccountBalance();
+    //                    setLockComponents();
 
-                    ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
+                        ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
+                    }
                 }
             }
         };

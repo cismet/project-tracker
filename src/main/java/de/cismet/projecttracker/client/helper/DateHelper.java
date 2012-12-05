@@ -6,6 +6,7 @@ package de.cismet.projecttracker.client.helper;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 import de.cismet.projecttracker.client.CalendarMessages;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
@@ -65,7 +66,8 @@ public class DateHelper {
     }
 
     public static void addDays(Date day, int days) {
-        day.setTime(day.getTime() + (days * DAY_IN_MILLIS));
+        CalendarUtil.addDaysToDate(day, days);
+//        day.setTime(day.getTime() + (days * DAY_IN_MILLIS));
     }
 
     public static String doubleToHours(double ihours) {
