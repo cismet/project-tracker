@@ -350,12 +350,12 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
 
                                         if (start == null) {
                                             // todo: sinvolleren Defaultwert nutzen
-                                            start = new Date(1900, 1, 1, 10, 0, 0);
+                                            start = new Date();//new Date(1900, 1, 1, 10, 0, 0);
                                         }
 
-                                        if (end == null) {
-                                            end = new Date();
-                                        }
+//                                        if (end == null) {
+//                                            end = new Date();
+//                                        }
 
                                         addTimeStartEnd(day, start, end);
                                     }
@@ -377,7 +377,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
 
                             max = new Date(max.getTime() + 60000);
                             timeList.get(timeList.size() - 1).getStart();
-                            addTimeStartEnd(day, max, new Date());
+                            addTimeStartEnd(day, max, null);
                         }
                     }
                 }
@@ -396,32 +396,39 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
      */
     private void addTimeStartEnd(final Date day, final Date startTime, final Date endTime) {
         final ActivityDTO start = new ActivityDTO();
-        final ActivityDTO end = new ActivityDTO();
+        final ActivityDTO end = (endTime == null ? null : new ActivityDTO());
 
         if (startTime.getHours() >= 4) {
             start.setDay(DateHelper.createDateObject(day, startTime));
-            end.setDay(DateHelper.createDateObject(day, endTime));
+            if (end != null) {
+                end.setDay(DateHelper.createDateObject(day, endTime));
+            }
         } else {
             start.setDay(DateHelper.createDateObject(day, new Date(2010, 01, 01, 04, 01, 00)));
-            end.setDay(DateHelper.createDateObject(day, endTime));
-
-            if (end.getDay().before(start.getDay())) {
-                end.setDay(DateHelper.createDateObject(day, start.getDay()));
-                end.setDay(new Date(end.getDay().getTime() + 60000));
+            if (end != null) {
+                end.setDay(DateHelper.createDateObject(day, endTime));
+            
+                if (end.getDay().before(start.getDay())) {
+                    end.setDay(DateHelper.createDateObject(day, start.getDay()));
+                    end.setDay(new Date(end.getDay().getTime() + 60000));
+                }
             }
         }
 
         start.setKindofactivity(ActivityDTO.BEGIN_OF_DAY);
-        end.setKindofactivity(ActivityDTO.END_OF_DAY);
-
         start.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
-        end.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
         final BasicAsyncCallback<Long> startCallback = new BasicAsyncCallback<Long>() {
             @Override
             protected void afterExecution(final Long result, final boolean operationFailed) {
                 if (!operationFailed) {
                     start.setId(result);
+                    
+                    if (end == null) {
+                        addTask(day.getDay(), start, end);
+                        final TimeStoryEvent e = new TimeStoryEvent(Story.this, true, day);
+                        fireTimeNoticeCreated(e);
+                    }
                 }
             }
         };
@@ -439,7 +446,12 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
         };
 
         ProjectTrackerEntryPoint.getProjectService(true).createActivity(start, startCallback);
-        ProjectTrackerEntryPoint.getProjectService(true).createActivity(end, endCallback);
+
+        if (end != null) {
+            end.setKindofactivity(ActivityDTO.END_OF_DAY);
+            end.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
+            ProjectTrackerEntryPoint.getProjectService(true).createActivity(end, endCallback);
+        }
     }
 
     /**
