@@ -299,7 +299,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         refresh();
     }
 
-    private void refreshAccountBalance() {
+    public void refreshAccountBalance() {
         final BasicAsyncCallback<Double> callback = new BasicAsyncCallback<Double>() {
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
@@ -315,7 +315,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         }
     }
 
-    private void refreshWeeklyHoursOfWork() {
+    public void refreshWeeklyHoursOfWork() {
         double hours = 0.0;
         double weekDebit = 0.0;
         for (int i = 0; i < 7; ++i) {

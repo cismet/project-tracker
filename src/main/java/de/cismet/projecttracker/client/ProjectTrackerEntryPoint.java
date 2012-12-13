@@ -1,8 +1,9 @@
 package de.cismet.projecttracker.client;
 
-import com.github.gwtbootstrap.client.ui.resources.ResourceInjector;
-import com.github.gwtbootstrap.datepicker.client.ui.resources.DatepickerResourceInjector;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.*;
@@ -26,17 +27,20 @@ import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.uicomps.SheetsPanel;
 import de.cismet.projecttracker.client.uicomps.TopPanel;
 import de.cismet.projecttracker.client.utilities.ChangeChecker;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 /**
- * This is the main class of the ProjectTracker and will be automatic instantiated by
- * the Google Web Toolkit to start the ProjectTracker application.
+ * This is the main class of the ProjectTracker and will be automatic
+ * instantiated by the Google Web Toolkit to start the ProjectTracker
+ * application.
  *
  * @author therter
  */
-public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler, ResizeHandler, HasResizeHandlers, ClickHandler,ServerDataChangeListener {
+public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler, ResizeHandler, HasResizeHandlers, ClickHandler, ServerDataChangeListener {
+
     private static ProjectTrackerEntryPoint currentInstance;
     private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
     private HandlerManager handlerManager = new HandlerManager(this);
@@ -53,14 +57,12 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
     private HandlerRegistration windowResize;
     private HandlerRegistration resize;
 
-
-
     /**
-     * Creates a new instance of ProjectTrackerEntryPoint
-     * This constructor should not be used. The only instance of this class
-     * should be created by the GWT.
-     * 
-     * @see #getInstance() 
+     * Creates a new instance of ProjectTrackerEntryPoint This constructor
+     * should not be used. The only instance of this class should be created by
+     * the GWT.
+     *
+     * @see #getInstance()
      */
     public ProjectTrackerEntryPoint() {
         currentInstance = this;
@@ -68,7 +70,6 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         Window.addResizeHandler(this);
     }
 
-    
     /**
      * @return the current ProjectTrackerEntryPoint instance
      */
@@ -78,50 +79,58 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         return currentInstance;
     }
 
-
     /**
-     * The entry point method, called automatically by loading a module
-     * that declares an implementing class as an entry-point
+     * The entry point method, called automatically by loading a module that
+     * declares an implementing class as an entry-point
      */
     @Override
     public void onModuleLoad() {
 //        Widget root;
 //
 //        root = getBasicScreen();
-
-        History.addValueChangeHandler(this);
-        // Finally, add the outer panel to the RootPanel, so that it will be
-        // displayed.
-        if (RootPanel.get().getWidgetCount() > 0) {
-            //if a widget was already added, it will be removed
-            RootPanel.get().remove(0);
-        }
-        checkLogin();
-        RootPanel.get("topbarId").add(topPanel);
-
-        // Call the window resized handler to get the initial sizes setup. Doing
-        // this in a deferred command causes it to occur after all widgets' sizes
-        // have been computed by the browser.
-        DeferredCommand.addCommand(new Command() {
+        GWT.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
-            public void execute() {
-                validateSize();
+            public void onUncaughtException(Throwable e) {
+                System.out.println("foo");
             }
         });
 
-        windowResize = Window.addResizeHandler(sheets);
-        resize = addResizeHandler(sheets);
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                History.addValueChangeHandler(ProjectTrackerEntryPoint.this);
+                // Finally, add the outer panel to the RootPanel, so that it will be
+                // displayed.
+                if (RootPanel.get().getWidgetCount() > 0) {
+                    //if a widget was already added, it will be removed
+                    RootPanel.get().remove(0);
+                }
+                checkLogin();
+                RootPanel.get("topbarId").add(topPanel);
+
+                // Call the window resized handler to get the initial sizes setup. Doing
+                // this in a deferred command causes it to occur after all widgets' sizes
+                // have been computed by the browser.
+                DeferredCommand.addCommand(new Command() {
+                    @Override
+                    public void execute() {
+                        validateSize();
+                    }
+                });
+
+                windowResize = Window.addResizeHandler(sheets);
+                resize = addResizeHandler(sheets);
+            }
+        });
     }
 
-    
     public void checkLogin() {
         BasicAsyncCallback<StaffDTO> callback = new BasicAsyncCallback<StaffDTO>() {
-
             @Override
             protected void afterExecution(StaffDTO result, boolean operationFailed) {
                 if (!operationFailed) {
                     if (result != null) {
-                        login(result, (result.getPermissions() & 0x1) == 0x1 );
+                        login(result, (result.getPermissions() & 0x1) == 0x1);
                     }
                 } else {
 //                    RootPanel.get("contentId").add(getBasicScreen());
@@ -130,20 +139,21 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         };
 
         ProjectTrackerEntryPoint.getProjectService(true).checkLogin(callback);
-        
+
     }
 
     /**
-     * @return true, if and only if a user is currently logged in on the client side. It is possible
-     * that the session was expired on the server side, but the user is still logged in on the client side.
+     * @return true, if and only if a user is currently logged in on the client
+     * side. It is possible that the session was expired on the server side, but
+     * the user is still logged in on the client side.
      */
     public boolean isLoggedIn() {
         return loggedInStaff != null;
     }
 
-
     /**
      * logs in
+     *
      * @param username the user, who has logged in
      * @param admin true, if the user has admin permissions
      */
@@ -152,13 +162,13 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         this.loggedInStaff = staff;
         this.admin = admin;
         topPanel.setLoggedIn(true, staff.getUsername());
-        
+
 //        RootPanel ps = RootPanel.get("PleaseSignin");
 //        if (ps != null) {
 //            RootPanel.get("contentId").remove(ps);
 //        }
         RootPanel.get("contentId").add(sheets);
-        
+
         validateSize();
         BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
             @Override
@@ -179,29 +189,27 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         ChangeChecker.getInstance().addListener(this);
         checkBeginOfDayBooking();
     }
-    
-    private void checkBeginOfDayBooking(){
-        final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>(){
 
+    private void checkBeginOfDayBooking() {
+        final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
-                if(!operationFailed && !result){
+                if (!operationFailed && !result) {
                     // popup
                     DialogBox form = new DialogBox();
-                    form.setWidget( new BeginOfWorkDialog(form,  sheets));
+                    form.setWidget(new BeginOfWorkDialog(form, sheets));
                     form.center();
                 }
             }
-            
         };
-        
-        ProjectTrackerEntryPoint.getProjectService(true).checkBeginOfDayActivityExists(getStaff(),callback);
+
+        ProjectTrackerEntryPoint.getProjectService(true).checkBeginOfDayActivityExists(getStaff(), callback);
     }
 
     public StaffDTO getStaff() {
         return staff;
     }
-    
+
     public void setStaff(StaffDTO staff) {
         this.staff = staff;
     }
@@ -209,21 +217,21 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
     public StaffDTO getLoggedInStaff() {
         return loggedInStaff;
     }
-    
-    public void setLoggedInStaff(StaffDTO staff){
+
+    public void setLoggedInStaff(StaffDTO staff) {
         this.loggedInStaff = staff;
     }
-    
-    public ContractDTO getContractForStaff(Date d) throws InvalidInputValuesException{
-        if(d == null){
+
+    public ContractDTO getContractForStaff(Date d) throws InvalidInputValuesException {
+        if (d == null) {
             throw new InvalidInputValuesException("Date must not be null!");
         }
         ArrayList<ContractDTO> contracts = ProjectTrackerEntryPoint.getInstance().getStaff().getContracts();
-        ContractDTO contract=null;
+        ContractDTO contract = null;
         for (ContractDTO c : contracts) {
             Date contractToDate = c.getTodate();
             Date contractFromDate = c.getFromdate();
-            if(contractToDate == null){
+            if (contractToDate == null) {
                 contractToDate = new Date(d.getTime());
                 DateHelper.addDays(contractToDate, 7);
             }
@@ -233,13 +241,14 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         }
         return contract;
     }
-    
-    public ContractDTO getContractForStaff(int week, int year)throws InvalidInputValuesException{
+
+    public ContractDTO getContractForStaff(int week, int year) throws InvalidInputValuesException {
         return getContractForStaff(DateHelper.getBeginOfWeek(year, week));
     }
 
     /**
-     * resizes the main window and fires a resize event to all registrated handler
+     * resizes the main window and fires a resize event to all registrated
+     * handler
      */
     public void validateSize() {
         resize(Window.getClientWidth(), Window.getClientHeight());
@@ -266,8 +275,8 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 
     /**
      * @return the maximum width of the widget, that is shown in the middle of
-     * the browser window.
-     * See {@see showNewCenterPanel(Widget)}
+     * the browser window. See {
+     * @see showNewCenterPanel(Widget)}
      */
     public int getMaxWidth() {
         return Window.getClientWidth() - 10;
@@ -278,9 +287,14 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         //todo eventuell korrigieren
         return Window.getClientHeight();
     }
+    
+    public SheetsPanel getSheetsPanel(){
+        return sheets;
+    }
 
     /**
-     * @return a DockPanel that cointains the top panel, the two menu bars and the main panel in the middel.
+     * @return a DockPanel that cointains the top panel, the two menu bars and
+     * the main panel in the middel.
      */
     private Widget getBasicScreen() {
 
@@ -297,7 +311,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 //        outer.add(panel, DockPanel.NORTH);
 
         return sheets;
-    }    
+    }
 
     /**
      * opens a popup and prints the given message
@@ -307,15 +321,15 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
     public static void outputBox(String msg) {
         Window.alert(msg);
     }
-    
+
     /**
      * opens a popup and prints the given message
-     * 
+     *
      * @param msg the message, that should be printed
      */
     public static native String md5(String msg) /*-{
-      return $wnd.MD5(msg); // $wnd is a JSNI synonym for 'window'
-    }-*/;
+     return $wnd.MD5(msg); // $wnd is a JSNI synonym for 'window'
+     }-*/;
 
     /**
      * prints the given message in the status bar
@@ -326,7 +340,9 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 //        if (statusBar != null) {
 //            statusBar.setStatusMsg(msg);
 //        }
-    };
+    }
+
+    ;
 
 
     /**
@@ -345,9 +361,9 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         return null;
     }
 
-
     /**
-     * Adds a new ResizeHandler. This handler will be invoked by changes of the browser window size
+     * Adds a new ResizeHandler. This handler will be invoked by changes of the
+     * browser window size
      *
      * @param handler
      */
@@ -358,13 +374,13 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 
     /**
      * fires the resize event to all registrated handler
+     *
      * @param event
      */
     @Override
     public void fireEvent(GwtEvent<?> event) {
         handlerManager.fireEvent(event);
     }
-
 
     /**
      * This method will be called automatically by resizing the browser window
@@ -377,8 +393,10 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         validateSize();
     }
 
-    /**o
+    /**
+     * o
      * resizes the main window
+     *
      * @param width
      * @param height
      */
@@ -396,7 +414,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 
         int outerWidth = width - 20;
         outer.setWidth(outerWidth + "px");
-        
+
 
         RootPanel p = RootPanel.get("contentId");
         int newHeight = height - p.getAbsoluteTop() - 85;
@@ -407,10 +425,10 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
 
     }
 
-
     /**
-     * This will be invoked from the sign out button within the TopPanel and this method
-     * signs out the current user.
+     * This will be invoked from the sign out button within the TopPanel and
+     * this method signs out the current user.
+     *
      * @param event
      */
     @Override
@@ -444,19 +462,18 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
         windowResize = Window.addResizeHandler(sheets);
         resize = addResizeHandler(sheets);
     }
-    
 
     @Override
     public void onValueChange(ValueChangeEvent event) {
         changePage(History.getToken());
     }
-    
+
     private void changePage(String token) {
         RootPanel pan = RootPanel.get(activePanel + "Id");
         if (pan != null) {
             pan.setStyleName("inactive");
         }
-        
+
         pan = RootPanel.get(token + "Id");
         if (pan != null) {
             pan.setStyleName("active");

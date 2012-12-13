@@ -72,7 +72,6 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.*;
-import org.hibernate.hql.ast.tree.OrderByClause;
 
 /**
  *
@@ -91,7 +90,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             + "order by max(id) desc limit 30;";
     private static final String REAL_WORKING_TIME_QUERY = "SELECT sum(workinghours)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid NOT IN (234, 407,408 ,409, 410,411,414, 419);";
 //    private static final String TRAVEL_TIME_QUERY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND day >= '%3$s' AND day < '%4$s' AND workpackageid = 414";
-    private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(coalesce(nullif(workinghours, 0),%1$s))  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (409,410,411,419);";
+    private static final String REAL_WORKING_TIME_ILLNESS_AND_HOLIDAY = "SELECT sum(case workinghours  when -1 then 0 when 0 then %1$s else workinghours end)  FROM activity WHERE staffid = %2$s AND date_trunc('day', day) >= '%3$s' AND date_trunc('day', day) < '%4$s' AND workpackageid IN (409,410,411,419);";
     private static final String FAVOURITE_EXISTS_QUERY = "select description, staffid, workpackageid from activity where "
             + "staffid=%1$s and day is null and workpackageid = %2$s and "
             + "case when description is null then true else description = '%3$s' end";
@@ -1718,7 +1717,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     && activity.getWorkPackage() == null) {
                 throw new DataRetrievalException(LanguageBundle.ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT);
             }
-
+            
             if (act.getWorkCategory() == null) {
                 act.setWorkCategory((WorkCategory) dbManager.getObject(WorkCategory.class, WorkCategoryDTO.WORK));
             }

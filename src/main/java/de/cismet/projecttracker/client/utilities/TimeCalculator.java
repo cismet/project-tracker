@@ -52,7 +52,7 @@ public class TimeCalculator {
                 } else if (act.getWorkPackage().getId() == ActivityDTO.ILLNESS_ID) {
                     if (act.getWorkinghours() == 0 && dhow > 0) {
                         hours += dhow;
-                    } else {
+                    } else if(act.getWorkinghours()!=-1){
                         hours += act.getWorkinghours();
                     }
                 } //                else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {

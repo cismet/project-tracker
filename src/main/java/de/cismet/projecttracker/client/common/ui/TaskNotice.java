@@ -138,7 +138,7 @@ public class TaskNotice extends Composite implements ClickHandler {
         double hours = Math.round(activity.getWorkinghours() * 100) / 100.0;
         text.append("<br />").append(desc);
 
-        if (hours != 0.0 && !deleteButtonDisabled) {
+        if (hours != 0.0 && hours!=-1.0 && !deleteButtonDisabled) {
             text.append("<br />").append(DateHelper.doubleToHours(hours)).append(" hours");
         }
 

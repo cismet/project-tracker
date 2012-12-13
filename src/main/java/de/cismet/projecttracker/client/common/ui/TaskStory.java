@@ -19,13 +19,17 @@ import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
+import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.HolidayType;
+import de.cismet.projecttracker.client.utilities.IllnessChecker;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TaskStory extends Composite implements TaskDeleteListener, DoubleClickHandler, TaskNoticeListener {
 
@@ -96,7 +100,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         for (FlowPanelWithSpacer columnPanel : daysOfWeek) {
             taskMap.put(columnPanel, new ArrayList<TaskNotice>());
         }
-
+        this.addTaskStoryListener(new IllnessChecker(this));
 
 //        mondayDragController = new RestorePickupDragController(RootPanel.get("contentId"), false);
 //        tuesdayDragController = new RestorePickupDragController(RootPanel.get("contentId"), false);
