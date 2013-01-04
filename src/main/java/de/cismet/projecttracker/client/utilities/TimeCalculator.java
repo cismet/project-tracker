@@ -39,9 +39,11 @@ public class TimeCalculator {
             dhow = contract.getWhow() / 5;
         }
 
-        if (act.getKindofactivity() == ActivityDTO.HOLIDAY || act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
-            hours += act.getWorkinghours();
-        } else {
+        if (act.getKindofactivity() == ActivityDTO.HOLIDAY) {
+            hours+=dhow;
+        } else if(act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY){
+            hours += dhow/2;
+        }else {
             if (act.getWorkPackage() != null && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
                 if (act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || act.getWorkPackage().getId() == ActivityDTO.LECTURE_ID) {
                     if (act.getWorkinghours() == 0 && dhow > 0) {
@@ -52,7 +54,7 @@ public class TimeCalculator {
                 } else if (act.getWorkPackage().getId() == ActivityDTO.ILLNESS_ID) {
                     if (act.getWorkinghours() == 0 && dhow > 0) {
                         hours += dhow;
-                    } else if(act.getWorkinghours()!=-1){
+                    } else if (act.getWorkinghours() != -1) {
                         hours += act.getWorkinghours();
                     }
                 } //                else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
@@ -68,15 +70,16 @@ public class TimeCalculator {
     }
 
     /**
-     * Calculates the wokring hours for the week of year for s and appends the tim in hours to the label l
+     * Calculates the wokring hours for the week of year for s and appends the
+     * tim in hours to the label l
+     *
      * @param year
      * @param week
      * @param s
-     * @param l 
+     * @param l
      */
     public static void getWorkingHoursForWeek(final int year, final int week, StaffDTO s, final Label l, final String prefix) {
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
-
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
                 if (!operationFailed) {
@@ -99,19 +102,19 @@ public class TimeCalculator {
         };
         ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(s, year, week, callback);
     }
-    
-     /**
-     * Calculates the wokring balance for the week of year for s and sets the labels text 
-     *  as the prefix appended the time in hours to the prefix. 
+
+    /**
+     * Calculates the wokring balance for the week of year for s and sets the
+     * labels text as the prefix appended the time in hours to the prefix.
+     *
      * @param year
      * @param week
      * @param s
-     * @param l 
+     * @param l
      */
     public static void getWorkingBalanceForWeek(final int year, final int week, StaffDTO s, final Label l, final String prefix) {
 
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
-
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
                 double hours = 0.0;
