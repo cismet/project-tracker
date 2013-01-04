@@ -235,7 +235,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint, ValueChangeHandler,
                 contractToDate = new Date(d.getTime());
                 DateHelper.addDays(contractToDate, 7);
             }
-            if (d.before(contractToDate) && d.after(contractFromDate)) {
+            if (d.compareTo(contractToDate)<=0 && d.compareTo(contractFromDate)>=0) {
                 contract = c;
             }
         }
