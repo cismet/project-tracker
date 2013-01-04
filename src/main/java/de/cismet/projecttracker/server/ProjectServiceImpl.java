@@ -14,6 +14,7 @@ import de.cismet.projecttracker.client.dto.CostCategoryDTO;
 import de.cismet.projecttracker.client.dto.EstimatedComponentCostDTO;
 import de.cismet.projecttracker.client.dto.EstimatedComponentCostMonthDTO;
 import de.cismet.projecttracker.client.dto.FundingDTO;
+import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.ProjectBodyDTO;
 import de.cismet.projecttracker.client.dto.ProjectCategoryDTO;
 import de.cismet.projecttracker.client.dto.ProjectComponentTagDTO;
@@ -1717,7 +1718,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     && activity.getWorkPackage() == null) {
                 throw new DataRetrievalException(LanguageBundle.ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT);
             }
-            
+
             if (act.getWorkCategory() == null) {
                 act.setWorkCategory((WorkCategory) dbManager.getObject(WorkCategory.class, WorkCategoryDTO.WORK));
             }
@@ -3242,10 +3243,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final ArrayList<ContractDTO> contracts = staff.getContracts();
 
         for (ContractDTO c : contracts) {
-            if (c.getFromdate().after(from) && c.getFromdate().before(to)) {
+            if (c.getFromdate().compareTo(from)>=0 && c.getFromdate().compareTo(to)<0) {
                 result.add(c);
             } else if (c.getTodate() == null || c.getTodate().after(to)) {
-                if (c.getFromdate().before(from)) {
+                if (c.getFromdate().compareTo(from)<=0) {
                     result.add(c);
                     break;
                 }
@@ -3311,7 +3312,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 dbManager.closeSession();
             }
         }
-        return Math.rint(result*2)/2;
+        return Math.rint(result * 2) / 2;
     }
 
     private double getPartialVacationDays(Date from, Date to, ContractDTO contract) {
@@ -3345,7 +3346,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         } else if (contracts.size() == 1) {
             totalVacationDays = contracts.get(0).getVacation();
         }
-        return Math.rint(totalVacationDays*2)/2;
+        return Math.rint(totalVacationDays * 2) / 2;
     }
 
     @Override
@@ -3353,6 +3354,15 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final Date firstDayYearBefore = new Date(year.getYear() - 1, 0, 1);
         final Date lastDayYearBefore = new Date(year.getYear() - 1, 11, 31);
         double totalVacationDays = getTotalVacationDaysForYear(new Date(year.getYear() - 1, 0, 1), staff);
+        //the total vacation can contain old residual vacation from the year before
+        if ((year.getYear() + 1900) - 1 == 2012) {
+            ProfileDTO profile = staff.getProfile();
+            if (profile != null) {
+                totalVacationDays += profile.getResidualVacation();
+            }
+        } else {
+            totalVacationDays += getVacationCarryOver(new Date(year.getYear() - 1, year.getMonth(), year.getDay()), staff);
+        }
         return totalVacationDays - getVacationDays(firstDayYearBefore, lastDayYearBefore, staff);
     }
 
