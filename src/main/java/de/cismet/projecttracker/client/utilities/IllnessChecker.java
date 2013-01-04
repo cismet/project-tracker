@@ -10,8 +10,10 @@ import de.cismet.projecttracker.client.common.ui.TaskStory;
 import de.cismet.projecttracker.client.common.ui.event.TaskStoryEvent;
 import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+import de.cismet.projecttracker.client.uicomps.SheetsPanel;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,16 +54,25 @@ public class IllnessChecker implements TaskStoryListener {
         final Date day = newActivity.getDay();
         List<TaskNotice> tasks = story.getTasksForDay(day.getDay());
         try {
-            final double whow = ProjectTrackerEntryPoint.getInstance().getContractForStaff(day).getWhow() / 5;
+            final ContractDTO contract = ProjectTrackerEntryPoint.getInstance().getContractForStaff(day);
+            if (contract == null) {
+                Logger.getLogger(IllnessChecker.class.getName()).log(Level.SEVERE, "Could not get valid "
+                        + "Contract for Staff " + ProjectTrackerEntryPoint.getInstance().getStaff()
+                        + " and date" + day.toString());
+                return;
+            }
+            final double whow = contract.getWhow() / 5;
             double whNonIllnes = 0;
             final List<TaskNotice> illnessAct = new LinkedList<TaskNotice>();
             boolean needed = false;
             for (TaskNotice tn : tasks) {
-                if (tn.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID) {
-                    illnessAct.add(tn);
-                } else if (tn.getActivity().getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                    needed = true;
-                    whNonIllnes += tn.getActivity().getWorkinghours();
+                if (tn.getActivity().getWorkPackage() != null) {
+                    if (tn.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID) {
+                        illnessAct.add(tn);
+                    } else if (tn.getActivity().getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
+                        needed = true;
+                        whNonIllnes += tn.getActivity().getWorkinghours();
+                    }
                 }
             }
             final int illnessActCount = illnessAct.size();
