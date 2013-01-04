@@ -36,6 +36,7 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.utilities.TimeCalculator;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -209,7 +210,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 //this should never happen
                 datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
             }
-            Date lastDay = (Date)d.clone();
+            Date lastDay = (Date) d.clone();
             DateHelper.addDays(lastDay, 6);
             weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
             datePicker.setValue(d);
@@ -220,7 +221,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                 //this should never happen
                 datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
             }
-            Date lastDay = (Date)d.clone();
+            Date lastDay = (Date) d.clone();
             DateHelper.addDays(lastDay, 6);
             weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
             datePicker.setValue(d);
@@ -253,7 +254,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
         final Date lastDay = new Date(firstDay.getTime());
         DateHelper.addDays(lastDay, 6);
         final int request = ++requestNumber;
-        
+
         BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
             @Override
             protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
@@ -264,16 +265,16 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                         times.setTimes(firstDay, result.getActivities());
                         taskControlPanel.initialise(firstDay, tasks, times);
                         /*
-                        * set the init status to false that event fired in fact of the creation of the new activities
-                        * doesnt change the recent activities
-                        */
+                         * set the init status to false that event fired in fact of the creation of the new activities
+                         * doesnt change the recent activities
+                         */
                         recent.setInitialised(false);
                         tasks.setActivities(firstDay, result.getActivities(), result.getHolidays());
                         //initialise drag and drop for TaskStory
                         favs.setTaskStory(tasks);
                         /*
-                        * this method sets the init status to true
-                        */
+                         * this method sets the init status to true
+                         */
                         recent.setTaskStory(tasks);
                         allRecent.setTaskStory(tasks);
                         //initialise drag and drop for favourite panel
@@ -284,7 +285,7 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
                         refreshWeeklyHoursOfWork();
                         refreshPrevWeekBalance();
                         refreshAccountBalance();
-    //                    setLockComponents();
+                        //                    setLockComponents();
 
                         ResizeEvent.fire(ProjectTrackerEntryPoint.getInstance(), Window.getClientWidth(), Window.getClientHeight());
                     }
@@ -333,10 +334,17 @@ public class SheetsPanel extends Composite implements ResizeHandler, ClickHandle
 
         weekHoursLab.setText(WEEKLY_HOURS_OF_WORK + " " + DateHelper.doubleToHours(hours) + " h");
         try {
-            ContractDTO co = ProjectTrackerEntryPoint.getInstance().getContractForStaff(getSelectedWeek(), getSelectedYear());
-            if (co != null) {
-                weekDebit = hours - co.getWhow();
+            final Date d = datePicker.getValue();
+            double whow=0.0d;
+            for (int i = 0; i <= 4; i++) {
+                ContractDTO co = ProjectTrackerEntryPoint.getInstance().getContractForStaff(d);
+                if (co != null) {
+                    whow+= co.getWhow()/5;
+                }
+                DateHelper.addDays(d, 1);
             }
+            weekDebit = hours -whow;
+
         } catch (InvalidInputValuesException ex) {
             Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
                     + "Contract for Staff " + ProjectTrackerEntryPoint.getInstance().getStaff()
