@@ -389,9 +389,12 @@ public class LockPanel extends Composite implements ClickHandler {
                 }
             }
         };
-
+        final Date lastDayOfWeek = new Date(firstDayOfWeek.getTime());
+        DateHelper.addDays(lastDayOfWeek,7);
+//        ProjectTrackerEntryPoint.getProjectService(
+//                true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), DateHelper.getYear(firstDayOfWeek), DateHelper.getWeekOfYear(firstDayOfWeek), callback);
         ProjectTrackerEntryPoint.getProjectService(
-                true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), DateHelper.getYear(firstDayOfWeek), DateHelper.getWeekOfYear(firstDayOfWeek), callback);
+                true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), firstDayOfWeek,lastDayOfWeek , callback);
     }
 
     public void unlockAllDaysInWeek() {

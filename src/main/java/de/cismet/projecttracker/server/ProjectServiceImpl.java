@@ -587,8 +587,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
     /**
      * @param project
-     * @return any cost category for the given project. If the given project
-     * have no cost category, a new one will be created.
+     * @return any cost category for the given project. If the given project have no cost category, a new one will be
+     * created.
      */
     private CostCategory getAnyCostCategory(Project project, DBManagerWrapper dbManager) throws DataRetrievalException, PersistentLayerException {
         if (project != null) {
@@ -1646,9 +1646,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     /**
      *
      * @param staff the staff, whose activities should be retrieved
-     * @param criteria an further criteria for the activities, which shluld be
-     * retrieved. This can be an object of the type WorkPackage, WorkCategory or
-     * Project
+     * @param criteria an further criteria for the activities, which shluld be retrieved. This can be an object of the
+     * type WorkPackage, WorkCategory or Project
      * @return all activities, which fulfil the given criterias
      * @throws DataRetrievalException
      * @throws PermissionDenyException
@@ -1843,8 +1842,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     /**
      *
      * @param activity
-     * @param originalActivity The description of the original activity. If
-     * null, a new activity was created
+     * @param originalActivity The description of the original activity. If null, a new activity was created
      */
     private void sendChangedActivityEmail(Activity activity, Activity origActivity, String email) {
         try {
@@ -2789,8 +2787,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     /**
-     * this method throws an exception, if the current user has no admin rights
-     * and the given user is not the current user
+     * this method throws an exception, if the current user has no admin rights and the given user is not the current
+     * user
      *
      * @param userId the id of the user data that should be changed
      * @throws PermissionDenyException
@@ -3225,6 +3223,22 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     @Override
+    public ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff, Date from, Date till) {
+        final ArrayList<Date> faultyDays = new ArrayList<Date>();
+        GregorianCalendar fromCal = new GregorianCalendar();
+        fromCal.setTime(from);
+        while (fromCal.getTime().compareTo(till) < 0) {
+
+            final boolean check = isPausePolicyFullfilled(staff, fromCal.getTime());
+            if (!check) {
+                faultyDays.add(fromCal.getTime());
+            }
+           fromCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+        }
+        return faultyDays;
+    }
+
+    @Override
     public Double getVacationDaysTaken(Date d, StaffDTO staff) {
         final Date firstDayInYear = new Date(d.getYear(), 0, 1);
         return getVacationDays(firstDayInYear, d, staff);
@@ -3243,10 +3257,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final ArrayList<ContractDTO> contracts = staff.getContracts();
 
         for (ContractDTO c : contracts) {
-            if (c.getFromdate().compareTo(from)>=0 && c.getFromdate().compareTo(to)<0) {
+            if (c.getFromdate().compareTo(from) >= 0 && c.getFromdate().compareTo(to) < 0) {
                 result.add(c);
             } else if (c.getTodate() == null || c.getTodate().after(to)) {
-                if (c.getFromdate().compareTo(from)<=0) {
+                if (c.getFromdate().compareTo(from) <= 0) {
                     result.add(c);
                     break;
                 }
