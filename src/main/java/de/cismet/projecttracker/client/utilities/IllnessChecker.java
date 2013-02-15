@@ -48,8 +48,23 @@ public class IllnessChecker implements TaskStoryListener {
         checkIllnesConstraints(e.getTaskNotice());
     }
 
-    private void checkIllnesConstraints(TaskNotice taskNotice) {
+    private void checkIllnesConstraints(final TaskNotice taskNotice) {
         //check if there are illnes activites 
+        final ActivityDTO newActivity = taskNotice.getActivity();
+        final Date day = newActivity.getDay();
+        BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
+            @Override
+            protected void afterExecution(Boolean result, boolean operationFailed) {
+                if(!result){
+                    performIllnessCheck(taskNotice);
+                }
+            }
+        };
+        ProjectTrackerEntryPoint.getProjectService(true).isDayLocked(day, newActivity.getStaff(), cb);
+        
+    }
+    
+    private void performIllnessCheck(final TaskNotice taskNotice){
         final ActivityDTO newActivity = taskNotice.getActivity();
         final Date day = newActivity.getDay();
         List<TaskNotice> tasks = story.getTasksForDay(day.getDay());
