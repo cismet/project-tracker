@@ -212,7 +212,7 @@ public class TaskNotice extends Composite implements ClickHandler {
                 @Override
                 protected void afterExecution(Boolean result, boolean operationFailed) {
                     if (!operationFailed) {
-                        if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                        if (!result) {
                             deleteTask();
                         }
                     }

@@ -73,7 +73,7 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
                 if (!operationFailed) {
-                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    if (!result ) {
                         changeTimeNotice(eventSource);
                     }
                 }
@@ -223,7 +223,7 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
                 if (!operationFailed) {
-                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    if (!result) {
                         deleteTimeNotice(eventSource);
                     }
                 }

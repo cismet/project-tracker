@@ -183,7 +183,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                             @Override
                                             protected void afterExecution(Boolean result, boolean operationFailed) {
                                                 if (!operationFailed) {
-                                                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                                                    if (!result) {
                                                         if (taskList.isEmpty() && activity.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
                                                             addPause(newDate);
                                                         }
@@ -309,7 +309,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
                 if (!operationFailed) {
-                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    if (!result) {
                         modifyTask(notice);
                     }
                 }

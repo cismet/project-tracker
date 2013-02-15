@@ -336,7 +336,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
             @Override
             protected void afterExecution(final Boolean result, final boolean operationFailed) {
                 if (!operationFailed) {
-                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    if (!result) {
                         final List<TimeNotice> timeList = Story.this.taskMap.get(
                                 Story.this.daysOfWeek[day.getDay()]);
                         if (timeList.isEmpty()) {

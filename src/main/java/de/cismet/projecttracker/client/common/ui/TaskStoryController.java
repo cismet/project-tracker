@@ -84,7 +84,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
                 if (!operationFailed) {
-                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    if (!result) {
                         List<TaskNotice> taskList = taskStory.getTasksForDay(day.getDay());
                         if (taskList.isEmpty()) {
                             taskStory.addPause(day);
@@ -106,7 +106,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
             @Override
             protected void afterExecution(Boolean result, boolean operationFailed) {
                 if (!operationFailed) {
-                    if (!result || ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+                    if (!result ) {
                         doFillTasks();
                     }
                 }
