@@ -257,7 +257,7 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
             @Override
             protected void afterExecution(Double result, boolean operationFailed) {
                 if (!operationFailed) {
-                    if (result > 0) {
+                    if (result != 0) {
                         remainingVacation += result;
                         carryOverContent.setText("+ " + formatDays(result) + " Days");
                     } else {
