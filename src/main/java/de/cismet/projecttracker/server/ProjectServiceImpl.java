@@ -1414,6 +1414,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             GregorianCalendar till = new GregorianCalendar();
             till.setTime(lastDayOfweek);
             till.add(GregorianCalendar.DAY_OF_MONTH, 1);
+            till.set(GregorianCalendar.HOUR_OF_DAY, 5);
 
             hibernateSession = dbManager.getSession();
             List<Activity> res = hibernateSession.createCriteria(Activity.class).
