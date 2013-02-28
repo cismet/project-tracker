@@ -91,7 +91,8 @@ public class RecentStory extends Composite {
     protected boolean contains(ActivityDTO act) {
         for (int i = 0; i < activites.size(); i++) {
             final ActivityDTO tmp = activites.get(i);
-            if (act.getWorkPackage().equals(tmp.getWorkPackage()) && act.getDescription().equals(tmp.getDescription())) {
+            if (act.getWorkPackage().equals(tmp.getWorkPackage()) && 
+                    (act.getDescription() == tmp.getDescription() || (act.getDescription() != null && act.getDescription().equals(tmp.getDescription())) ) ) {
                 return true;
             }
         }
