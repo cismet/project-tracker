@@ -93,21 +93,31 @@ public class IllnessChecker implements TaskStoryListener {
             final int illnessActCount = illnessAct.size();
             if (illnessActCount >= 1 && needed) {
                 final double time = (whow - whNonIllnes) / illnessActCount;
+                boolean hasChanged = false;
                 for (final TaskNotice tn : illnessAct) {
                     if (time > 0) {
+                        if (Math.abs(tn.getActivity().getWorkinghours() - time) > 0.01) {
+                            hasChanged = true;
+                        }
                         tn.getActivity().setWorkinghours(time);
                     } else {
+                        if (tn.getActivity().getWorkinghours() != -1) {
+                            hasChanged = true;
+                        }
                         tn.getActivity().setWorkinghours(-1);
                     }
-                    BasicAsyncCallback<ActivityDTO> cb = new BasicAsyncCallback<ActivityDTO>() {
-                        @Override
-                        protected void afterExecution(ActivityDTO result, boolean operationFailed) {
-                            tn.refresh();
-                            ProjectTrackerEntryPoint.getInstance().getSheetsPanel().refreshAccountBalance();
-                            ProjectTrackerEntryPoint.getInstance().getSheetsPanel().refreshWeeklyHoursOfWork();
-                        }
-                    };
-                    ProjectTrackerEntryPoint.getProjectService(true).saveActivity(tn.getActivity(), cb);
+                    
+                    if (hasChanged) {
+                        BasicAsyncCallback<ActivityDTO> cb = new BasicAsyncCallback<ActivityDTO>() {
+                            @Override
+                            protected void afterExecution(ActivityDTO result, boolean operationFailed) {
+                                tn.refresh();
+                                ProjectTrackerEntryPoint.getInstance().getSheetsPanel().refreshAccountBalance();
+                                ProjectTrackerEntryPoint.getInstance().getSheetsPanel().refreshWeeklyHoursOfWork();
+                            }
+                        };
+                        ProjectTrackerEntryPoint.getProjectService(true).saveActivity(tn.getActivity(), cb);
+                    }
                 }
             }
         } catch (InvalidInputValuesException ex) {
