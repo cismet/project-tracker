@@ -1,0 +1,42 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+             xmlns:b2="urn:import:com.github.gwtbootstrap.datepicker.client.ui">
+    <ui:style>
+        .input-component {
+        width: 100%;
+        }
+                
+        .input-component-left {
+        float:left;
+        width:440px;
+        }
+        .input-component-margin {
+        margin-left: 20px;
+        }
+    </ui:style>
+    <g:HTMLPanel>
+        <g:HorizontalPanel>
+            <!--<div class="modal-body">-->
+            <g:HTMLPanel>
+                <div class="report-filters-left">
+                    <div>Project:</div>
+                    <g:ListBox ui:field="project" styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
+                    <div>Workpackage:</div>
+                    <g:ListBox ui:field="workpackage"  styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
+                    <g:HorizontalPanel ui:field="datepickerPanel">
+                    </g:HorizontalPanel>
+                </div>
+            </g:HTMLPanel>
+            <g:HTMLPanel>
+                <div class="report-filters-right">
+                    <div>User:</div>
+                    <b:ListBox ui:field="users" styleName="report-filter-cb-user"/>
+                    <div>Description:</div>
+                    <g:TextBox ui:field="description" /><!-- styleName="{style.input-component}" />-->
+                </div>   
+            </g:HTMLPanel>
+        </g:HorizontalPanel>
+    </g:HTMLPanel>
+</ui:UiBinder>
