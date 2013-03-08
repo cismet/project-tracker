@@ -1,0 +1,55 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:t="urn:import:de.cismet.projecttracker.client.common.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui">
+    <ui:style>
+        .formTextBox{
+        font-size:14px;
+        line-height:20px;
+        height:20px;
+            
+        }
+
+    </ui:style>
+    <g:HTMLPanel>
+        <legend>Auto Pause</legend>
+        <b:Form type="HORIZONTAL">
+            <b:ControlGroup>
+                <b:ControlLabel>Add Autopause</b:ControlLabel>
+                <b:Controls>
+                    <b:CheckBox ui:field="autoPauseCBO"> enable </b:CheckBox>
+                </b:Controls>
+                <b:ControlLabel>Pause Duration</b:ControlLabel>
+                <b:Controls>
+                    <b:TextBox ui:field="pauseDuration">Pause Duration: </b:TextBox>
+                </b:Controls>
+            </b:ControlGroup>
+            
+            <b:Legend>Pause Lock Mode</b:Legend>
+            
+            <b:ControlGroup>
+                <b:ControlLabel>Lock Mode</b:ControlLabel>
+                <b:Controls>
+                    <b:CheckBox ui:field="weekLockCB" name="weekLockMode"> Show Week Lock Box</b:CheckBox>
+                    <b:CheckBox ui:field="dayLockCB" name="weekLockMode">Show Day Lock bar</b:CheckBox>
+                </b:Controls>
+            </b:ControlGroup>
+            
+            <b:Legend ui:field="residualVacLegend">Remaining Vacation 2011</b:Legend>
+            <b:ControlGroup ui:field="residualVacationGroup">
+                <b:ControlLabel>Remaining days</b:ControlLabel>
+                <b:Controls>
+                    <b:TextBox ui:field="residualVacation"></b:TextBox>
+                </b:Controls>
+            </b:ControlGroup>
+           
+            <b:ControlGroup>
+                <b:Controls>
+                    <b:SubmitButton ui:field="submitBtn" addStyleNames="btn btn-info">Submit</b:SubmitButton>
+                </b:Controls>
+            </b:ControlGroup>  
+        </b:Form>
+
+    </g:HTMLPanel>
+</ui:UiBinder>

@@ -1,0 +1,55 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui"
+	xmlns:t="urn:import:de.cismet.projecttracker.client.common.ui">
+	<ui:style>
+		.taskboard {
+			width: 100%;
+                        min-height: 1px;
+		}
+	</ui:style>
+	<g:HTMLPanel>
+		<g:AbsolutePanel ui:field="boundaryPanel">
+			<g:HTMLPanel>
+                          <div class="row rowheader">
+                              <div class="span1V2 columns" style="text-align: center;"><g:Label ui:field="mondayLab" /></div>
+                              <div class="span1V2 columns" style="text-align: center;"><g:Label ui:field="tuesdayLab" /></div>
+                              <div class="span1V2 columns" style="text-align: center;"><g:Label ui:field="wednesdayLab" /></div>
+                              <div class="span1V2 columns" style="text-align: center;"><g:Label ui:field="thursdayLab" /></div>
+                              <div class="span1V2 columns" style="text-align: center;"><g:Label ui:field="fridayLab" /></div>
+                              <div class="span1V2 columns" style="text-align: center;"><g:Label ui:field="saturdayLab" /></div>
+                              <div class="span1V2 columns" style="text-align: center;"><g:Label ui:field="sundayLab" /></div>
+                          </div>
+			  <div class="row timerow">
+					<div class="span1V2 columns">
+						<g:FlowPanel ui:field="monday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:FlowPanel ui:field="tuesday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:FlowPanel ui:field="wednesday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:FlowPanel ui:field="thursday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:FlowPanel ui:field="friday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:FlowPanel ui:field="saturday" styleName="{style.taskboard}" />
+					</div>
+	
+					<div class="span1V2 columns">
+						<g:FlowPanel ui:field="sunday" styleName="{style.taskboard}" />
+					</div>
+				</div>
+			</g:HTMLPanel>
+		</g:AbsolutePanel>
+	</g:HTMLPanel>
+</ui:UiBinder>

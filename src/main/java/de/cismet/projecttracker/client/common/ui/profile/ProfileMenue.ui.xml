@@ -1,0 +1,18 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:t="urn:import:de.cismet.projecttracker.client.common.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui">
+    <ui:style>
+
+
+    </ui:style>
+    <g:FlowPanel> 
+        <b:NavTabs ui:field="menu">
+            <b:NavLink ui:field="passwordLink">Change Password</b:NavLink>
+            <b:NavLink ui:field="accountLink">Settings</b:NavLink>
+<!--            <b:NavLink ui:field="designLink">Design</b:NavLink>-->
+            <b:NavLink ui:field="statisticsLink">Account Information</b:NavLink>
+        </b:NavTabs>
+    </g:FlowPanel>
+</ui:UiBinder>

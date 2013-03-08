@@ -1,0 +1,28 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:t="urn:import:de.cismet.projecttracker.client.common.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui">
+    <ui:style>
+        .formTextBox{
+        font-size:14px;
+        line-height:20px;
+        height:20px;
+            
+        }
+
+    </ui:style>
+    <g:HTMLPanel>
+        <g:FlowPanel ui:field="mainPanel">
+            <b:Legend>Unlocked Days</b:Legend>
+            <g:HorizontalPanel ui:field="unlockedDaysPnl"></g:HorizontalPanel>
+            
+            <b:Legend>Holidays Taken</b:Legend>
+            <g:HorizontalPanel ui:field="holidaysTakenPnl"></g:HorizontalPanel>
+            
+            <b:Legend>Holidays Planned</b:Legend>
+            <g:HorizontalPanel ui:field="holidaysPlannedPnl"></g:HorizontalPanel>
+        </g:FlowPanel>
+
+    </g:HTMLPanel>
+</ui:UiBinder>
