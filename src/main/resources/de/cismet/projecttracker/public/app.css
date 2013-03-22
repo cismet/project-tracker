@@ -116,6 +116,136 @@ footer{
     vertical-align: top;
 }
 
+.report-content{
+    height: auto;
+    padding-top:10px;
+}
+.report-filter-area{
+    background-color: #F5F5F5;
+    padding: 20px 20px 5px;
+    margin: -3px -0px 0px;
+    border-radius:6px;
+    -moz-border-radius: 6px;
+    -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
+    border:#ccc solid 1px;
+    height:200px;
+}
+
+.report-results-area{
+    background-color: #F5F5F5;
+    border-radius:6px;
+    -moz-border-radius: 6px;
+    -webkit-box-shadow: rgba(0,0,0,0.148438) 0 1px 2px;
+    border:#ccc solid 1px;
+    margin-top:15px;
+    width: 100%;
+    height: 100%;
+}
+
+.report-filters-left{
+    float:left;
+    margin-left:10px;
+    margin-top:10px;
+    font-size: 13px;
+}
+
+.report-filters-right{
+    float: right;
+    margin-left: 10px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.report-datePicker{
+    width:73px;
+    background-color: #F5F5F5;
+    border: medium none;
+    box-shadow: none;
+    color: #404040;
+    font-size: 13px;
+    height: 27px;
+    padding-bottom: 7px;
+    padding-left: 0;
+    margin-left: 5px;
+}
+
+.report-datePicker-button{
+    margin-right: 5px;
+}
+
+.report-lbl{
+    font-size: 13px;
+    padding-top:2px
+}
+
+.report-result-lbl{
+    font-size: 16px;
+    margin: 60px auto;
+    width: 310px;
+}
+
+.report-result-error-lbl{
+    width:  215px;
+}
+
+.report-filters-left input[type="text"]{
+    background-color: #F5F5F5;
+    border: medium none;
+    box-shadow: none;
+    color: #404040;
+    font-size: 13px;
+    height: 27px;
+    margin-bottom: 0;
+    padding-bottom: 7px;
+    padding-left: 0;
+}
+
+.report-filters-right input[type="text"]{
+    height: 30px;
+    margin-top: 5px;
+}
+
+.report-filter-cb{
+    width:320px;
+    margin-top: 5px;
+}
+
+.report-filter-cb-user{
+    width: 150px;
+    margin-top: 5px;
+}
+
+.report-filter-date input{
+    width: 100px;
+}
+
+.report-table-wpRow{
+    background-color: #ffffff;
+}
+.report-table-no-border{
+    outline: none;
+}
+
+.report-table-wpCell{
+    font-size: 12px;
+    line-height: 18px !important;
+    padding: 4px !important;
+}
+
+.report-table-staffCol{
+    width:200px;
+}
+
+.report-table-wpCol{
+    width: 100%;
+}
+
+.report-table-whCol{
+    width:100px;
+    text-align: right !important;
+    padding-right: 20px !important;
+}
+
 .profile-page-header{
     background-color: #F5F5F5;
     padding: 20px 20px 5px;

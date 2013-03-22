@@ -20,8 +20,8 @@ import de.cismet.projecttracker.client.common.ui.TaskNotice;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
 import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
 import de.cismet.projecttracker.client.common.ui.report.ReportFilterPanel;
+import de.cismet.projecttracker.client.common.ui.report.ReportResultPanel;
 import de.cismet.projecttracker.client.common.ui.report.ReportSearchParamListener;
-import de.cismet.projecttracker.client.common.ui.report.ReportTaskNotice;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
@@ -41,13 +41,8 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
     private FlowPanel contentPanel = new FlowPanel();
     private FlowPanel filterContainerPanel = new FlowPanel();
     private FlowPanel summaryPanel = new FlowPanel();
-    private FlowPanel resultsPanel = new FlowPanel();
+    private ReportResultPanel resultsPanel;
     private ReportFilterPanel filterPanel;
-    private HashMap<StaffDTO, ActivityDTO> userMap = new HashMap<StaffDTO, ActivityDTO>();
-    private HashMap<StaffDTO, Image> userIconMap = new HashMap<StaffDTO, Image>();
-    private HashMap<WorkPackageDTO, ActivityDTO> wpMap = new HashMap<WorkPackageDTO, ActivityDTO>();
-    private double hoursInTotal = 0;
-    private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
 
     public ReportsPanel() {
         init();
@@ -98,82 +93,15 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
     }
 
     private void initResultsArea() {
-        resultsPanel.setStyleName("report-results-area verticalScroller");
-        final Label l = new Label("Results");
-        l.setStyleName("profile-name-label");
-        resultsPanel.add(l);
+      resultsPanel = new ReportResultPanel(filterPanel);
     }
 
-    private void addActivitesToResultsPanel(ArrayList<ActivityDTO> result) {
-        final FlowPanelWithSpacer activityPanel = new FlowPanelWithSpacer();
-        for (ActivityDTO act : result) {
-//            final StaffDTO staff = act.getStaff();
-//            Image gravatar = userIconMap.get(staff);
-//            if(gravatar == null){
-//                gravatar = new Image();
-//                 final String email = ProjectTrackerEntryPoint.getInstance().getStaff().getEmail();
-//                if (email != null) {
-//                    gravatar.setUrl(GRAVATAR_URL_PREFIX
-//                            + ProjectTrackerEntryPoint.getInstance().md5(email)
-//                            + "?s=110");
-//                }
-//                userIconMap.put(staff, gravatar);
-//            }
-//            activityPanel.add(new ReportTaskNotice(act,gravatar));
-            activityPanel.add(new TaskNotice(act, true));
-        }
-        resultsPanel.add(activityPanel);
-    }
-
-    private void generateSummaryPanel() {
-//        summaryPanel.add;
-    }
 
     @Override
     public void searchParamsChanged() {
-        resultsPanel.clear();
-
-        final HashMap<String, Object> params = filterPanel.getSearchParams();
-        final List<WorkPackageDTO> workpackages = (List< WorkPackageDTO>) params.get(ReportFilterPanel.WORKPACKAGE_KEY);
-        final ArrayList<StaffDTO> staff = (ArrayList<StaffDTO>) params.get(ReportFilterPanel.STAFF_KEY);
-        final Date from = (Date) params.get(ReportFilterPanel.DATE_FROM_KEY);
-        final Date to = (Date) params.get(ReportFilterPanel.DATE_TO_KEY);
-        final String descr = (String) params.get(ReportFilterPanel.DESC_KEY);
-
-        BasicAsyncCallback<ArrayList<ActivityDTO>> cb = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
-            @Override
-            protected void afterExecution(ArrayList<ActivityDTO> result, boolean operationFailed) {
-                Label l = new Label();
-                l.setStyleName("report-result-lbl");
-                if (operationFailed) {
-                    l.setText("Error during acticity search");
-                    l.addStyleName("label label-important report-result-error-lbl");
-                    resultsPanel.add(l);
-                    return;
-                }
-                if (result == null || result.isEmpty()) {
-                    l.setText("No corresponding activites can be found");
-                    resultsPanel.add(l);
-                    return;
-                }
-                processActivites(result);
-                generateSummaryPanel();
-                addActivitesToResultsPanel(result);
-            }
-        };
-        //call the service..
-        ProjectTrackerEntryPoint.getProjectService(true).getActivites(workpackages, staff, from, to, descr, cb);
+        resultsPanel.refresh();
     }
 
-    private void processActivites(ArrayList<ActivityDTO> result) {
-        for (ActivityDTO tmp : result) {
-            final StaffDTO staff = tmp.getStaff();
-            userMap.put(staff, tmp);
-            final WorkPackageDTO wp = tmp.getWorkPackage();
-            wpMap.put(wp, tmp);
-            hoursInTotal += tmp.getWorkinghours();
-        }
-    }
 
     private void resize(int heigth) {
 
