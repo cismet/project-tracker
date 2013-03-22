@@ -37,6 +37,9 @@
                     <g:TextBox ui:field="description" /><!-- styleName="{style.input-component}" />-->
                 </div>   
             </g:HTMLPanel>
+            <g:HTMLPanel ui:field="statisticWrapper">
+                
+            </g:HTMLPanel>
         </g:HorizontalPanel>
     </g:HTMLPanel>
 </ui:UiBinder>

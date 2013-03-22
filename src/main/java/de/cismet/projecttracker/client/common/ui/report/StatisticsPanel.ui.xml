@@ -1,0 +1,45 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+             xmlns:b2="urn:import:com.github.gwtbootstrap.datepicker.client.ui">
+    <ui:style>
+
+    </ui:style>
+    <g:HTMLPanel >
+        <div class="report-filters-right page-header-acc-bal">
+            <span class="h3 page-header-title">Statistical Summary</span>
+            <!--<div class="modal-body">-->
+            <div class="clear">
+            
+                <span class="profile-header-label">Total Hours:</span>
+                <span ui:field="totalHours" class="pull-right"> </span>
+            
+            </div>
+            <div class="clear">
+            
+                <span class="profile-header-label">Staff count:</span>
+                <span ui:field="staffCount" class="pull-right"> </span>
+            
+            </div>
+            <div class="clear">
+            
+                <span class="profile-header-label">Activity count:</span>
+                <span ui:field="activityCount" class="pull-right"> </span>
+            
+            </div>
+            <div class="clear">
+            
+                <span class="profile-header-label">First Date:</span>
+                <span ui:field="firstDate" class="pull-right"> </span>
+            
+            </div>
+            <div class="clear">
+            
+                <span class="profile-header-label">Last Date:</span>
+                <span ui:field="lastDate" class="pull-right"> </span>
+            
+            </div>
+        </div>
+    </g:HTMLPanel>
+</ui:UiBinder>

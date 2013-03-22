@@ -22,6 +22,8 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -61,6 +63,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     ListBox users;
     @UiField
     HorizontalPanel datepickerPanel;
+    @UiField
+    HTMLPanel statisticWrapper;
     private List<ProjectDTO> projects;
     private List<ReportSearchParamListener> listeners = new LinkedList<ReportSearchParamListener>();
     public static final String WORKPACKAGE_KEY = "WP";
@@ -358,7 +362,11 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     public void removeSearchParamListener(ReportSearchParamListener l) {
         listeners.remove(l);
     }
-
+    
+    public void setStatisticsPanel(Composite p){
+        statisticWrapper.clear();
+        statisticWrapper.add(p);
+    }
     private void fireSearchParamsChanged() {
         for (ReportSearchParamListener l : listeners) {
             l.searchParamsChanged();

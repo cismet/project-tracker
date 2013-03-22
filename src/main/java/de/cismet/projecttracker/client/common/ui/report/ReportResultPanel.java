@@ -36,6 +36,9 @@ public class ReportResultPanel extends Composite {
     private HashMap<StaffDTO, Set<ActivityDTO>> userMap = new HashMap<StaffDTO, Set<ActivityDTO>>();
     private HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap = new HashMap<WorkPackageDTO, Set<ActivityDTO>>();
     private double hoursInTotal = 0;
+    private int activityCount=0;
+    private Date firstActivity = null;
+    private Date lastActivity = null;
 
     public ReportResultPanel(ReportFilterPanel filterPanel) {
         initWidget(mainPanel);
@@ -51,7 +54,10 @@ public class ReportResultPanel extends Composite {
     }
 
     public void refresh() {
-        hoursInTotal=0;
+        hoursInTotal = 0;
+        activityCount =0;
+        firstActivity = null;
+        lastActivity =null;
         wpMap.clear();
         userMap.clear();
         mainPanel.clear();
@@ -84,12 +90,17 @@ public class ReportResultPanel extends Composite {
                 }
                 processActivites(result);
                 fillSummaryPanel();
+                generateAndPropagateStatisticsPanel();
                 addActivitesToResultsPanel(result);
-                
             }
         };
         //call the service..
         ProjectTrackerEntryPoint.getProjectService(true).getActivites(workpackages, staff, from, to, descr, cb);
+    }
+
+    private void generateAndPropagateStatisticsPanel() {
+        StatisticsPanel statPan = new StatisticsPanel(hoursInTotal,userMap.keySet().size(),activityCount,firstActivity,lastActivity);
+        filterPanel.setStatisticsPanel(statPan);
     }
 
     private void addActivitesToResultsPanel(ArrayList<ActivityDTO> result) {
@@ -124,6 +135,25 @@ public class ReportResultPanel extends Composite {
     private void processActivites(ArrayList<ActivityDTO> result) {
 
         for (ActivityDTO tmp : result) {
+            hoursInTotal += tmp.getWorkinghours();
+            activityCount++;
+            //find the earliest activity...
+            if(firstActivity == null){
+                firstActivity = tmp.getDay();
+            }else {
+                if(tmp.getDay().before(lastActivity)){
+                    lastActivity = tmp.getDay();
+                }
+            }
+            
+            //fin the latest activity
+            if(lastActivity == null){
+                lastActivity = tmp.getDay();
+            }else{
+                if(tmp.getDay().after(lastActivity)){
+                    lastActivity=tmp.getDay();
+                }
+            }
             final StaffDTO staff = tmp.getStaff();
             Set<ActivityDTO> userActivitySet = userMap.get(staff);
             if (userActivitySet == null) {
@@ -141,5 +171,4 @@ public class ReportResultPanel extends Composite {
         }
 
     }
- 
 }
