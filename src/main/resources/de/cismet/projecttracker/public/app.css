@@ -251,6 +251,24 @@ footer{
     padding-right: 20px !important;
 }
 
+.report-task-notice-left{
+    float: left;
+    margin-left:5px;
+    margin-right:10px;
+}
+
+.report-task-notice-center{
+    display: inline-block;
+    max-width: 650px;
+     
+}
+.report-task-notice-container{
+    min-height: 50px;
+}
+.report-task-notice-right{
+    float: right;
+}
+
 .profile-page-header{
     background-color: #F5F5F5;
     padding: 20px 20px 5px;

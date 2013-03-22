@@ -4,16 +4,25 @@
  */
 package de.cismet.projecttracker.client.common.ui.report;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
-import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
+import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -21,118 +30,87 @@ import de.cismet.projecttracker.client.helper.DateHelper;
  */
 public class ReportTaskNotice extends Composite {
 
-    private FlowPanel mainPanel = new FlowPanel();
+    interface ReportTaskNoticeUiBinder extends UiBinder<Widget, ReportTaskNotice> {
+    };
+    private static final ReportTaskNoticeUiBinder uiBinder = GWT.create(ReportTaskNoticeUiBinder.class);
     private ActivityDTO activity;
-    private Image gravatar;
+    private Image gravatar = new Image();
+    private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
+    private static final String MAIN_STYLES = "alert alert-block timebox";
+    private static final String[] ADDITIONAL_PROJECT_STYLES = {"proj1", "proj2", "proj3", "proj4", "proj5", "proj6", "proj7"};
+    private static final HashMap<Long, Integer> projectStyle = new HashMap<Long, Integer>();
+    @UiField
+    HTMLPanel imagePanel;
+    @UiField
+    HTMLPanel descrPanel;
+    @UiField
+    HTMLPanel datePanel;
+    @UiField
+    HTMLPanel hoursPanel;
+    @UiField
+    HTMLPanel containerPanel;
 
-    public ReportTaskNotice(ActivityDTO activity, Image gravatar) {
+    static {
+        projectStyle.put((long) 1, 0);
+        projectStyle.put((long) 2, 1);
+        projectStyle.put((long) 18, 2);
+        projectStyle.put((long) 21, 3);
+        projectStyle.put((long) 20, 4);
+        projectStyle.put((long) 10, 5);
+    }
+
+    public ReportTaskNotice(ActivityDTO activity) {
+        initWidget(uiBinder.createAndBindUi(this));
         this.activity = activity;
-        this.gravatar = gravatar; 
-        initWidget(mainPanel);
-        init();
-    }
-
-    protected String getTextFromActivity() {
-        if (activity.getKindofactivity() != 0) {
-            String text = "";
-            if (activity.getKindofactivity() == 1) {
-                //begin of day
-                text = "Begin of Work Activity";
-                text += "<br/> at <br/>";
-                text += DateHelper.formatDateTime(activity.getDay());
-
-            } else if (activity.getKindofactivity() == 2) {
-                //end of day
-                text = "End of Work Activity";
-                text += "<br/> at <br/>";
-                text += DateHelper.formatDateTime(activity.getDay());
-            } else {
-                //lock
-                text = "Locked Day";
-                text += "<br/> at <br/>";
-                text += DateHelper.formatDate(activity.getDay());
-            }
-            return text;
-        } else {
-            String desc = getDesccription(activity.getDescription());
-            StringBuilder text = new StringBuilder();
-
-            if (activity.getWorkCategory() != null && activity.getWorkCategory().getId() == WorkCategoryDTO.TRAVEL) {
-                text.append("Travel: ").append(activity.getWorkPackage().getAbbreviation());
-            } else {
-                text.append(activity.getWorkPackage().getAbbreviation());
-            }
-
-            double hours = Math.round(activity.getWorkinghours() * 100) / 100.0;
-            text.append("<br />").append(desc);
-            text.append("<br/> at <br/>");
-            text.append(DateHelper.formatDate(activity.getDay()));
-            if (hours != 0.0) {
-                text.append("<br />").append(DateHelper.doubleToHours(hours)).append(" hours");
-            }
-
-            return text.toString();
+        if (activity != null && activity.getStaff() != null && activity.getStaff().getEmail() != null) {
+            this.gravatar.setUrl(GRAVATAR_URL_PREFIX + ProjectTrackerEntryPoint.getInstance().md5(activity.getStaff().getEmail())
+                    + "?s=32");
+            imagePanel.add(gravatar);
         }
-    }
-
-    protected String getDesccription(String desc) {
-        if (desc == null) {
-            return "";
-        }
-        int i = desc.indexOf("(@");
-
-        if (i != -1) {
-            String result = desc.substring(0, i);
-            return result;
-        } else {
-            return desc;
-        }
-    }
-
-    protected String getTooltipTextFromActivity() {
-        if (activity.getKindofactivity() == 0) {
-            StringBuilder text = new StringBuilder(activity.getWorkPackage().getProject().getName());
-            text.append("\n").append(activity.getWorkPackage().getName());
-
-            if (activity.getDescription() != null) {
-                text.append("\n").append(activity.getDescription());
-            }
-
-            return text.toString();
-        } else {
-            return "";
-        }
-    }
-
-    private void init() {
-        final HorizontalPanel hrPnl = new HorizontalPanel();
-        final VerticalPanel v1 = new VerticalPanel();
-        v1.add(gravatar);
-
-        final VerticalPanel v2 = new VerticalPanel();
         final Label workPackage = new Label();
         final WorkPackageDTO wp = activity.getWorkPackage();
         if (wp != null) {
-            workPackage.setText(wp.getDescription());
+            workPackage.setText(wp.getName());
         }
-        v2.add(workPackage);
-        
+        descrPanel.add(workPackage);
+
         final Label desc = new Label();
-        desc.setText(activity.getDescription());
-        v2.add(desc);
-        
-        final VerticalPanel v3 = new VerticalPanel();
-        final Label dateLbl = new Label();
-        dateLbl.setText(DateHelper.formatDate(activity.getDay()));
-        v3.add(dateLbl);
-        final Label hourLbl = new Label();
-        hourLbl.setText(DateHelper.doubleToHours(activity.getWorkinghours()));
-        v3.add(hourLbl);
-        
-        hrPnl.add(v1);
-        hrPnl.add(v2);
-        hrPnl.add(v3);
-        
-        mainPanel.add(hrPnl);
+        final String descr = activity.getDescription() == null ? " " : activity.getDescription();
+        desc.setText(descr);
+        descrPanel.add(desc);
+
+        datePanel.add(new Label(DateHelper.formatDate(activity.getDay())));
+        datePanel.add(new Label(DateHelper.doubleToHours(activity.getWorkinghours()) + " h"));
+
+        setColour();
+    }
+
+    private void setColour() {
+        if (activity.getWorkPackage() != null && activity.getWorkPackage().getProject() != null) {
+            List<ProjectDTO> proj = ProjectTrackerEntryPoint.getInstance().getProjects();
+            if (proj != null) {
+                long projectId = activity.getWorkPackage().getProject().getId();
+                Integer index = projectStyle.get(projectId);
+
+                if (index == null) {
+                    index = 6;
+                }
+
+                if (index < 0 || index >= ADDITIONAL_PROJECT_STYLES.length) {
+                    index = ADDITIONAL_PROJECT_STYLES.length - 1;
+                }
+
+                containerPanel.setStyleName(MAIN_STYLES + " " + ADDITIONAL_PROJECT_STYLES[index]);
+            } else {
+                Timer t = new Timer() {
+                    @Override
+                    public void run() {
+                        setColour();
+                    }
+                };
+
+                t.schedule(2000);
+            }
+        }
     }
 }

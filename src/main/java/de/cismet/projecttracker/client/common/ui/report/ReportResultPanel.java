@@ -119,8 +119,8 @@ public class ReportResultPanel extends Composite {
 //                }
 //                userIconMap.put(staff, gravatar);
 //            }
-//            activityPanel.add(new ReportTaskNotice(act,gravatar));
-            activityPanel.add(new TaskNotice(act, true));
+            activityPanel.add(new ReportTaskNotice(act));
+//            activityPanel.add(new TaskNotice(act, true));
         }
         activityAccordionPanel.add(activityPanel);
         mainPanel.add(activityAccordionPanel);
