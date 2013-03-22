@@ -29,7 +29,7 @@ import java.util.Set;
 public class ReportResultPanel extends Composite {
 
     private FlowPanel mainPanel = new FlowPanel();
-    AccordionGroup foo = new AccordionGroup();
+    AccordionGroup activityAccordionPanel = new AccordionGroup();
     private FlowPanel activityList = new FlowPanel();
     private FlowPanel summaryPanel = new FlowPanel();
     private ReportFilterPanel filterPanel;
@@ -46,8 +46,8 @@ public class ReportResultPanel extends Composite {
     private void init() {
         mainPanel.setStyleName("report-results-area verticalScroller");
         mainPanel.add(summaryPanel);
-        foo.setHeading("Show single activites");
-        foo.setDefaultOpen(false);
+        activityAccordionPanel.setHeading("Show single activites");
+        activityAccordionPanel.setDefaultOpen(false);
     }
 
     public void refresh() {
@@ -56,6 +56,7 @@ public class ReportResultPanel extends Composite {
         userMap.clear();
         mainPanel.clear();
         summaryPanel.clear();
+        activityAccordionPanel.clear();
         activityList.clear();
 
         final HashMap<String, Object> params = filterPanel.getSearchParams();
@@ -110,8 +111,8 @@ public class ReportResultPanel extends Composite {
 //            activityPanel.add(new ReportTaskNotice(act,gravatar));
             activityPanel.add(new TaskNotice(act, true));
         }
-        foo.add(activityPanel);
-        mainPanel.add(foo);
+        activityAccordionPanel.add(activityPanel);
+        mainPanel.add(activityAccordionPanel);
     }
 
     private void fillSummaryPanel() {
