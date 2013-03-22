@@ -224,12 +224,17 @@ footer{
 }
 .report-table-no-border{
     outline: none;
+    vertical-align: middle !important;
 }
 
 .report-table-wpCell{
     font-size: 12px;
     line-height: 18px !important;
     padding: 4px !important;
+}
+
+.report-table-staffIcon{
+    padding-right:5px;
 }
 
 .report-table-staffCol{
