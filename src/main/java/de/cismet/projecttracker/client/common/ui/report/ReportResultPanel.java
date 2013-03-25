@@ -86,12 +86,12 @@ public class ReportResultPanel extends Composite {
                 if (operationFailed) {
                     l.setText("Error during acticity search");
                     l.addStyleName("label label-important report-result-error-lbl");
-                    activityList.add(l);
+                    mainPanel.add(l);
                     return;
                 }
                 if (result == null || result.isEmpty()) {
                     l.setText("No corresponding activites can be found");
-                    activityList.add(l);
+                    mainPanel.add(l);
                     return;
                 }
                 processActivites(result);
@@ -112,21 +112,7 @@ public class ReportResultPanel extends Composite {
     private void addActivitesToResultsPanel(ArrayList<ActivityDTO> result) {
         final FlowPanelWithSpacer activityPanel = new FlowPanelWithSpacer();
         for (ActivityDTO act : result) {
-            //TODO create a special TaskNotice with custom look
-//            final StaffDTO staff = act.getStaff();
-//            Image gravatar = userIconMap.get(staff);
-//            if(gravatar == null){
-//                gravatar = new Image();
-//                 final String email = ProjectTrackerEntryPoint.getInstance().getStaff().getEmail();
-//                if (email != null) {
-//                    gravatar.setUrl(GRAVATAR_URL_PREFIX
-//                            + ProjectTrackerEntryPoint.getInstance().md5(email)
-//                            + "?s=110");
-//                }
-//                userIconMap.put(staff, gravatar);
-//            }
             activityPanel.add(new ReportTaskNotice(act));
-//            activityPanel.add(new TaskNotice(act, true));
         }
         activityAccordionPanel.add(activityPanel);
         mainPanel.add(activityAccordionPanel);
