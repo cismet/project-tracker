@@ -3496,7 +3496,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             }
             conjuction.add(Restrictions.in("staff.id", staffIds));
         }
-        
+        conjuction.add(Restrictions.isNotNull("day"));
         if(from != null && til != null && from.compareTo(til)<0){
             conjuction.add(Restrictions.ge("day", from));
             conjuction.add(Restrictions.le("day", til));

@@ -4,10 +4,11 @@
  */
 package de.cismet.projecttracker.client.common.ui.report;
 
+import com.github.gwtbootstrap.client.ui.CheckBox;
+import com.github.gwtbootstrap.client.ui.Collapse;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -22,7 +23,6 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -67,6 +67,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     @UiField
     HTMLPanel statisticWrapper;
     StaffDTO loggedInUser;
+    @UiField
+    CheckBox dateFilterCB;
     private List<ProjectDTO> projects;
     private List<ReportSearchParamListener> listeners = new LinkedList<ReportSearchParamListener>();
     public static final String WORKPACKAGE_KEY = "WP";
@@ -115,6 +117,9 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
                 isToPickerVisible = true;
                 periodTo.show();
             }
+        }
+        else if(event.getSource() == dateFilterCB){
+            fireSearchParamsChanged();
         }
     }
 
@@ -183,6 +188,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         project.addItem("* all Elements", "" + -1);
         initUsers();
         users.addChangeHandler(this);
+        dateFilterCB.addClickHandler(this);
         periodFrom.setFormat("dd.mm.yyyy");
         periodFrom.setAutoClose(true);
         periodFrom.setStyleName("report-datePicker");
@@ -436,8 +442,10 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         }
         map.put(STAFF_KEY, searchStaff);
 
-        map.put(DATE_FROM_KEY, periodFrom.getValue());
-        map.put(DATE_TO_KEY, periodTo.getValue());
+        if (dateFilterCB.getValue()) {
+            map.put(DATE_FROM_KEY, periodFrom.getValue());
+            map.put(DATE_TO_KEY, periodTo.getValue());
+        }
 
         map.put(DESC_KEY, description.getText());
 

@@ -36,7 +36,7 @@ public class ReportResultPanel extends Composite {
     private HashMap<StaffDTO, Set<ActivityDTO>> userMap = new HashMap<StaffDTO, Set<ActivityDTO>>();
     private HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap = new HashMap<WorkPackageDTO, Set<ActivityDTO>>();
     private double hoursInTotal = 0;
-    private int activityCount=0;
+    private int activityCount = 0;
     private Date firstActivity = null;
     private Date lastActivity = null;
 
@@ -55,9 +55,9 @@ public class ReportResultPanel extends Composite {
 
     public void refresh() {
         hoursInTotal = 0;
-        activityCount =0;
+        activityCount = 0;
         firstActivity = null;
-        lastActivity =null;
+        lastActivity = null;
         wpMap.clear();
         userMap.clear();
         mainPanel.clear();
@@ -68,8 +68,14 @@ public class ReportResultPanel extends Composite {
         final HashMap<String, Object> params = filterPanel.getSearchParams();
         final List<WorkPackageDTO> workpackages = (List< WorkPackageDTO>) params.get(ReportFilterPanel.WORKPACKAGE_KEY);
         final ArrayList<StaffDTO> staff = (ArrayList<StaffDTO>) params.get(ReportFilterPanel.STAFF_KEY);
-        final Date from = (Date) params.get(ReportFilterPanel.DATE_FROM_KEY);
-        final Date to = (Date) params.get(ReportFilterPanel.DATE_TO_KEY);
+        Date from = null;
+        Date to = null;
+        if (params.containsKey(ReportFilterPanel.DATE_FROM_KEY)) {
+            from = (Date) params.get(ReportFilterPanel.DATE_FROM_KEY);
+        }
+        if (params.containsKey(ReportFilterPanel.DATE_TO_KEY)) {
+            to = (Date) params.get(ReportFilterPanel.DATE_TO_KEY);
+        }
         final String descr = (String) params.get(ReportFilterPanel.DESC_KEY);
 
         BasicAsyncCallback<ArrayList<ActivityDTO>> cb = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
@@ -99,7 +105,7 @@ public class ReportResultPanel extends Composite {
     }
 
     private void generateAndPropagateStatisticsPanel() {
-        StatisticsPanel statPan = new StatisticsPanel(hoursInTotal,userMap.keySet().size(),activityCount,firstActivity,lastActivity);
+        StatisticsPanel statPan = new StatisticsPanel(hoursInTotal, userMap.keySet().size(), activityCount, firstActivity, lastActivity);
         filterPanel.setStatisticsPanel(statPan);
     }
 
@@ -138,20 +144,20 @@ public class ReportResultPanel extends Composite {
             hoursInTotal += tmp.getWorkinghours();
             activityCount++;
             //find the earliest activity...
-            if(firstActivity == null){
+            if (firstActivity == null) {
                 firstActivity = tmp.getDay();
-            }else {
-                if(tmp.getDay().before(lastActivity)){
-                    lastActivity = tmp.getDay();
+            } else {
+                if (tmp.getDay().before(firstActivity)) {
+                    firstActivity = tmp.getDay();
                 }
             }
-            
+
             //fin the latest activity
-            if(lastActivity == null){
+            if (lastActivity == null) {
                 lastActivity = tmp.getDay();
-            }else{
-                if(tmp.getDay().after(lastActivity)){
-                    lastActivity=tmp.getDay();
+            } else {
+                if (tmp.getDay().after(lastActivity)) {
+                    lastActivity = tmp.getDay();
                 }
             }
             final StaffDTO staff = tmp.getStaff();

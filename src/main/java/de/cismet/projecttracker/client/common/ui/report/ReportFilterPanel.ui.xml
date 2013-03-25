@@ -25,8 +25,17 @@
                     <g:ListBox ui:field="project" styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
                     <div>Workpackage:</div>
                     <g:ListBox ui:field="workpackage"  styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
-                    <g:HorizontalPanel ui:field="datepickerPanel">
-                    </g:HorizontalPanel>
+                    <b:Tooltip text="if selected you can specify a time period to search for">
+                        <b:CollapseTrigger target="#toggle1">
+                            <b:CheckBox ui:field="dateFilterCB">use date filter</b:CheckBox>
+                        </b:CollapseTrigger>
+                    </b:Tooltip>
+                    <b:Collapse existTrigger="true" b:id="toggle1" defaultOpen="false">
+                        <b:FluidRow>
+                            <g:HorizontalPanel ui:field="datepickerPanel">
+                            </g:HorizontalPanel>
+                        </b:FluidRow>
+                    </b:Collapse>
                 </div>
             </g:HTMLPanel>
             <g:HTMLPanel>
