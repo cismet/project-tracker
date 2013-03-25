@@ -156,6 +156,12 @@ footer{
     font-size: 13px;
 }
 
+.report-filter-user-list{
+    width:210px;
+    height:93px !important;
+    margin-top: 5px;
+}
+
 .report-datePicker{
     width:73px;
     background-color: #F5F5F5;

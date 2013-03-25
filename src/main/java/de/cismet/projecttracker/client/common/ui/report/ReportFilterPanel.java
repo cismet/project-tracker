@@ -5,7 +5,6 @@
 package de.cismet.projecttracker.client.common.ui.report;
 
 import com.github.gwtbootstrap.client.ui.CheckBox;
-import com.github.gwtbootstrap.client.ui.Collapse;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
@@ -60,8 +59,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     ListBox project;
     @UiField
     ListBox workpackage;
-    @UiField
-    ListBox users;
+    @UiField(provided=true)
+    com.github.gwtbootstrap.client.ui.ListBox users = new com.github.gwtbootstrap.client.ui.ListBox(true);
     @UiField
     HorizontalPanel datepickerPanel;
     @UiField
@@ -117,8 +116,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
                 isToPickerVisible = true;
                 periodTo.show();
             }
-        }
-        else if(event.getSource() == dateFilterCB){
+        } else if (event.getSource() == dateFilterCB) {
             fireSearchParamsChanged();
         }
     }
@@ -187,6 +185,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         }
         project.addItem("* all Elements", "" + -1);
         initUsers();
+        users.setStyleName("report-filter-user-list");
         users.addChangeHandler(this);
         dateFilterCB.addClickHandler(this);
         periodFrom.setFormat("dd.mm.yyyy");
@@ -436,9 +435,13 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         map.put(WORKPACKAGE_KEY, workpackages);
 
         final List<StaffDTO> searchStaff = new ArrayList<StaffDTO>();
-        final StaffDTO staff = getSelectedUser();
-        if (staff != null) {
-            searchStaff.add(staff);
+//        final StaffDTO staff = getSelectedUser();
+//        if (staff != null) {
+//            searchStaff.add(staff);
+//        }
+        final List<StaffDTO> selectedUsers = getSelectedUsers();
+        if(selectedUsers!=null){
+            searchStaff.addAll(selectedUsers);
         }
         map.put(STAFF_KEY, searchStaff);
 
@@ -450,6 +453,26 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         map.put(DESC_KEY, description.getText());
 
         return map;
+    }
+
+    private ArrayList<StaffDTO> getSelectedUsers() {
+        ArrayList<StaffDTO> selectedItems = new ArrayList<StaffDTO>();
+        for (int i = 0; i < users.getItemCount(); i++) {
+            if (users.isItemSelected(i)) {
+                final long value = Long.parseLong(users.getValue(i));
+                if (value == -1) {
+                    //search for all users, return null
+                    return null;
+                }
+                for (StaffDTO staff : userList) {
+                    if (staff.getId() == value) {
+                        selectedItems.add(staff);
+                        break;
+                    }
+                }
+            }
+        }
+        return selectedItems;
     }
 
     public void refresh() {
