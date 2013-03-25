@@ -53,13 +53,9 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
     @Override
     public void menuChangeEvent(MenuEvent e) {
         if (e.getNumber() == TopPanel.REPORTS) {
-            if (ProjectTrackerEntryPoint.getInstance().isAdmin()) {
-                RootPanel.get("contentId").clear();
-                RootPanel.get("contentId").add(this);
-            } else {
-                ProjectTrackerEntryPoint.outputBox("You have no admin permission");
-            }
-
+            RootPanel.get("contentId").clear();
+            RootPanel.get("contentId").add(this);
+            filterPanel.refresh();
         }
     }
 
@@ -93,15 +89,13 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
     }
 
     private void initResultsArea() {
-      resultsPanel = new ReportResultPanel(filterPanel);
+        resultsPanel = new ReportResultPanel(filterPanel);
     }
-
 
     @Override
     public void searchParamsChanged() {
         resultsPanel.refresh();
     }
-
 
     private void resize(int heigth) {
 

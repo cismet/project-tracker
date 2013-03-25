@@ -7,6 +7,7 @@ package de.cismet.projecttracker.client.common.ui.report;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -21,8 +22,8 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -65,6 +66,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     HorizontalPanel datepickerPanel;
     @UiField
     HTMLPanel statisticWrapper;
+    StaffDTO loggedInUser;
     private List<ProjectDTO> projects;
     private List<ReportSearchParamListener> listeners = new LinkedList<ReportSearchParamListener>();
     public static final String WORKPACKAGE_KEY = "WP";
@@ -81,7 +83,6 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     private boolean isToPickerVisible = false;
     private long lastInvocation = -1;
     Timer t = new Timer() {
-
         @Override
         public void run() {
             fireSearchParamsChanged();
@@ -133,7 +134,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         }
         lastInvocation = time;
         t.schedule(800);
-        
+
     }
 
     interface ReportFilterPanelUiBinder extends UiBinder<Widget, ReportFilterPanel> {
@@ -147,6 +148,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     }
 
     private void init() {
+        loggedInUser = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
         List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
 //        travel.setText("Travel: ");
         if (result == null) {
@@ -180,6 +182,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         }
         project.addItem("* all Elements", "" + -1);
         initUsers();
+        users.addChangeHandler(this);
         periodFrom.setFormat("dd.mm.yyyy");
         periodFrom.setAutoClose(true);
         periodFrom.setStyleName("report-datePicker");
@@ -264,36 +267,50 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     }
 
     private void initUsers() {
-        BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
-            @Override
-            protected void afterExecution(ArrayList<StaffDTO> result, boolean operationFailed) {
-                users.addItem("* all Users", "-1");
-                users.setSelectedIndex(-1);
-                int i = 0;
-                int index = 0;
-                Collections.sort(result);
-                StaffDTO loggedInStaff = ProjectTrackerEntryPoint.getInstance().getStaff();
-                for (StaffDTO staff : result) {
-                    users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
-                    if (staff.getId() == loggedInStaff.getId()) {
-                        index = i;
-                    }
-                    ++i;
+        if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+            final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
+            users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
+            users.setSelectedIndex(0);
+            //fire the change event since setSelected item does not
+            Scheduler.get().scheduleDeferred(new Command() {
+                @Override
+                public void execute() {
+                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), users);
                 }
-                users.setSelectedIndex(index);
-                //fire the change event since setSelected item does not
-                Scheduler.get().scheduleDeferred(new Command() {
-                    @Override
-                    public void execute() {
-                        DomEvent.fireNativeEvent(Document.get().createChangeEvent(), users);
+            });
+            users.setEnabled(false);
+            userList.add(staff);
+        } else {
+            BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
+                @Override
+                protected void afterExecution(ArrayList<StaffDTO> result, boolean operationFailed) {
+                    users.addItem("* all Users", "-1");
+                    users.setSelectedIndex(-1);
+                    int i = 0;
+                    int index = 0;
+                    Collections.sort(result);
+                    StaffDTO loggedInStaff = ProjectTrackerEntryPoint.getInstance().getStaff();
+                    for (StaffDTO staff : result) {
+                        users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
+                        if (staff.getId() == loggedInStaff.getId()) {
+                            index = i;
+                        }
+                        ++i;
                     }
-                });
-                userList = result;
-            }
-        };
+                    users.setSelectedIndex(index);
+                    //fire the change event since setSelected item does not
+                    Scheduler.get().scheduleDeferred(new Command() {
+                        @Override
+                        public void execute() {
+                            DomEvent.fireNativeEvent(Document.get().createChangeEvent(), users);
+                        }
+                    });
+                    userList = result;
+                }
+            };
 
-        ProjectTrackerEntryPoint.getProjectService(true).getCurrentEmployees(callback);
-        users.addChangeHandler(this);
+            ProjectTrackerEntryPoint.getProjectService(true).getCurrentEmployees(callback);
+        }
     }
 
     private ProjectDTO getSelectedProject() {
@@ -362,11 +379,12 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     public void removeSearchParamListener(ReportSearchParamListener l) {
         listeners.remove(l);
     }
-    
-    public void setStatisticsPanel(Composite p){
+
+    public void setStatisticsPanel(Composite p) {
         statisticWrapper.clear();
         statisticWrapper.add(p);
     }
+
     private void fireSearchParamsChanged() {
         for (ReportSearchParamListener l : listeners) {
             l.searchParamsChanged();
@@ -424,5 +442,14 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         map.put(DESC_KEY, description.getText());
 
         return map;
+    }
+
+    public void refresh() {
+        if (ProjectTrackerEntryPoint.getInstance().getLoggedInStaff() != loggedInUser) {
+            userList.clear();
+            users.clear();
+            users.setEnabled(true);
+            initUsers();
+        }
     }
 }
