@@ -158,7 +158,8 @@ public class DateHelper {
     /**
      * @param date
      * @param otherDate
-     * @return true, if and only if the two given date objects represents the same day. A day starts at 4 am
+     * @return true, if and only if the two given date objects represents the same day. 
+     *         A logical ProjectTracker day starts at 4 am.
      */
     public static boolean isSameDaySV(Date date, Date otherDate) {
         if (date == null && otherDate == null) {
@@ -166,13 +167,33 @@ public class DateHelper {
         } else if (date == null || otherDate == null) {
             return false;
         }
+        if (date.getYear() == otherDate.getYear() && date.getMonth() == otherDate.getMonth()) {
+            final int dateDay = date.getDay();
+            final int otherDateDay = otherDate.getDay();
+            final int diff = dateDay - otherDateDay;
+            if (diff == 0) {
+                if(date.getHours()<4 && otherDate.getHours()>4 || date.getHours()>4 && otherDate.getHours()<4){
+                    return false;
+                }
+                return true;
+            } else if (diff == 1) {
+                //date is one day after otherDay, check if the time
+                if (date.getHours() < 4 && otherDate.getHours()>4) {
+                    return true;
+                }
+                return false;
+            } else if (diff == -1) {
+                if (otherDate.getHours() < 4 && date.getHours()>4) {
+                    return true;
+                }
+                return false;
+            } else {
+                return false;
+            }
 
-        Date newDate = new Date(date.getTime() - (4 * HOUR_IN_MILLIS));
-        Date newOtherDate = new Date(otherDate.getTime() - (4 * HOUR_IN_MILLIS));
-
-        return (newDate.getYear() == newOtherDate.getYear()
-                && newDate.getMonth() == newOtherDate.getMonth()
-                && newDate.getDate() == newOtherDate.getDate());
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -279,7 +300,7 @@ public class DateHelper {
     }
 
     public static String getDayAbbreviation(Date d) {
-        return d.getDay() == 0 ? DAYS_OF_WEEK_LONG[6]:DAYS_OF_WEEK_LONG[d.getDay()-1];
+        return d.getDay() == 0 ? DAYS_OF_WEEK_LONG[6] : DAYS_OF_WEEK_LONG[d.getDay() - 1];
     }
 
     /**
