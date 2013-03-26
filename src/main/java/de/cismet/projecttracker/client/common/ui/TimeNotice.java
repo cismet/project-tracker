@@ -92,6 +92,18 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
             activityToSave = start;
             newDate = checkTimeFormat(startTime.getText());
             startTime.setText(newDate);
+            //check if the time lies in the interval 24:00 - 4 and set the date correctly
+            if(!startTime.getText().equals("")){
+                try{
+                   Date startDate =  DateHelper.parseString(startTime.getText(), DateTimeFormat.getFormat("HH:mm"));
+                   if(startDate.getHours()<4){
+                       endAtNextDay = true;
+                   }
+                }catch (IllegalArgumentException e) {
+                    ((TextBox) eventSource).setText(DateHelper.formatTime(activityToSave.getDay()));
+                    return;
+                }
+            }
 
         } else if (eventSource == endTime) {
             activityToSave = end;
