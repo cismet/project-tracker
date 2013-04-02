@@ -14,17 +14,12 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.*;
-import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import de.cismet.projecttracker.client.types.WorkpackageListItem;
-import de.cismet.web.timetracker.types.HoursOfWork;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler {
 
@@ -108,7 +103,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     void onButtonClick(ClickEvent event) {
         if (travel.getValue() && travelCatagory == null) {
             BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
-
                 @Override
                 protected void afterExecution(WorkCategoryDTO result, boolean operationFailed) {
                     if (!operationFailed) {
@@ -148,10 +142,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         } else {
             newActivity.setWorkCategory(null);
         }
-       
+
         if (modification) {
             BasicAsyncCallback<ActivityDTO> callback = new BasicAsyncCallback<ActivityDTO>() {
-
                 @Override
                 protected void afterExecution(ActivityDTO result, boolean operationFailed) {
                     if (!operationFailed) {
@@ -164,7 +157,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
             ProjectTrackerEntryPoint.getProjectService(true).saveActivity(newActivity, callback);
         } else {
             BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
-
                 @Override
                 protected void afterExecution(Long result, boolean operationFailed) {
                     if (!operationFailed) {
@@ -189,7 +181,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
 //        travel.setText("Travel: ");
         if (result == null) {
             BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
-
                 @Override
                 protected void afterExecution(ArrayList<ProjectDTO> result, boolean operationFailed) {
                     for (ProjectDTO tmp : result) {
@@ -227,6 +218,19 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
             if (selectedProject.getWorkPackages() != null) {
                 WorkPackageDTO[] wps = selectedProject.getWorkPackages().toArray(new WorkPackageDTO[selectedProject.getWorkPackages().size()]);
                 Arrays.sort(wps);
+                //for the abwesenheits package we want urlaub,krank, pause at the beginning
+                if (selectedProject.getName().equals("Abwesenheit")) {
+                    int alreadyAdded = 0;
+                    for (int i = 0; i < wps.length; i++) {
+                        WorkPackageDTO wp = wps[i];
+                        if (wp.getId() == ActivityDTO.HOLIDAY_ID || wp.getId() == ActivityDTO.ILLNESS_ID || wp.getId() == ActivityDTO.PAUSE_ID) {
+                            WorkPackageDTO tmp = wps[alreadyAdded];
+                            wps[alreadyAdded] = wp;
+                            wps[i] = tmp;
+                            alreadyAdded++;
+                        }
+                    }
+                }
                 for (WorkPackageDTO tmp : wps) {
                     WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
