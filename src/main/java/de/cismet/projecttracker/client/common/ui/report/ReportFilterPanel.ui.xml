@@ -1,0 +1,54 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+             xmlns:b2="urn:import:com.github.gwtbootstrap.datepicker.client.ui">
+    <ui:style>
+        .input-component {
+        width: 100%;
+        }
+                
+        .input-component-left {
+        float:left;
+        width:440px;
+        }
+        .input-component-margin {
+        margin-left: 20px;
+        }
+    </ui:style>
+    <g:HTMLPanel>
+        <g:HorizontalPanel>
+            <!--<div class="modal-body">-->
+            <g:HTMLPanel>
+                <div class="report-filters-left">
+                    <div>Project:</div>
+                    <g:ListBox ui:field="project" styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
+                    <div>Workpackage:</div>
+                    <g:ListBox ui:field="workpackage"  styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
+                    <b:Tooltip text="if selected you can specify a time period to search for">
+                        <b:CollapseTrigger target="#toggle1">
+                            <b:CheckBox ui:field="dateFilterCB">use date filter</b:CheckBox>
+                        </b:CollapseTrigger>
+                    </b:Tooltip>
+                    <b:Collapse existTrigger="true" b:id="toggle1" defaultOpen="false">
+                        <b:FluidRow>
+                            <g:HorizontalPanel ui:field="datepickerPanel">
+                            </g:HorizontalPanel>
+                        </b:FluidRow>
+                    </b:Collapse>
+                </div>
+            </g:HTMLPanel>
+            <g:HTMLPanel>
+                <div class="report-filters-right">
+                    <div>User:</div>
+                    <b:ListBox ui:field="users" styleName="report-filter-cb-user"/>
+                    <div>Description:</div>
+                    <g:TextBox ui:field="description" /><!-- styleName="{style.input-component}" />-->
+                </div>   
+            </g:HTMLPanel>
+            <g:HTMLPanel ui:field="statisticWrapper">
+                
+            </g:HTMLPanel>
+        </g:HorizontalPanel>
+    </g:HTMLPanel>
+</ui:UiBinder>

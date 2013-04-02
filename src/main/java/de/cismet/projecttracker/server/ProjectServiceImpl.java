@@ -72,6 +72,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.*;
 
 /**
@@ -3234,7 +3235,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             if (!check) {
                 faultyDays.add(fromCal.getTime());
             }
-           fromCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+            fromCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
         }
         return faultyDays;
     }
@@ -3470,5 +3471,59 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     @Override
     public double getTotalVacationForYear(StaffDTO staff, Date year) {
         return getTotalVacationDaysForYear(year, staff);
+    }
+
+    /**
+     * if one of the parameters is null this parameter doesnt gets taken into account for filtering
+     */
+    @Override
+    public ArrayList<ActivityDTO> getActivites(List<WorkPackageDTO> workpackages, List<StaffDTO> staff, Date from, Date til, String description) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException {
+        final ArrayList<ActivityDTO> result = new ArrayList<ActivityDTO>();
+        DBManagerWrapper dbManager = new DBManagerWrapper();
+        Session hibernateSession = null;
+        Transaction tx = null;
+        final Conjunction conjuction = Restrictions.conjunction();
+        if (workpackages != null && !workpackages.isEmpty()) {
+            final ArrayList<Long> wpIds = new ArrayList<Long>();
+            for (WorkPackageDTO wp : workpackages) {
+                wpIds.add(wp.getId());
+            }
+            conjuction.add(Restrictions.in("workPackage.id", wpIds));
+        }
+        
+        if(staff != null && !staff.isEmpty()){
+            final ArrayList<Long> staffIds = new ArrayList<Long>();
+            for(StaffDTO s : staff){
+                staffIds.add(s.getId());
+            }
+            conjuction.add(Restrictions.in("staff.id", staffIds));
+        }
+        conjuction.add(Restrictions.isNotNull("day"));
+        if(from != null && til != null && from.compareTo(til)<0){
+            conjuction.add(Restrictions.ge("day", from));
+            conjuction.add(Restrictions.le("day", til));
+        }
+        
+        if(description!=null){
+            conjuction.add(Restrictions.ilike("description", description, MatchMode.ANYWHERE));
+        }
+        
+        try {
+            hibernateSession = dbManager.getSession();
+            tx = hibernateSession.beginTransaction();
+//            Criterion wpRestriction = Restrictions.in("workPackage.id", wpIds);
+            Criteria crit = hibernateSession.createCriteria(Activity.class).
+                    add((conjuction));
+            result.addAll(dtoManager.clone(crit.list()));
+            tx.commit();
+        } 
+        catch (Exception ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            tx.rollback();
+        } 
+        finally {
+            dbManager.closeSession();
+        }
+        return result;
     }
 }

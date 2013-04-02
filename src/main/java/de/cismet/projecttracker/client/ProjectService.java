@@ -487,6 +487,7 @@ public interface ProjectService extends RemoteService {
      */
     public Double getAccountBalance(StaffDTO staff) throws DataRetrievalException, NoSessionException, PermissionDenyException;
 
+    public ArrayList<ActivityDTO> getActivites(List<WorkPackageDTO> workpackages, List<StaffDTO> staff, Date from, Date til, String description)throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException;
     /**
      * @param staff the activities of this user will be returned. If the staff is null, the activities of the current
      * users will be returned

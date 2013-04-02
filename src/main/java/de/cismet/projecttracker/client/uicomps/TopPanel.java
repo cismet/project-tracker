@@ -48,6 +48,7 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
     private List<MenuListener> listener = new ArrayList<MenuListener>();
     private List<StaffDTO> userList = new ArrayList<StaffDTO>();
     private ProfilePanel profilePanel = null;
+    private ReportsPanel reportsPanel =null;
     private boolean loggedIn = false;
     private List<ChangeHandler> changeListeners = new ArrayList<ChangeHandler>();
 
@@ -144,6 +145,10 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
             if (activeLab == sheetsLab) {
                 newEvent.setNumber(SHEETS);
             } else if (activeLab == reportsLab) {
+                if(reportsPanel == null){
+                    reportsPanel = new ReportsPanel();
+                    this.addMenuListener(reportsPanel);
+                }
                 newEvent.setNumber(REPORTS);
             } else if (activeLab == profileLab) {
                 if (profilePanel == null) {
