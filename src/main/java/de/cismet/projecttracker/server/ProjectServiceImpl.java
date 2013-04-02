@@ -72,6 +72,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.*;
 
 /**
@@ -2475,8 +2476,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
-            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
+            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+//            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
             if (staff
                     != null) {
@@ -3480,6 +3481,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final ArrayList<ActivityDTO> result = new ArrayList<ActivityDTO>();
         DBManagerWrapper dbManager = new DBManagerWrapper();
         Session hibernateSession = null;
+        Transaction tx = null;
         final Conjunction conjuction = Restrictions.conjunction();
         if (workpackages != null && !workpackages.isEmpty()) {
             final ArrayList<Long> wpIds = new ArrayList<Long>();
@@ -3508,13 +3510,18 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         
         try {
             hibernateSession = dbManager.getSession();
+            tx = hibernateSession.beginTransaction();
 //            Criterion wpRestriction = Restrictions.in("workPackage.id", wpIds);
             Criteria crit = hibernateSession.createCriteria(Activity.class).
                     add((conjuction));
             result.addAll(dtoManager.clone(crit.list()));
-        } catch (InvalidInputValuesException ex) {
+            tx.commit();
+        } 
+        catch (Exception ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
+            tx.rollback();
+        } 
+        finally {
             dbManager.closeSession();
         }
         return result;
