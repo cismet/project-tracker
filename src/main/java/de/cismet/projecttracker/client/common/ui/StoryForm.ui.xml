@@ -25,7 +25,7 @@
 			<div class="modal-body">
                             <div>Project:</div>
                             <g:ListBox ui:field="project" styleName="{style.input-component}" />
-                            <div>Workpackage:</div>
+                            <div>Workpackage: <g:CheckBox ui:field="wpDateFilterCB" styleName="{style.input-component-margin}" /></div>
                             <g:ListBox ui:field="workpackage" styleName="{style.input-component}" />
                             <div>Description:</div>
                             <g:TextBox ui:field="description" styleName="{style.input-component}" />
