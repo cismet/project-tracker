@@ -266,7 +266,7 @@ footer{
 .report-task-notice-center{
     display: inline-block;
     max-width: 650px;
-     
+
 }
 .report-task-notice-container{
     min-height: 50px;
@@ -781,6 +781,10 @@ footer{
 .modal-body table th, table td {
     line-height: 18px;
     text-align: left;
+}
+.modal-body .wpFilterCB{
+    margin-left: 5px;
+    margin-top: 0;
 }
 
 .modal-body, .modal-body h1,.modal-body h2,.modal-body h3,.modal-body h4,.modal-body h5,.modal-body h6,.modal-body p,

@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.SimpleCheckBox;
 import com.google.gwt.user.client.ui.TextBox;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.*;
@@ -21,7 +22,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler {
+public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler, ClickHandler {
 
     private static TaskFormUiBinder uiBinder = GWT.create(TaskFormUiBinder.class);
     private static WorkCategoryDTO travelCatagory = null;
@@ -39,6 +40,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     ListBox workpackage;
     @UiField
     CheckBox travel;
+    @UiField
+    SimpleCheckBox wpDateFilterCB;
     private DialogBox form;
     private TaskStory caller;
     private Date day = new Date();
@@ -50,6 +53,13 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     public void onChange(ChangeEvent event) {
         if (event.getSource() == project) {
             initWorkpackage();
+        }
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+        if (event.getSource() == wpDateFilterCB) {
+            initWorkpackage();;
         }
     }
 
@@ -177,6 +187,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     }
 
     private void init() {
+        wpDateFilterCB.setValue(true);
+        wpDateFilterCB.setTitle(" if selected, only WorkPackages which are in the current period of the project, are shown");
+        wpDateFilterCB.addClickHandler(this);
         List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
 //        travel.setText("Travel: ");
         if (result == null) {
@@ -234,9 +247,16 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
                 for (WorkPackageDTO tmp : wps) {
                     WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
-//                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
-                    if (tmp.getName() != null) {
-                        workpackage.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                    if (wpDateFilterCB.getValue()) {
+                        if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
+                            if (tmp.getName() != null) {
+                                workpackage.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                            }
+                        }
+                    } else {
+                        if (tmp.getName() != null) {
+                            workpackage.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                        }
                     }
                 }
 
@@ -249,7 +269,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
             }
         }
     }
-
+    
     private static String extractWorkpackageName(WorkPackageDTO workpackage) {
         WorkPackageDTO tmp = workpackage.getWorkPackage();
         String prefix = "";
