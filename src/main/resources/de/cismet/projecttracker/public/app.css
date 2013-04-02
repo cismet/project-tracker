@@ -273,6 +273,7 @@ footer{
 }
 .report-task-notice-right{
     float: right;
+    margin-right:5px
 }
 
 .profile-page-header{
