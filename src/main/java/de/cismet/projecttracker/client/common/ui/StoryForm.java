@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.SimpleCheckBox;
 import com.google.gwt.user.client.ui.TextBox;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.*;
@@ -40,7 +41,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     @UiField
     CheckBox travel;
     @UiField
-    CheckBox wpDateFilterCB;
+    SimpleCheckBox wpDateFilterCB;
     private DialogBox form;
     private TaskStory caller;
     private Date day = new Date();
@@ -186,7 +187,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     }
 
     private void init() {
-        wpDateFilterCB.setValue(true, false);
+        wpDateFilterCB.setValue(true);
+        wpDateFilterCB.setTitle(" if selected, only WorkPackages which are in the current period of the project, are shown");
         wpDateFilterCB.addClickHandler(this);
         List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
 //        travel.setText("Travel: ");
