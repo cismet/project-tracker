@@ -1,5 +1,8 @@
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +10,7 @@ import java.util.List;
  *
  * @author therter
  */
+@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@jsonWorkPackageId")
 public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparable<WorkPackageDTO> {
     private WorkPackageDTO workPackage;
     private ProjectDTO project;
@@ -18,10 +22,15 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     private double warnlevel;
     private double criticallevel;
     private double fullstoplevel;
+    @JsonIgnore
     private ArrayList<WorkPackageDTO> workPackages = new ArrayList<WorkPackageDTO>(0);
+    @JsonIgnore
     private ArrayList<WorkPackagePeriodDTO> workPackagePeriods = new ArrayList<WorkPackagePeriodDTO>(0);
+    @JsonIgnore
     private ArrayList<ProjectComponentTagDTO> projectComponentTags = new ArrayList<ProjectComponentTagDTO>(0);
+    @JsonIgnore
     private ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts = new ArrayList<EstimatedComponentCostDTO>(0);
+    @JsonIgnore
     private ArrayList<WorkPackageProgressDTO> workPackageProgresses = new ArrayList<WorkPackageProgressDTO>(0);
     private String abbreviation;
     private boolean issubversion = false;

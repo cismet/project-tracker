@@ -1,5 +1,7 @@
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import de.cismet.projecttracker.client.MessageConstants;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import java.util.Date;
@@ -8,6 +10,7 @@ import java.util.Date;
  *
  * @author therter
  */
+@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@id")
 public class WorkPackagePeriodDTO extends BasicDTO<WorkPackagePeriodDTO> implements Comparable<Object>  {
     private WorkPackageDTO workPackage;
     private Date fromdate;

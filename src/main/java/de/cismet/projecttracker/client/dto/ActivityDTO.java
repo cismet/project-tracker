@@ -5,8 +5,7 @@
 
 package de.cismet.projecttracker.client.dto;
 
-import de.cismet.projecttracker.client.helper.DateHelper;
-import java.sql.Timestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 
 /**

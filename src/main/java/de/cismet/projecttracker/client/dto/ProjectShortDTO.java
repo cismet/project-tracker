@@ -2,26 +2,29 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.ArrayList;
 
 /**
  *
  * @author therter
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class ProjectShortDTO extends BasicDTO<BasicDTO> implements Comparable<ProjectShortDTO> {
-     protected String name;
-     protected String description;
-     protected double overheadratio;
-     protected ProjectCategoryDTO projectCategory;
-     protected ArrayList<ProjectPeriodDTO> projectPeriods = new ArrayList<ProjectPeriodDTO>(0);
+
+    protected String name;
+    protected String description;
+    protected double overheadratio;
+    protected ProjectCategoryDTO projectCategory;
+    @JsonIgnore
+    protected ArrayList<ProjectPeriodDTO> projectPeriods = new ArrayList<ProjectPeriodDTO>(0);
 
     public ProjectShortDTO() {
     }
-
-     
 
     public ProjectShortDTO(long id, String name, String description, double overheadratio, ProjectCategoryDTO projectCategory, ArrayList<ProjectPeriodDTO> projectPeriods) {
         this.id = id;
@@ -31,7 +34,6 @@ public class ProjectShortDTO extends BasicDTO<BasicDTO> implements Comparable<Pr
         this.projectCategory = projectCategory;
         this.projectPeriods = projectPeriods;
     }
-
 
     /**
      * @return the name
@@ -117,7 +119,7 @@ public class ProjectShortDTO extends BasicDTO<BasicDTO> implements Comparable<Pr
      */
     @Override
     public void reset(BasicDTO obj) {
-        ProjectShortDTO prj = (ProjectShortDTO)obj;
+        ProjectShortDTO prj = (ProjectShortDTO) obj;
         this.id = prj.id;
         this.name = prj.name;
         this.description = prj.description;

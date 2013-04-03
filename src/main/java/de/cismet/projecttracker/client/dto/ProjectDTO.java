@@ -1,5 +1,6 @@
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 
 /**
@@ -16,9 +17,13 @@ public class ProjectDTO extends ProjectShortDTO {
     private double criticallevel;
     private double fullstoplevel;
     private StaffDTO responsiblestaff;
+    @JsonIgnore
     private ArrayList<ProjectDTO> projects = new ArrayList<ProjectDTO>(0);
+    @JsonIgnore
     private ArrayList<CostCategoryDTO> costCategories = new ArrayList<CostCategoryDTO>(0);
+    @JsonIgnore
     private ArrayList<WorkPackageDTO> workPackages = new ArrayList<WorkPackageDTO>(0);
+    @JsonIgnore
     private ArrayList<ProjectComponentTagDTO> projectComponentTags = new ArrayList<ProjectComponentTagDTO>(0);
 
     public ProjectDTO() {

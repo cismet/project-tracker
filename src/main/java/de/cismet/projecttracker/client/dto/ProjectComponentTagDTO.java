@@ -5,6 +5,8 @@
 
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.ArrayList;
 
 
@@ -12,6 +14,7 @@ import java.util.ArrayList;
  *
  * @author therter
  */
+@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@id")
 public class ProjectComponentTagDTO extends BasicDTO<ProjectComponentTagDTO> {
      private ProjectDTO project;
      private String name;

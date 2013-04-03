@@ -1,13 +1,18 @@
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.ArrayList;
 
 /**
  *
  * @author therter
  */
+@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@id")
 public class ProjectCategoryDTO extends BasicDTO<ProjectCategoryDTO> implements Comparable<ProjectCategoryDTO>{
     private String name;
+    @JsonIgnore
     private ArrayList<ProjectDTO> projects = new ArrayList<ProjectDTO>(0);
 
     public ProjectCategoryDTO() {
