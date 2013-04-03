@@ -1,5 +1,8 @@
 package de.cismet.projecttracker.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import de.cismet.projecttracker.utilities.DBManagerWrapper;
 import de.cismet.projecttracker.utilities.DTOManager;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -54,6 +57,12 @@ import de.cismet.projecttracker.utilities.Utilities;
 import de.cismet.projecttracker.report.timetracker.TimetrackerQuery;
 import de.cismet.projecttracker.utilities.EmailTaskNotice;
 import de.cismet.web.timetracker.types.HoursOfWork;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
@@ -105,6 +114,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static boolean initialised = false;
     private static DTOManager dtoManager = new DTOManager();
     private static final GregorianCalendar accountBalanceDueDate = new GregorianCalendar(2012, 2, 1);
+    private static String JSON_LOG_BASE_DIR;
 //    private static final int PAUSE_CHECKER_DAYS = 2;
 
     @Override
@@ -129,6 +139,16 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             // start the timer that checks pause tasks
 
 //            PauseChecker pauseChecker = new PauseChecker(this, PAUSE_CHECKER_DAYS);
+            //load the base dir for json log files
+            InputStream input = null;
+            Properties jsonConfig = new Properties();
+            try {
+                input = ProjectServiceImpl.class.getResourceAsStream("/de/cismet/projecttracker/server/json_log.properties");
+                jsonConfig.load(input);
+                JSON_LOG_BASE_DIR = jsonConfig.getProperty("base_dir");
+            } catch (IOException e) {
+                logger.error("Cannot open and load json_log properties file.", e);
+            }
         }
     }
 
@@ -1720,6 +1740,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 throw new DataRetrievalException(LanguageBundle.ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT);
             }
 
+            //if a day gets locked save a log file containing json objects of all activites for that day
+            if (act.getKindofactivity() == ActivityDTO.LOCKED_DAY) {
+                writeJsonLogFile(activity);
+            }
             if (act.getWorkCategory() == null) {
                 act.setWorkCategory((WorkCategory) dbManager.getObject(WorkCategory.class, WorkCategoryDTO.WORK));
             }
@@ -1737,6 +1761,68 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             return id;
         } finally {
             dbManager.closeSession();
+        }
+    }
+
+    private void writeJsonLogFile(ActivityDTO act) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(act.getDay());
+        cal.set(GregorianCalendar.HOUR_OF_DAY,0);
+        ArrayList<ActivityDTO> userActs = getActivityByDay(act.getStaff(), cal.getTime());
+        BufferedWriter bfw = null;
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            try {
+                ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+                final String json = writer.writeValueAsString(userActs);
+
+                final String logDir = JSON_LOG_BASE_DIR + System.getProperty("file.separator") + act.getStaff().getUsername();
+                //check if the user dir exits and create it if necessary
+                if (!new File(logDir).exists()) {
+                    new File(logDir).mkdirs();
+                }
+
+                final StringBuilder fileNameBuilder = new StringBuilder();
+                fileNameBuilder.append(logDir);
+
+                /*
+                 * since a day can be unlocked and locked again it is possible that a log file exists already
+                 * in that case we append a number to the filename
+                 */
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                final String date = df.format(act.getDay());
+                fileNameBuilder.append(System.getProperty("file.separator"));
+                fileNameBuilder.append(date);
+                File[] files = new File(logDir).listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File file, String string) {
+                        if (string.matches(date + ".*")) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                });
+
+                if (files.length > 0) {
+                    fileNameBuilder.append("#");
+                    fileNameBuilder.append(files.length);
+                }
+
+                //write the json object to file
+                File logFile = new File(fileNameBuilder.toString());
+                bfw = new BufferedWriter(new FileWriter(logFile));
+                bfw.write(json, 0, json.length());
+
+            } catch (JsonProcessingException ex) {
+               logger.error("Cannot create json object for activity "+act.toString(), ex);
+            } finally {
+                if (bfw != null) {
+                    bfw.close();
+                }
+            }
+        } catch (IOException ex) {
+            logger.error("Cannot write the json object to file.", ex);
         }
     }
 
@@ -1824,15 +1910,20 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             // org.hibernate.NonUniqueObjectException: a different object with the same identifier value was already associated with the session
 //            activityHib.setWorkCategory((WorkCategory)dtoManager.merge( getWorkCategories().get(0)));
             String actText = act.toString();
+
             activityHib.setReports(act.getReports());
-            if (activityHib.getWorkCategory() == null) {
+            if (activityHib.getWorkCategory()
+                    == null) {
                 activityHib.setWorkCategory((WorkCategory) dbManager.getObject(WorkCategory.class, WorkCategoryDTO.WORK));
             }
 
             dbManager.closeSession();
             dbManager = new DBManagerWrapper();
+
             dbManager.saveObject(activityHib);
-            if (activityHib.getStaff().getId() != getUserId() && activityHib.getDay() != null) {
+
+            if (activityHib.getStaff()
+                    .getId() != getUserId() && activityHib.getDay() != null) {
                 sendChangedActivityEmail(activityHib, origAct, activityHib.getStaff().getEmail());
             }
             return activity;
@@ -1899,6 +1990,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("delete activity");
         DBManagerWrapper dbManager = new DBManagerWrapper();
         final Activity deletedActivity = (Activity) dtoManager.merge(activity.createCopy());
+
+
         try {
             Activity act = (Activity) dbManager.getObject(Activity.class, new Long(activity.getId()));
             checkUserOrAdminPermission(act.getStaff().getId());
@@ -1910,19 +2003,21 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     throw new PersistentLayerException(LanguageBundle.CANNOT_CHANGE_ACTIVITY);
                 }
             }
-
             String actText = null;
             Staff st = null;
             Date day = null;
 
-            if (act.getDay() != null) {
+            if (act.getDay()
+                    != null) {
                 actText = act.toString();
                 st = act.getStaff();
                 day = act.getDay();
             }
-            dbManager.deleteObject(act);
 
-            if (st != null && st.getId() != getUserId() && day != null) {
+            dbManager.deleteObject(act);
+            if (st
+                    != null && st.getId()
+                    != getUserId() && day != null) {
                 sendChangedActivityEmail(null, deletedActivity, st.getEmail());
             }
         } finally {
@@ -1939,10 +2034,13 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         DBManagerWrapper dbManager = new DBManagerWrapper();
         List<ReportDTO> reports = new ArrayList<ReportDTO>();
 
+
+
         try {
             for (ActivityDTO activity : activityList) {
                 Activity act = (Activity) dbManager.getObject(Activity.class, new Long(activity.getId()));
-                if (act != null) {
+                if (act
+                        != null) {
                     checkUserOrAdminPermission(act.getStaff().getId());
 
                     Set<Report> reportSet = act.getReports();
@@ -1968,6 +2066,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public List<ReportDTO> getReportsForActivity(ActivityDTO activity) throws InvalidInputValuesException, DataRetrievalException, PersistentLayerException, PermissionDenyException, NoSessionException {
         logger.debug("getReportsForActivity");
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
         try {
             Activity act = (Activity) dbManager.getObject(Activity.class, new Long(activity.getId()));
@@ -2113,6 +2213,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
 
 
+
+
         try {
             List<WorkCategory> result = (List<WorkCategory>) dbManager.getAllObjects(WorkCategory.class);
             logger.debug(result.size() + " work categories found");
@@ -2129,6 +2231,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("get work category");
         checkSession();
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
 
 
@@ -2153,6 +2257,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
 
 
+
+
         try {
             List<ContractDocument> result = (List<ContractDocument>) dbManager.getObjectsByAttribute(ContractDocument.class, "contract", dtoManager.merge(contract));
 
@@ -2171,6 +2277,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("get contract documents");
         checkUserOrAdminPermission(travel.getStaff().getId());
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
 
 
@@ -2231,6 +2339,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("get fundings");
         checkAdminPermission();
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
 
 
@@ -2319,23 +2429,23 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             Criteria crit = hibernateSession.createCriteria(Travel.class);
 
-            if (staffId != 0) {
+            if (staffId
+                    != 0) {
                 Staff st = new Staff();
                 st.setId(staffId);
                 crit.add(Restrictions.eq("staff", st));
             }
-
-            if (projectId != 0) {
+            if (projectId
+                    != 0) {
                 Project pro = new Project();
                 pro.setId(projectId);
                 crit.add(Restrictions.eq("project", pro));
             }
-
-            if (year != 0) {
+            if (year
+                    != 0) {
                 int dateObjectYear = year - 1900;
                 crit.add(Restrictions.between("date", new Date(dateObjectYear, 0, 1), new Date(dateObjectYear, 11, 31, 23, 59, 59)));
             }
-
             List<Travel> result = crit.list();
 
             return dtoManager.clone(result);
@@ -2414,6 +2524,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("delete report");
         checkAdminPermission();
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
 
 
@@ -2687,10 +2799,13 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("getStaffById");
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             Staff s = (Staff) dbManager.getObject(Staff.class, getUserId());
 
-            if (s.getLastmodification() != null) {
+            if (s.getLastmodification()
+                    != null) {
                 s.setLastmodification(null);
                 saveStaff((StaffDTO) dtoManager.clone(s));
 
@@ -2843,6 +2958,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         logger.debug("getStaffById");
         DBManagerWrapper dbManager = new DBManagerWrapper();
 
+
+
         try {
             Staff result = (Staff) dbManager.getObject(Staff.class, id);
 
@@ -2855,6 +2972,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private Staff getStaffByUsername(String username) throws DataRetrievalException {
         logger.debug("getStaffByUsername");
         DBManagerWrapper dbManager = new DBManagerWrapper();
+
+
 
         try {
             Staff result = (Staff) dbManager.getObjectByAttribute(Staff.class, "username", username);
@@ -2999,7 +3118,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             if (rs != null) {
                 while (rs.next()) {
                     long id = rs.getLong(1);
-                    result.add((Activity) dbManager.getObject(Activity.class, id));
+                    result
+                            .add((Activity) dbManager.getObject(Activity.class, id));
                 }
             }
 
@@ -3023,9 +3143,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             if (rs != null && !rs.first()) {
                 return false;
+
+
             }
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(FavouriteTaskStory.class.getName()).log(Level.SEVERE, "Error while checking"
+            java.util.logging.Logger.getLogger(FavouriteTaskStory.class
+                    .getName()).log(Level.SEVERE, "Error while checking"
                     + " if facourite task already exists. Drop action cancelled", ex);
         } finally {
             dbManager.closeSession();
@@ -3062,13 +3185,16 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                         final Timestamp endOfDay = rs.getTimestamp("day");
                         if (endOfDay.before(now)) {
                             return false;
+
+
                         }
                     }
                 }
             }
 
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, "Error while checking if begin_of_day activity exists", ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, "Error while checking if begin_of_day activity exists", ex);
         } finally {
             dbManager.closeSession();
         }
@@ -3090,11 +3216,14 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         Activity lockedDayActivity = null;
         Criteria crit = null;
+
+
         try {
             crit = dbManager.getSession().createCriteria(Activity.class).add(Restrictions.and(Restrictions.eq("staff", dtoManager.merge(s)), Restrictions.and(Restrictions.eq("kindofactivity", ActivityDTO.LOCKED_DAY), Restrictions.eq("day", d)))).setMaxResults(1);
             lockedDayActivity = (Activity) crit.uniqueResult();
         } catch (InvalidInputValuesException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } finally {
             dbManager.closeSession();
         }
@@ -3125,7 +3254,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 resultList.add((ActivityDTO) dtoManager.clone(activity));
             }
         } catch (InvalidInputValuesException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } finally {
             dbManager.closeSession();
         }
@@ -3190,17 +3320,23 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     }
                 } else {
                     return true;
+
+
                 }
 //                }
             }
         } catch (InvalidInputValuesException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } catch (DataRetrievalException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } catch (PermissionDenyException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } catch (NoSessionException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
 
         return false;
@@ -3318,12 +3454,15 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                             result += 1;
                         } else {
                             result += wh / (whPerWeek / 5);
+
+
                         }
                     }
                 }
 
             } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+                java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                        .getName()).log(Level.SEVERE, null, ex);
             } finally {
                 dbManager.closeSession();
             }
@@ -3395,11 +3534,14 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 while (rs.next()) {
                     final Date d = rs.getDate(1);
                     result.add(d);
+
+
                 }
             }
 
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } finally {
             dbManager.closeSession();
         }
@@ -3415,11 +3557,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             WorkPackage wp = (WorkPackage) dbManager.getObject(WorkPackage.class, 409);
             WorkPackageDTO wpDTO = (WorkPackageDTO) dtoManager.clone(wp);
-
             Criterion dateRestriction = Restrictions.and(Restrictions.ge("day", new Date(d.getYear(), 0, 1)), Restrictions.le("day", d));
             Criterion wpRestriction = Restrictions.and(Restrictions.eq("staff.id", staff.getId()), Restrictions.eq("workPackage.id", wpDTO.getId()));
             Criteria crit = hibernateSession.createCriteria(Activity.class).
                     add(Restrictions.and(wpRestriction, dateRestriction));
+
             crit.addOrder(Property.forName("day").asc());
             List<Activity> result = crit.list();
 
@@ -3428,9 +3570,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             // convert the server version of the Project type to the client version of the Project type
             return (ArrayList<ActivityDTO>) dtoManager.clone(result);
         } catch (DataRetrievalException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidInputValuesException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } finally {
             dbManager.closeSession();
         }
@@ -3446,12 +3590,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             WorkPackage wp = (WorkPackage) dbManager.getObject(WorkPackage.class, 409);
             WorkPackageDTO wpDTO = (WorkPackageDTO) dtoManager.clone(wp);
-
             Criterion dateRestriction = Restrictions.and(Restrictions.ge("day", d), Restrictions.le("day", new Date(d.getYear(), 11, 31)));
             Criterion wpRestriction = Restrictions.and(Restrictions.eq("staff.id", staff.getId()), Restrictions.eq("workPackage.id", wpDTO.getId()));
             Criteria crit = hibernateSession.createCriteria(Activity.class).
                     add(Restrictions.and(wpRestriction, dateRestriction));
-
             List<Activity> result = crit.list();
 
             logger.debug(result.size() + " activities found");
@@ -3459,9 +3601,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             // convert the server version of the Project type to the client version of the Project type
             return (ArrayList<ActivityDTO>) dtoManager.clone(result);
         } catch (DataRetrievalException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidInputValuesException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
         } finally {
             dbManager.closeSession();
         }
@@ -3490,24 +3634,24 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             }
             conjuction.add(Restrictions.in("workPackage.id", wpIds));
         }
-        
-        if(staff != null && !staff.isEmpty()){
+
+        if (staff != null && !staff.isEmpty()) {
             final ArrayList<Long> staffIds = new ArrayList<Long>();
-            for(StaffDTO s : staff){
+            for (StaffDTO s : staff) {
                 staffIds.add(s.getId());
             }
             conjuction.add(Restrictions.in("staff.id", staffIds));
         }
         conjuction.add(Restrictions.isNotNull("day"));
-        if(from != null && til != null && from.compareTo(til)<0){
+        if (from != null && til != null && from.compareTo(til) < 0) {
             conjuction.add(Restrictions.ge("day", from));
             conjuction.add(Restrictions.le("day", til));
         }
-        
-        if(description!=null){
+
+        if (description != null) {
             conjuction.add(Restrictions.ilike("description", description, MatchMode.ANYWHERE));
         }
-        
+
         try {
             hibernateSession = dbManager.getSession();
             tx = hibernateSession.beginTransaction();
@@ -3516,12 +3660,11 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     add((conjuction));
             result.addAll(dtoManager.clone(crit.list()));
             tx.commit();
-        } 
-        catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class
+                    .getName()).log(Level.SEVERE, null, ex);
             tx.rollback();
-        } 
-        finally {
+        } finally {
             dbManager.closeSession();
         }
         return result;
