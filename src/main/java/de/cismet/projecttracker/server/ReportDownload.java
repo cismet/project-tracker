@@ -1,48 +1,111 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.server;
+
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import de.cismet.projecttracker.client.exceptions.NoSessionException;
 import de.cismet.projecttracker.client.exceptions.PermissionDenyException;
+
 import de.cismet.projecttracker.report.ProjectTrackerReport;
 import de.cismet.projecttracker.report.ReportManager;
 import de.cismet.projecttracker.report.db.entities.Report;
 import de.cismet.projecttracker.report.query.DBManager;
-import de.cismet.projecttracker.utilities.LanguageBundle;
-import java.io.IOException;
-import java.io.PrintWriter;
-import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import org.apache.log4j.Logger;
 
+import de.cismet.projecttracker.utilities.LanguageBundle;
 
 /**
  * TODO: prufen, ob diese Funktionalität von der Klasse DocumentDownload abgedeckt werden kann
- * @author therter
+ *
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ReportDownload extends BasicServlet {
+
+    //~ Static fields/initializers ---------------------------------------------
+
     private static final Logger logger = Logger.getLogger(ReportDownload.class);
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param   request   servlet request
+     * @param   response  servlet response
+     *
+     * @throws  ServletException  if a servlet-specific error occurs
+     * @throws  IOException       if an I/O error occurs
+     */
+    @Override
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException,
+        IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param   request   servlet request
+     * @param   response  servlet response
+     *
+     * @throws  ServletException  if a servlet-specific error occurs
+     * @throws  IOException       if an I/O error occurs
+     */
+    @Override
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException,
+        IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return  a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    } // </editor-fold>
+
+    //~ Instance fields --------------------------------------------------------
+
     private ReportManager reportManager;
 
+    //~ Methods ----------------------------------------------------------------
+
     @Override
-    public void init(ServletConfig config) throws ServletException {
+    public void init(final ServletConfig config) throws ServletException {
         super.init(config);
         reportManager = new ReportManager(config.getServletContext().getRealPath("/"));
     }
 
-   
-    /** 
+    /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     *
+     * @param   request   servlet request
+     * @param   response  servlet response
+     *
+     * @throws  ServletException  if a servlet-specific error occurs
+     * @throws  IOException       if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+    protected void processRequest(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
         String urlExtension = null;
-        String id = request.getParameter("id");
+        final String id = request.getParameter("id");
         response.setContentType("text/html;charset=UTF-8");
 
         try {
@@ -51,56 +114,75 @@ public class ReportDownload extends BasicServlet {
                 urlExtension = request.getPathInfo().substring(1);
             }
 
-            if (urlExtension == null || urlExtension.equals("")) {
-                String pluginName = request.getParameter("plugin");
+            if ((urlExtension == null) || urlExtension.equals("")) {
+                final String pluginName = request.getParameter("plugin");
                 redirect(id, pluginName, request.getRequestURI(), response);
             } else {
                 returnFile(id, response);
             }
         } catch (PermissionDenyException e) {
-            PrintWriter out = response.getWriter();
+            final PrintWriter out = response.getWriter();
             out.print("permission deny");
             out.close();
         } catch (NoSessionException e) {
-            PrintWriter out = response.getWriter();
+            final PrintWriter out = response.getWriter();
             out.print("session expired");
             out.close();
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id          DOCUMENT ME!
+     * @param   pluginName  DOCUMENT ME!
+     * @param   uri         DOCUMENT ME!
+     * @param   response    DOCUMENT ME!
+     *
+     * @throws  IOException  DOCUMENT ME!
+     */
+    private void redirect(final String id,
+            final String pluginName,
+            final String uri,
+            final HttpServletResponse response) throws IOException {
+        final ProjectTrackerReport reportPlugin = reportManager.getReportByName(pluginName);
+        String ext = "";
+        if (reportPlugin != null) {
+            ext = reportPlugin.getFileExtension();
+        }
+        final String newUrl = uri + "/Report" + id + ext + "?id=" + id;
 
-    private void redirect(String id, String pluginName, String uri, HttpServletResponse response) throws IOException {
-            ProjectTrackerReport reportPlugin = reportManager.getReportByName( pluginName );
-            String ext = "";
-            if (reportPlugin != null) {
-                ext = reportPlugin.getFileExtension();
-            }
-            String newUrl = uri + "/Report" + id + ext + "?id=" + id;
-
-            response.sendRedirect( response.encodeRedirectURL( newUrl ) );
+        response.sendRedirect(response.encodeRedirectURL(newUrl));
     }
 
-
-    private void returnFile(String id, HttpServletResponse response) throws IOException {
-        ServletOutputStream out = response.getOutputStream();
-        DBManager dbManager = new DBManager();
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id        DOCUMENT ME!
+     * @param   response  DOCUMENT ME!
+     *
+     * @throws  IOException  DOCUMENT ME!
+     */
+    private void returnFile(final String id, final HttpServletResponse response) throws IOException {
+        final ServletOutputStream out = response.getOutputStream();
+        final DBManager dbManager = new DBManager();
 
         try {
-            long reportId = Long.parseLong( id );
+            final long reportId = Long.parseLong(id);
 
-            Report report = (Report)dbManager.getObject(Report.class, new Long(reportId));
-            ProjectTrackerReport reportPlugin = reportManager.getReportByName( report.getGeneratorname() );
+            final Report report = (Report)dbManager.getObject(Report.class, new Long(reportId));
+            final ProjectTrackerReport reportPlugin = reportManager.getReportByName(report.getGeneratorname());
 
-            if (reportPlugin != null && report != null) {
+            if ((reportPlugin != null) && (report != null)) {
                 response.setContentType(reportPlugin.getMIMEType());
                 out.write(report.getReportdocument());
             } else {
                 if (reportPlugin == null) {
                     logger.error("report plugin with name " + report.getGeneratorname() + " not found");
-                    out.println( LanguageBundle.REPORT_PLUGIN_NOT_FOUND );
+                    out.println(LanguageBundle.REPORT_PLUGIN_NOT_FOUND);
                 } else if (report == null) {
                     logger.error("report with id " + reportId + " not found");
-                    out.println( LanguageBundle.REPORT_NOT_FOUND );
+                    out.println(LanguageBundle.REPORT_NOT_FOUND);
                 }
             }
         } catch (Throwable t) {
@@ -112,41 +194,4 @@ public class ReportDownload extends BasicServlet {
             out.close();
         }
     }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }

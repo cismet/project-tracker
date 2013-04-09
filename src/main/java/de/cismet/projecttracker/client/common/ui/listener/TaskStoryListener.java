@@ -1,18 +1,44 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.common.ui.listener;
 
 import de.cismet.projecttracker.client.common.ui.event.TaskStoryEvent;
 
 /**
+ * DOCUMENT ME!
  *
- * @author thorsten
+ * @author   thorsten
+ * @version  $Revision$, $Date$
  */
 public interface TaskStoryListener {
-    public void taskNoticeCreated(TaskStoryEvent e);
-    public void taskNoticeChanged(TaskStoryEvent e);
-    public void taskNoticeDeleted(TaskStoryEvent e);
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    void taskNoticeCreated(TaskStoryEvent e);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    void taskNoticeChanged(TaskStoryEvent e);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    void taskNoticeDeleted(TaskStoryEvent e);
 }

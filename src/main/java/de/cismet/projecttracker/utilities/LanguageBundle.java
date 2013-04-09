@@ -1,12 +1,24 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.utilities;
 
 import java.util.ResourceBundle;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class LanguageBundle {
+
+    //~ Static fields/initializers ---------------------------------------------
+
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("de.cismet.projecttracker.serverLang");
     public static final String CANNOT_REMOVE_PROJECT_CATEGORY = BUNDLE.getString("cannotRemoveProjectCategory");
     public static final String CANNOT_CHANGE_ACTIVITY = BUNDLE.getString("cannotChangeActivity");
@@ -29,15 +41,23 @@ public class LanguageBundle {
     public static final String CRITICAL_WARN_EMAIL = BUNDLE.getString("criticalWarnEMail");
     public static final String FULL_STOP_EMAIL = BUNDLE.getString("fullStopEMail");
     public static final String EMAIL_BODY = BUNDLE.getString("emailBody");
-    public static final String ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT = BUNDLE.getString("activityMustHaveAProjectComponent");
-    public static final String THERE_ARE_STILL_CONTRACTS_ASSIGNED_TO_THE_COMPANY = BUNDLE.getString("thereAreStillContractsAssignedToTheCompany");
-    public static final String THE_WORK_CATEGORY_IS_USED_BY_ACTIVITIES = BUNDLE.getString("theWorkCategoryIsUsedByActivities");
+    public static final String ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT = BUNDLE.getString(
+            "activityMustHaveAProjectComponent");
+    public static final String THERE_ARE_STILL_CONTRACTS_ASSIGNED_TO_THE_COMPANY = BUNDLE.getString(
+            "thereAreStillContractsAssignedToTheCompany");
+    public static final String THE_WORK_CATEGORY_IS_USED_BY_ACTIVITIES = BUNDLE.getString(
+            "theWorkCategoryIsUsedByActivities");
     public static final String ACTIVITY_BEFORE_PERIOD_START = BUNDLE.getString("activityBeforePeriodStart");
     public static final String ACTIVITY_AFTER_PERIOD_END = BUNDLE.getString("activityAfterPeriodEnd");
-    public static final String PROJECT_START_BEFORE_PROJECT_COMPONENT_START = BUNDLE.getString("projectStartBeforeProjectComponentStart");
-    public static final String PROJECT_END_AFTER_PROJECT_COMPONENT_END = BUNDLE.getString("projectEndAfterProjectComponentEnd");
-    public static final String WORK_PACKAGE_START_BEFORE_PROJECT_START = BUNDLE.getString("workPackageStartBeforeProjectStart");
+    public static final String PROJECT_START_BEFORE_PROJECT_COMPONENT_START = BUNDLE.getString(
+            "projectStartBeforeProjectComponentStart");
+    public static final String PROJECT_END_AFTER_PROJECT_COMPONENT_END = BUNDLE.getString(
+            "projectEndAfterProjectComponentEnd");
+    public static final String WORK_PACKAGE_START_BEFORE_PROJECT_START = BUNDLE.getString(
+            "workPackageStartBeforeProjectStart");
     public static final String WORK_PACKAGE_END_AFTER_PROJECT_END = BUNDLE.getString("workPackageEndAfterProjectEnd");
-    public static final String ACTIVITY_BEFORE_START_OF_THE_PROJECT_COMPONENT = BUNDLE.getString("activityBeforeStartOfTheProjectComponent");
-    public static final String ACTIVITY_AFTER_END_OF_THE_PROJECT_COMPONENT = BUNDLE.getString("activityAfterEndOfTheProjectComponent");
+    public static final String ACTIVITY_BEFORE_START_OF_THE_PROJECT_COMPONENT = BUNDLE.getString(
+            "activityBeforeStartOfTheProjectComponent");
+    public static final String ACTIVITY_AFTER_END_OF_THE_PROJECT_COMPONENT = BUNDLE.getString(
+            "activityAfterEndOfTheProjectComponent");
 }

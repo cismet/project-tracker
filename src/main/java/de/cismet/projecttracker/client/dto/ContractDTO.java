@@ -1,31 +1,65 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.dto;
 
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ContractDTO extends BasicDTO<ContractDTO> {
-     private StaffDTO staff;
-     private CompanyDTO company;
-     private Date fromdate;
-     private Date todate;
-     private double whow;
-     private int vacation;
-     private ArrayList<ContractDocumentDTO> contractDocuments = new ArrayList<ContractDocumentDTO>(0);
 
+    //~ Instance fields --------------------------------------------------------
+
+    private StaffDTO staff;
+    private CompanyDTO company;
+    private Date fromdate;
+    private Date todate;
+    private double whow;
+    private int vacation;
+    private ArrayList<ContractDocumentDTO> contractDocuments = new ArrayList<ContractDocumentDTO>(0);
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ContractDTO object.
+     */
     public ContractDTO() {
     }
 
-     
-    public ContractDTO(long id, StaffDTO staff, CompanyDTO company, Date fromdate, Date todate, double whow, ArrayList<ContractDocumentDTO> contractDocuments,int vacation) {
+    /**
+     * Creates a new ContractDTO object.
+     *
+     * @param  id                 DOCUMENT ME!
+     * @param  staff              DOCUMENT ME!
+     * @param  company            DOCUMENT ME!
+     * @param  fromdate           DOCUMENT ME!
+     * @param  todate             DOCUMENT ME!
+     * @param  whow               DOCUMENT ME!
+     * @param  contractDocuments  DOCUMENT ME!
+     * @param  vacation           DOCUMENT ME!
+     */
+    public ContractDTO(final long id,
+            final StaffDTO staff,
+            final CompanyDTO company,
+            final Date fromdate,
+            final Date todate,
+            final double whow,
+            final ArrayList<ContractDocumentDTO> contractDocuments,
+            final int vacation) {
         this.id = id;
         this.staff = staff;
         this.company = company;
@@ -36,108 +70,141 @@ public class ContractDTO extends BasicDTO<ContractDTO> {
         this.contractDocuments = contractDocuments;
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the staff
+     * DOCUMENT ME!
+     *
+     * @return  the staff
      */
     public StaffDTO getStaff() {
         return staff;
     }
 
     /**
-     * @param staff the staff to set
+     * DOCUMENT ME!
+     *
+     * @param  staff  the staff to set
      */
-    public void setStaff(StaffDTO staff) {
+    public void setStaff(final StaffDTO staff) {
         this.staff = staff;
     }
 
     /**
-     * @return the company
+     * DOCUMENT ME!
+     *
+     * @return  the company
      */
     public CompanyDTO getCompany() {
         return company;
     }
 
     /**
-     * @param company the company to set
+     * DOCUMENT ME!
+     *
+     * @param  company  the company to set
      */
-    public void setCompany(CompanyDTO company) {
+    public void setCompany(final CompanyDTO company) {
         this.company = company;
     }
 
     /**
-     * @return the fromdate
+     * DOCUMENT ME!
+     *
+     * @return  the fromdate
      */
     public Date getFromdate() {
         return fromdate;
     }
 
     /**
-     * @param fromdate the fromdate to set
+     * DOCUMENT ME!
+     *
+     * @param  fromdate  the fromdate to set
      */
-    public void setFromdate(Date fromdate) {
+    public void setFromdate(final Date fromdate) {
         this.fromdate = fromdate;
     }
 
     /**
-     * @return the todate
+     * DOCUMENT ME!
+     *
+     * @return  the todate
      */
     public Date getTodate() {
         return todate;
     }
 
     /**
-     * @param todate the todate to set
+     * DOCUMENT ME!
+     *
+     * @param  todate  the todate to set
      */
-    public void setTodate(Date todate) {
+    public void setTodate(final Date todate) {
         this.todate = todate;
     }
 
     /**
-     * @return the whow
+     * DOCUMENT ME!
+     *
+     * @return  the whow
      */
     public double getWhow() {
         return whow;
     }
 
     /**
-     * @param whow the whow to set
+     * DOCUMENT ME!
+     *
+     * @param  whow  the whow to set
      */
-    public void setWhow(double whow) {
+    public void setWhow(final double whow) {
         this.whow = whow;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public int getVacation() {
         return vacation;
     }
 
-    public void setVacation(int vacation) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  vacation  DOCUMENT ME!
+     */
+    public void setVacation(final int vacation) {
         this.vacation = vacation;
     }
-    
+
     /**
-     * @return the contractDocuments
+     * DOCUMENT ME!
+     *
+     * @return  the contractDocuments
      */
     public ArrayList<ContractDocumentDTO> getContractDocuments() {
         return contractDocuments;
     }
 
     /**
-     * @param contractDocuments the contractDocuments to set
+     * DOCUMENT ME!
+     *
+     * @param  contractDocuments  the contractDocuments to set
      */
-    public void setContractDocuments(ArrayList<ContractDocumentDTO> contractDocuments) {
+    public void setContractDocuments(final ArrayList<ContractDocumentDTO> contractDocuments) {
         this.contractDocuments = contractDocuments;
     }
 
-    
     @Override
     public ContractDTO createCopy() {
-        return new ContractDTO(id, staff, company, fromdate, todate, whow, contractDocuments,vacation);
+        return new ContractDTO(id, staff, company, fromdate, todate, whow, contractDocuments, vacation);
     }
 
-
-
     @Override
-    public void reset(ContractDTO obj) {
+    public void reset(final ContractDTO obj) {
         this.id = obj.id;
         this.staff = obj.staff;
         this.company = obj.company;
@@ -147,6 +214,4 @@ public class ContractDTO extends BasicDTO<ContractDTO> {
         this.vacation = obj.vacation;
         this.contractDocuments = obj.contractDocuments;
     }
-
-
 }

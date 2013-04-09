@@ -1,35 +1,61 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.types;
 
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 
-
 /**
- * A ListItem implementation that wraps ProjectListItem objects
+ * A ListItem implementation that wraps ProjectListItem objects.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ProjectListItem extends ListItem {
+
+    //~ Instance fields --------------------------------------------------------
+
     private ProjectDTO project;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ProjectListItem object.
+     */
     public ProjectListItem() {
     }
 
-    public ProjectListItem(ProjectDTO project) {
+    /**
+     * Creates a new ProjectListItem object.
+     *
+     * @param  project  DOCUMENT ME!
+     */
+    public ProjectListItem(final ProjectDTO project) {
         super("" + project.getId(), project.getName());
         this.project = project;
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the project
+     * DOCUMENT ME!
+     *
+     * @return  the project
      */
     public ProjectDTO getProject() {
         return project;
     }
 
     /**
-     * @param project the project to set
+     * DOCUMENT ME!
+     *
+     * @param  project  the project to set
      */
-    public void setProject(ProjectDTO project) {
+    public void setProject(final ProjectDTO project) {
         this.project = project;
         setId("" + project.getId());
         setName(project.getName());

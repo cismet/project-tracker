@@ -1,13 +1,25 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.dto;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparable<WorkPackageDTO> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private WorkPackageDTO workPackage;
     private ProjectDTO project;
     private CostCategoryDTO costCategory;
@@ -21,17 +33,60 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     private ArrayList<WorkPackageDTO> workPackages = new ArrayList<WorkPackageDTO>(0);
     private ArrayList<WorkPackagePeriodDTO> workPackagePeriods = new ArrayList<WorkPackagePeriodDTO>(0);
     private ArrayList<ProjectComponentTagDTO> projectComponentTags = new ArrayList<ProjectComponentTagDTO>(0);
-    private ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts = new ArrayList<EstimatedComponentCostDTO>(0);
+    private ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts = new ArrayList<EstimatedComponentCostDTO>(
+            0);
     private ArrayList<WorkPackageProgressDTO> workPackageProgresses = new ArrayList<WorkPackageProgressDTO>(0);
     private String abbreviation;
     private boolean issubversion = false;
 
+    //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new WorkPackageDTO object.
+     */
     public WorkPackageDTO() {
     }
-     
 
-    public WorkPackageDTO(long id, StaffDTO responsiblestaff, WorkPackageDTO workPackage, ProjectDTO project, CostCategoryDTO costCategory, String name, String description, double warnlevel, double criticallevel, double fullstoplevel, ArrayList<WorkPackageDTO> workPackages, ArrayList<WorkPackagePeriodDTO> workPackagePeriods, ArrayList<ProjectComponentTagDTO> projectComponentTags, ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts, ArrayList<WorkPackageProgressDTO> workPackageProgresses, String abbreviation, boolean issubversion, String expirationDescription) {
+    /**
+     * Creates a new WorkPackageDTO object.
+     *
+     * @param  id                         DOCUMENT ME!
+     * @param  responsiblestaff           DOCUMENT ME!
+     * @param  workPackage                DOCUMENT ME!
+     * @param  project                    DOCUMENT ME!
+     * @param  costCategory               DOCUMENT ME!
+     * @param  name                       DOCUMENT ME!
+     * @param  description                DOCUMENT ME!
+     * @param  warnlevel                  DOCUMENT ME!
+     * @param  criticallevel              DOCUMENT ME!
+     * @param  fullstoplevel              DOCUMENT ME!
+     * @param  workPackages               DOCUMENT ME!
+     * @param  workPackagePeriods         DOCUMENT ME!
+     * @param  projectComponentTags       DOCUMENT ME!
+     * @param  estimatedWorkPackageCosts  DOCUMENT ME!
+     * @param  workPackageProgresses      DOCUMENT ME!
+     * @param  abbreviation               DOCUMENT ME!
+     * @param  issubversion               DOCUMENT ME!
+     * @param  expirationDescription      DOCUMENT ME!
+     */
+    public WorkPackageDTO(final long id,
+            final StaffDTO responsiblestaff,
+            final WorkPackageDTO workPackage,
+            final ProjectDTO project,
+            final CostCategoryDTO costCategory,
+            final String name,
+            final String description,
+            final double warnlevel,
+            final double criticallevel,
+            final double fullstoplevel,
+            final ArrayList<WorkPackageDTO> workPackages,
+            final ArrayList<WorkPackagePeriodDTO> workPackagePeriods,
+            final ArrayList<ProjectComponentTagDTO> projectComponentTags,
+            final ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts,
+            final ArrayList<WorkPackageProgressDTO> workPackageProgresses,
+            final String abbreviation,
+            final boolean issubversion,
+            final String expirationDescription) {
         this.id = id;
         this.responsiblestaff = responsiblestaff;
         this.workPackage = workPackage;
@@ -53,110 +108,149 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
         this.fullstoplevel = fullstoplevel;
     }
 
+    //~ Methods ----------------------------------------------------------------
 
     /**
-     * @return the workPackage
+     * DOCUMENT ME!
+     *
+     * @return  the workPackage
      */
     public WorkPackageDTO getWorkPackage() {
         return workPackage;
     }
 
     /**
-     * @param workPackage the workPackage to set
+     * DOCUMENT ME!
+     *
+     * @param  workPackage  the workPackage to set
      */
-    public void setWorkPackage(WorkPackageDTO workPackage) {
+    public void setWorkPackage(final WorkPackageDTO workPackage) {
         this.workPackage = workPackage;
     }
 
     /**
-     * @return the project
+     * DOCUMENT ME!
+     *
+     * @return  the project
      */
     public ProjectDTO getProject() {
         return project;
     }
 
     /**
-     * @param project the project to set
+     * DOCUMENT ME!
+     *
+     * @param  project  the project to set
      */
-    public void setProject(ProjectDTO project) {
+    public void setProject(final ProjectDTO project) {
         this.project = project;
     }
 
     /**
-     * @return the costCategory
+     * DOCUMENT ME!
+     *
+     * @return  the costCategory
      */
     public CostCategoryDTO getCostCategory() {
         return costCategory;
     }
 
     /**
-     * @param costCategory the costCategory to set
+     * DOCUMENT ME!
+     *
+     * @param  costCategory  the costCategory to set
      */
-    public void setCostCategory(CostCategoryDTO costCategory) {
+    public void setCostCategory(final CostCategoryDTO costCategory) {
         this.costCategory = costCategory;
     }
 
     /**
-     * @return the name
+     * DOCUMENT ME!
+     *
+     * @return  the name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * @param name the name to set
+     * DOCUMENT ME!
+     *
+     * @param  name  the name to set
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     /**
-     * @return the description
+     * DOCUMENT ME!
+     *
+     * @return  the description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * @param description the description to set
+     * DOCUMENT ME!
+     *
+     * @param  description  the description to set
      */
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getExpirationDescription() {
         return expirationDescription;
     }
 
-    public void setExpirationDescription(String expirationDescription) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  expirationDescription  DOCUMENT ME!
+     */
+    public void setExpirationDescription(final String expirationDescription) {
         this.expirationDescription = expirationDescription;
     }
 
     /**
-     * @return the workPackages
+     * DOCUMENT ME!
+     *
+     * @return  the workPackages
      */
     public ArrayList<WorkPackageDTO> getWorkPackages() {
         return workPackages;
     }
 
     /**
-     * @param workPackages the workPackages to set
+     * DOCUMENT ME!
+     *
+     * @param  workPackages  the workPackages to set
      */
-    public void setWorkPackages(ArrayList<WorkPackageDTO> workPackages) {
+    public void setWorkPackages(final ArrayList<WorkPackageDTO> workPackages) {
         this.workPackages = workPackages;
     }
 
     /**
-     * @return the workPackagePeriods
+     * DOCUMENT ME!
+     *
+     * @return  the workPackagePeriods
      */
     public ArrayList<WorkPackagePeriodDTO> getWorkPackagePeriods() {
         return workPackagePeriods;
     }
 
     /**
-     * @param workPackagePeriods the workPackagePeriods to set
+     * DOCUMENT ME!
+     *
+     * @param  workPackagePeriods  the workPackagePeriods to set
      */
-    public void setWorkPackagePeriods(ArrayList<WorkPackagePeriodDTO> workPackagePeriods) {
+    public void setWorkPackagePeriods(final ArrayList<WorkPackagePeriodDTO> workPackagePeriods) {
         this.workPackagePeriods = workPackagePeriods;
     }
 
@@ -175,140 +269,192 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
 //    }
 
     /**
-     * @return the projectComponentTags
+     * DOCUMENT ME!
+     *
+     * @return  the projectComponentTags
      */
     public ArrayList<ProjectComponentTagDTO> getProjectComponentTags() {
         return projectComponentTags;
     }
 
     /**
-     * @param projectComponentTags the projectComponentTags to set
+     * DOCUMENT ME!
+     *
+     * @param  projectComponentTags  the projectComponentTags to set
      */
-    public void setProjectComponentTags(ArrayList<ProjectComponentTagDTO> projectComponentTags) {
+    public void setProjectComponentTags(final ArrayList<ProjectComponentTagDTO> projectComponentTags) {
         this.projectComponentTags = projectComponentTags;
     }
 
     /**
-     * @return the estimatedWorkPackageCosts
+     * DOCUMENT ME!
+     *
+     * @return  the estimatedWorkPackageCosts
      */
     public ArrayList<EstimatedComponentCostDTO> getEstimatedWorkPackageCosts() {
         return estimatedWorkPackageCosts;
     }
 
     /**
-     * @param estimatedWorkPackageCosts the estimatedWorkPackageCosts to set
+     * DOCUMENT ME!
+     *
+     * @param  estimatedWorkPackageCosts  the estimatedWorkPackageCosts to set
      */
-    public void setEstimatedWorkPackageCosts(ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts) {
+    public void setEstimatedWorkPackageCosts(final ArrayList<EstimatedComponentCostDTO> estimatedWorkPackageCosts) {
         this.estimatedWorkPackageCosts = estimatedWorkPackageCosts;
     }
 
     /**
-     * @return the workPackageProgresses
+     * DOCUMENT ME!
+     *
+     * @return  the workPackageProgresses
      */
     public ArrayList<WorkPackageProgressDTO> getWorkPackageProgresses() {
         return workPackageProgresses;
     }
 
     /**
-     * @param workPackageProgresses the workPackageProgresses to set
+     * DOCUMENT ME!
+     *
+     * @param  workPackageProgresses  the workPackageProgresses to set
      */
-    public void setWorkPackageProgresses(ArrayList<WorkPackageProgressDTO> workPackageProgresses) {
+    public void setWorkPackageProgresses(final ArrayList<WorkPackageProgressDTO> workPackageProgresses) {
         this.workPackageProgresses = workPackageProgresses;
     }
 
     /**
-     * @return the abbreviation
+     * DOCUMENT ME!
+     *
+     * @return  the abbreviation
      */
     public String getAbbreviation() {
         return abbreviation;
     }
 
     /**
-     * @param abbreviation the abbreviation to set
+     * DOCUMENT ME!
+     *
+     * @param  abbreviation  the abbreviation to set
      */
-    public void setAbbreviation(String abbreviation) {
+    public void setAbbreviation(final String abbreviation) {
         this.abbreviation = abbreviation;
     }
 
     /**
-     * @return the issubversion
+     * DOCUMENT ME!
+     *
+     * @return  the issubversion
      */
     public boolean getIssubversion() {
         return issubversion;
     }
 
     /**
-     * @param issubversion the issubversion to set
+     * DOCUMENT ME!
+     *
+     * @param  issubversion  the issubversion to set
      */
-    public void setIssubversion(boolean issubversion) {
+    public void setIssubversion(final boolean issubversion) {
         this.issubversion = issubversion;
     }
 
     /**
-     * @return the warnlevel
+     * DOCUMENT ME!
+     *
+     * @return  the warnlevel
      */
     public double getWarnlevel() {
         return warnlevel;
     }
 
     /**
-     * @param warnlevel the warnlevel to set
+     * DOCUMENT ME!
+     *
+     * @param  warnlevel  the warnlevel to set
      */
-    public void setWarnlevel(double warnlevel) {
+    public void setWarnlevel(final double warnlevel) {
         this.warnlevel = warnlevel;
     }
 
     /**
-     * @return the criticallevel
+     * DOCUMENT ME!
+     *
+     * @return  the criticallevel
      */
     public double getCriticallevel() {
         return criticallevel;
     }
 
     /**
-     * @param criticallevel the criticallevel to set
+     * DOCUMENT ME!
+     *
+     * @param  criticallevel  the criticallevel to set
      */
-    public void setCriticallevel(double criticallevel) {
+    public void setCriticallevel(final double criticallevel) {
         this.criticallevel = criticallevel;
     }
 
     /**
-     * @return the fullstoplevel
+     * DOCUMENT ME!
+     *
+     * @return  the fullstoplevel
      */
     public double getFullstoplevel() {
         return fullstoplevel;
     }
 
     /**
-     * @param fullstoplevel the fullstoplevel to set
+     * DOCUMENT ME!
+     *
+     * @param  fullstoplevel  the fullstoplevel to set
      */
-    public void setFullstoplevel(double fullstoplevel) {
+    public void setFullstoplevel(final double fullstoplevel) {
         this.fullstoplevel = fullstoplevel;
     }
 
     /**
-     * @return the responsiblestaff
+     * DOCUMENT ME!
+     *
+     * @return  the responsiblestaff
      */
     public StaffDTO getResponsiblestaff() {
         return responsiblestaff;
     }
 
     /**
-     * @param responsiblestaff the responsiblestaff to set
+     * DOCUMENT ME!
+     *
+     * @param  responsiblestaff  the responsiblestaff to set
      */
-    public void setResponsiblestaff(StaffDTO responsiblestaff) {
+    public void setResponsiblestaff(final StaffDTO responsiblestaff) {
         this.responsiblestaff = responsiblestaff;
     }
 
-    
     @Override
     public WorkPackageDTO createCopy() {
-        return new WorkPackageDTO(id, getResponsiblestaff(), workPackage, project, costCategory, name, description, warnlevel, criticallevel, fullstoplevel, workPackages, workPackagePeriods, projectComponentTags, estimatedWorkPackageCosts, workPackageProgresses, abbreviation, issubversion, expirationDescription);
+        return new WorkPackageDTO(
+                id,
+                getResponsiblestaff(),
+                workPackage,
+                project,
+                costCategory,
+                name,
+                description,
+                warnlevel,
+                criticallevel,
+                fullstoplevel,
+                workPackages,
+                workPackagePeriods,
+                projectComponentTags,
+                estimatedWorkPackageCosts,
+                workPackageProgresses,
+                abbreviation,
+                issubversion,
+                expirationDescription);
     }
 
-    
     @Override
-    public void reset(WorkPackageDTO obj) {
+    public void reset(final WorkPackageDTO obj) {
         this.id = obj.id;
         this.setResponsiblestaff(obj.getResponsiblestaff());
         this.workPackage = obj.workPackage;
@@ -330,40 +476,51 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     }
 
     @Override
-    public int compareTo(WorkPackageDTO o) {
-        if ( isSameLevel(this, o) ) {
+    public int compareTo(final WorkPackageDTO o) {
+        if (isSameLevel(this, o)) {
             return (int)Math.signum(id - o.id);
         } else if (isSubworkPackage(this, o)) {
             return -1;
         } else if (isSubworkPackage(o, this)) {
             return 1;
         } else {
-            List<WorkPackageDTO> parents1 = getParents(this);
-            List<WorkPackageDTO> parents2 = getParents(o);
+            final List<WorkPackageDTO> parents1 = getParents(this);
+            final List<WorkPackageDTO> parents2 = getParents(o);
             int i;
 
-            for ( i = 0; i < parents1.size(); ++i ) {
-                if ( parents2.contains( parents1.get(i) ) ) {
+            for (i = 0; i < parents1.size(); ++i) {
+                if (parents2.contains(parents1.get(i))) {
                     break;
                 }
             }
-            
+
             if (i >= parents1.size()) {
-                WorkPackageDTO ob1 = ( parents1.size() > 0 ? parents1.get(parents1.size() - 1) : this);
-                WorkPackageDTO ob2 = ( parents2.size() > 0 ? parents2.get(parents2.size() - 1) : o);
-                
+                final WorkPackageDTO ob1 = ((parents1.size() > 0) ? parents1.get(parents1.size() - 1) : this);
+                final WorkPackageDTO ob2 = ((parents2.size() > 0) ? parents2.get(parents2.size() - 1) : o);
+
                 return compareById(ob1, ob2);
             } else {
-                int i2 = parents2.indexOf(parents1.get(i));
-                WorkPackageDTO ob1 = getElementAfterIndex(parents1, i, this);
-                WorkPackageDTO ob2 = getElementAfterIndex(parents2, i2, o);
-                
+                final int i2 = parents2.indexOf(parents1.get(i));
+                final WorkPackageDTO ob1 = getElementAfterIndex(parents1, i, this);
+                final WorkPackageDTO ob2 = getElementAfterIndex(parents2, i2, o);
+
                 return compareById(ob1, ob2);
             }
         }
     }
-    
-    private static WorkPackageDTO getElementAfterIndex(List<WorkPackageDTO> list, int index, WorkPackageDTO object) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   list    DOCUMENT ME!
+     * @param   index   DOCUMENT ME!
+     * @param   object  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static WorkPackageDTO getElementAfterIndex(final List<WorkPackageDTO> list,
+            final int index,
+            final WorkPackageDTO object) {
         if ((index - 1) >= 0) {
             return list.get(index - 1);
         } else {
@@ -371,59 +528,92 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
         }
     }
 
-    private static int compareById(WorkPackageDTO o1, WorkPackageDTO o2) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o1  DOCUMENT ME!
+     * @param   o2  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static int compareById(final WorkPackageDTO o1, final WorkPackageDTO o2) {
         return (int)Math.signum(o1.id - o2.id);
     }
-    
-    private static List<WorkPackageDTO> getParents(WorkPackageDTO wp) {
-        List<WorkPackageDTO> parents = new ArrayList<WorkPackageDTO>();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   wp  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static List<WorkPackageDTO> getParents(final WorkPackageDTO wp) {
+        final List<WorkPackageDTO> parents = new ArrayList<WorkPackageDTO>();
         WorkPackageDTO tmp = wp;
         while (tmp.getWorkPackage() != null) {
             parents.add(tmp.getWorkPackage());
             tmp = tmp.getWorkPackage();
         }
-        
+
         return parents;
     }
-    
-    
-    public static boolean isSameLevel(WorkPackageDTO o1, WorkPackageDTO o2) {
-        if ( (o1.getWorkPackage() == null && o2.getWorkPackage() == null) || 
-             (o1.getWorkPackage() != null && o2.getWorkPackage() != null && o1.getWorkPackage().equals(o2.getWorkPackage())) ) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o1  DOCUMENT ME!
+     * @param   o2  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean isSameLevel(final WorkPackageDTO o1, final WorkPackageDTO o2) {
+        if (((o1.getWorkPackage() == null) && (o2.getWorkPackage() == null))
+                    || ((o1.getWorkPackage() != null) && (o2.getWorkPackage() != null)
+                        && o1.getWorkPackage().equals(o2.getWorkPackage()))) {
             return true;
         } else {
             return false;
         }
     }
-    
-    public static boolean isSubworkPackage(WorkPackageDTO possibleParent, WorkPackageDTO possibleChild) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   possibleParent  DOCUMENT ME!
+     * @param   possibleChild   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean isSubworkPackage(final WorkPackageDTO possibleParent, final WorkPackageDTO possibleChild) {
         boolean subWorkPackage = false;
-        
+
         if (possibleChild.getWorkPackage() == null) {
             return false;
         } else if (possibleParent.equals(possibleChild.getWorkPackage())) {
             return true;
-        } else if (possibleParent.getWorkPackage() != null && possibleChild.equals(possibleParent.getWorkPackage())) {
+        } else if ((possibleParent.getWorkPackage() != null) && possibleChild.equals(possibleParent.getWorkPackage())) {
             // this if block is not needed, but it improves the performance
             return false;
         } else {
-            for (WorkPackageDTO tmp : possibleParent.getWorkPackages()) {
+            for (final WorkPackageDTO tmp : possibleParent.getWorkPackages()) {
                 subWorkPackage |= isSubworkPackage(tmp, possibleChild);
             }
         }
-        
+
         return subWorkPackage;
     }
 
     /**
-     * @return the most recent version of the project period or null, if no project period exists
+     * DOCUMENT ME!
+     *
+     * @return  the most recent version of the project period or null, if no project period exists
      */
     public WorkPackagePeriodDTO determineMostRecentPeriod() {
         WorkPackagePeriodDTO currentPeriod = null;
 
-        if (workPackagePeriods != null && workPackagePeriods.size() > 0) {
-            for (WorkPackagePeriodDTO tmp : workPackagePeriods) {
-                if ( currentPeriod == null || tmp.getAsof().after( currentPeriod.getAsof() ) ) {
+        if ((workPackagePeriods != null) && (workPackagePeriods.size() > 0)) {
+            for (final WorkPackagePeriodDTO tmp : workPackagePeriods) {
+                if ((currentPeriod == null) || tmp.getAsof().after(currentPeriod.getAsof())) {
                     currentPeriod = tmp;
                 }
             }
@@ -433,14 +623,16 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     }
 
     /**
-     * @return the most recent version of the project progress or null, if no project progress exists
+     * DOCUMENT ME!
+     *
+     * @return  the most recent version of the project progress or null, if no project progress exists
      */
     public WorkPackageProgressDTO determineMostRecentProgress() {
         WorkPackageProgressDTO progress = null;
 
-        if (workPackageProgresses != null && workPackageProgresses.size() > 0) {
-            for (WorkPackageProgressDTO tmp : workPackageProgresses) {
-                if ( progress == null || tmp.getTime().after( progress.getTime() ) ) {
+        if ((workPackageProgresses != null) && (workPackageProgresses.size() > 0)) {
+            for (final WorkPackageProgressDTO tmp : workPackageProgresses) {
+                if ((progress == null) || tmp.getTime().after(progress.getTime())) {
                     progress = tmp;
                 }
             }

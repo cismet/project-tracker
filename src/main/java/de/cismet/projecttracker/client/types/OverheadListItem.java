@@ -1,44 +1,75 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.types;
 
 import de.cismet.projecttracker.client.dto.RealOverheadDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 
 /**
- * A ListItem implementation that wraps RealOverheadDTO objects
+ * A ListItem implementation that wraps RealOverheadDTO objects.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class OverheadListItem extends ListItem {
+
+    //~ Instance fields --------------------------------------------------------
+
     private RealOverheadDTO overhead;
 
-    public OverheadListItem(){
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new OverheadListItem object.
+     */
+    public OverheadListItem() {
     }
 
-    public OverheadListItem(RealOverheadDTO overhead) {
+    /**
+     * Creates a new OverheadListItem object.
+     *
+     * @param  overhead  DOCUMENT ME!
+     */
+    public OverheadListItem(final RealOverheadDTO overhead) {
         this.overhead = overhead;
         setName(getOverheadName());
         setId("" + overhead.getId());
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the real overhead
+     * DOCUMENT ME!
+     *
+     * @return  the real overhead
      */
     public RealOverheadDTO getOverhead() {
         return overhead;
     }
 
     /**
-     * @param overhead the overhead to set
+     * DOCUMENT ME!
+     *
+     * @param  overhead  the overhead to set
      */
-    public void setOverhead(RealOverheadDTO overhead) {
+    public void setOverhead(final RealOverheadDTO overhead) {
         this.overhead = overhead;
-        setId( "" + overhead.getId() );
-        setName( getOverheadName() );
+        setId("" + overhead.getId());
+        setName(getOverheadName());
     }
 
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private String getOverheadName() {
-        String label = DateHelper.formatDate( overhead.getValidfrom() );
+        String label = DateHelper.formatDate(overhead.getValidfrom());
         if (overhead.getValidto() != null) {
             label += " - " + DateHelper.formatDate(overhead.getValidto());
         }

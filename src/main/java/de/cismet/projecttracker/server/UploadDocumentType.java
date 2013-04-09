@@ -1,23 +1,41 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.server;
 
 import de.cismet.projecttracker.utilities.LanguageBundle;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class UploadDocumentType {
+
+    //~ Instance fields --------------------------------------------------------
+
     private long parentId = -1;
     private byte[] content;
     private String fileName;
     private String mimeType;
     private String docType;
 
+    //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getErrors() {
         String errors = "";
 
-        if ( content == null ) {
+        if (content == null) {
             errors += LanguageBundle.PAYLOAD_NOT_FOUND + "\n";
         }
         if (fileName == null) {
@@ -38,72 +56,92 @@ public class UploadDocumentType {
     }
 
     /**
-     * @return the content
+     * DOCUMENT ME!
+     *
+     * @return  the content
      */
     public byte[] getContent() {
         return content;
     }
 
     /**
-     * @param content the content to set
+     * DOCUMENT ME!
+     *
+     * @param  content  the content to set
      */
-    public void setContent(byte[] content) {
+    public void setContent(final byte[] content) {
         this.content = content;
     }
 
     /**
-     * @return the fileName
+     * DOCUMENT ME!
+     *
+     * @return  the fileName
      */
     public String getFileName() {
         return fileName;
     }
 
     /**
-     * @param fileName the fileName to set
+     * DOCUMENT ME!
+     *
+     * @param  fileName  the fileName to set
      */
-    public void setFileName(String fileName) {
+    public void setFileName(final String fileName) {
         this.fileName = fileName;
     }
 
     /**
-     * @return the mimeType
+     * DOCUMENT ME!
+     *
+     * @return  the mimeType
      */
     public String getMimeType() {
         return mimeType;
     }
 
     /**
-     * @param mimeType the mimeType to set
+     * DOCUMENT ME!
+     *
+     * @param  mimeType  the mimeType to set
      */
-    public void setMimeType(String mimeType) {
+    public void setMimeType(final String mimeType) {
         this.mimeType = mimeType;
     }
 
     /**
-     * @return the parentId
+     * DOCUMENT ME!
+     *
+     * @return  the parentId
      */
     public long getParentId() {
         return parentId;
     }
 
     /**
-     * @param parentId the parentId to set
+     * DOCUMENT ME!
+     *
+     * @param  parentId  the parentId to set
      */
-    public void setParentId(long parentId) {
+    public void setParentId(final long parentId) {
         this.parentId = parentId;
     }
 
     /**
-     * @return the docType
+     * DOCUMENT ME!
+     *
+     * @return  the docType
      */
     public String getDocType() {
         return docType;
     }
 
     /**
-     * @param docType the docType to set
+     * DOCUMENT ME!
+     *
+     * @param  docType  the docType to set
      */
-    public void setDocType(String docType) {
+    public void setDocType(final String docType) {
         this.docType = docType;
     }
 }

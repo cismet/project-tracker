@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -15,21 +22,27 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import de.cismet.projecttracker.client.dto.ActivityDTO;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.cismet.projecttracker.client.dto.ActivityDTO;
+
 /**
+ * DOCUMENT ME!
  *
- * @author dmeiers
+ * @author   dmeiers
+ * @version  $Revision$, $Date$
  */
 public class FillButtonPreview extends Composite {
 
-    private static FillButtonPreview.FillButtonPreviewUiBinder uiBinder = GWT.create(FillButtonPreview.FillButtonPreviewUiBinder.class);
-    private DialogBox form;
-    private HashMap<Long,TaskNotice> previewTasks;
-    private ArrayList<TaskNotice> realTasks;
-    private TaskStory taskStory;
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static FillButtonPreview.FillButtonPreviewUiBinder uiBinder = GWT.create(
+            FillButtonPreview.FillButtonPreviewUiBinder.class);
+
+    //~ Instance fields --------------------------------------------------------
+
     @UiField
     FlowPanelWithSpacer prevPanel;
     @UiField
@@ -44,8 +57,25 @@ public class FillButtonPreview extends Composite {
     Label after;
     @UiField
     HorizontalPanel outerPanel;
+    private DialogBox form;
+    private HashMap<Long, TaskNotice> previewTasks;
+    private ArrayList<TaskNotice> realTasks;
+    private TaskStory taskStory;
 
-    FillButtonPreview(DialogBox form, ArrayList<TaskNotice> negativeFillPreview, ArrayList<TaskNotice> real, TaskStory ts) {
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new FillButtonPreview object.
+     *
+     * @param  form                 DOCUMENT ME!
+     * @param  negativeFillPreview  DOCUMENT ME!
+     * @param  real                 DOCUMENT ME!
+     * @param  ts                   DOCUMENT ME!
+     */
+    FillButtonPreview(final DialogBox form,
+            final ArrayList<TaskNotice> negativeFillPreview,
+            final ArrayList<TaskNotice> real,
+            final TaskStory ts) {
         this.form = form;
         initWidget(uiBinder.createAndBindUi(this));
         realTasks = real;
@@ -53,30 +83,34 @@ public class FillButtonPreview extends Composite {
         before.setText("Before");
         after.setStyleName("TimeHeader");
         after.setText("After");
-        outerPanel.setStyleName("fillPreviewHorizontalPanel",true);
-        //reduce the heigth of the spacer
+        outerPanel.setStyleName("fillPreviewHorizontalPanel", true);
+        // reduce the heigth of the spacer
         final Widget prevPanelSpacer = prevPanel.getWidget(0);
         prevPanelSpacer.setHeight("5px");
         final Widget realPanelspacer = realPanel.getWidget(0);
         realPanelspacer.setHeight("5px");
-        
+
         previewTasks = new HashMap<Long, TaskNotice>();
         this.taskStory = ts;
-        for (TaskNotice tn : negativeFillPreview) {
+        for (final TaskNotice tn : negativeFillPreview) {
             prevPanel.add(tn);
             previewTasks.put(tn.getActivity().getId(), tn);
         }
-        for (TaskNotice tn : realTasks) {
+        for (final TaskNotice tn : realTasks) {
             realPanel.add(new TaskNotice(tn.getActivity().createCopy()));
         }
     }
 
-    interface FillButtonPreviewUiBinder extends UiBinder<Widget, FillButtonPreview> {
-    }
+    //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  event  DOCUMENT ME!
+     */
     @UiHandler("okButton")
-    void onOkButtonClick(ClickEvent event) {
-        for (TaskNotice tn : realTasks) {
+    void onOkButtonClick(final ClickEvent event) {
+        for (final TaskNotice tn : realTasks) {
             final ActivityDTO realAct = tn.getActivity();
             final double newWhow = previewTasks.get(realAct.getId()).getActivity().getWorkinghours();
             realAct.setWorkinghours(newWhow);
@@ -87,8 +121,23 @@ public class FillButtonPreview extends Composite {
         form.hide();
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  event  DOCUMENT ME!
+     */
     @UiHandler("closeButton")
-    void onCloseButtonClick(ClickEvent event) {
+    void onCloseButtonClick(final ClickEvent event) {
         form.hide();
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface FillButtonPreviewUiBinder extends UiBinder<Widget, FillButtonPreview> {
     }
 }

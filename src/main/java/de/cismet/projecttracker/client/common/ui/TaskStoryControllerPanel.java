@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -8,16 +15,24 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.*;
-import de.cismet.projecttracker.client.helper.DateHelper;
+
 import java.util.Date;
 
+import de.cismet.projecttracker.client.helper.DateHelper;
+
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class TaskStoryControllerPanel extends Composite {
+
+    //~ Static fields/initializers ---------------------------------------------
+
     private static TaskStoryControllerUiBinder uiBinder = GWT.create(TaskStoryControllerUiBinder.class);
-    private Date firstDayOfWeek = new Date();
+
+    //~ Instance fields --------------------------------------------------------
 
     @UiField
     TaskStoryController monday;
@@ -42,19 +57,29 @@ public class TaskStoryControllerPanel extends Composite {
 
     @UiField
     AbsolutePanel boundaryPanel;
+    private Date firstDayOfWeek = new Date();
 
-    
-    interface TaskStoryControllerUiBinder extends UiBinder<Widget, TaskStoryControllerPanel> {
-    }
-    
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new TaskStoryControllerPanel object.
+     */
     public TaskStoryControllerPanel() {
         initWidget(uiBinder.createAndBindUi(this));
     }
-    
-    
-    public void initialise(Date firstDayOfWeek, TaskStory caller, Story time) {
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  firstDayOfWeek  DOCUMENT ME!
+     * @param  caller          DOCUMENT ME!
+     * @param  time            DOCUMENT ME!
+     */
+    public void initialise(final Date firstDayOfWeek, final TaskStory caller, final Story time) {
         this.firstDayOfWeek = firstDayOfWeek;
-        
+
         monday.setDay(calcDateForDay(0));
         tuesday.setDay(calcDateForDay(1));
         wednesday.setDay(calcDateForDay(2));
@@ -62,7 +87,7 @@ public class TaskStoryControllerPanel extends Composite {
         friday.setDay(calcDateForDay(4));
         saturday.setDay(calcDateForDay(5));
         sunday.setDay(calcDateForDay(6));
-    
+
         monday.setTaskStory(caller);
         tuesday.setTaskStory(caller);
         wednesday.setTaskStory(caller);
@@ -79,11 +104,28 @@ public class TaskStoryControllerPanel extends Composite {
         saturday.setStory(time);
         sunday.setStory(time);
     }
-    
-    private Date calcDateForDay(int day) {
-        Date newDate = (Date)firstDayOfWeek.clone();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   day  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Date calcDateForDay(final int day) {
+        final Date newDate = (Date)firstDayOfWeek.clone();
         DateHelper.addDays(newDate, day);
-        
+
         return newDate;
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface TaskStoryControllerUiBinder extends UiBinder<Widget, TaskStoryControllerPanel> {
     }
 }

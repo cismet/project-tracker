@@ -1,73 +1,111 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.dto;
 
 import java.util.ArrayList;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class CompanyDTO extends BasicDTO<CompanyDTO> implements Comparable<CompanyDTO> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private String name;
     private ArrayList<ContractDTO> contracts = new ArrayList<ContractDTO>(0);
     private ArrayList<RealOverheadDTO> realOverheads = new ArrayList<RealOverheadDTO>(0);
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new CompanyDTO object.
+     */
     public CompanyDTO() {
     }
 
-
-    
-
-    public CompanyDTO(long id, String name, ArrayList<ContractDTO> contracts, ArrayList<RealOverheadDTO> realOverheads) {
+    /**
+     * Creates a new CompanyDTO object.
+     *
+     * @param  id             DOCUMENT ME!
+     * @param  name           DOCUMENT ME!
+     * @param  contracts      DOCUMENT ME!
+     * @param  realOverheads  DOCUMENT ME!
+     */
+    public CompanyDTO(final long id,
+            final String name,
+            final ArrayList<ContractDTO> contracts,
+            final ArrayList<RealOverheadDTO> realOverheads) {
         this.id = id;
         this.name = name;
         this.contracts = contracts;
         this.realOverheads = realOverheads;
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the name
+     * DOCUMENT ME!
+     *
+     * @return  the name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * @param name the name to set
+     * DOCUMENT ME!
+     *
+     * @param  name  the name to set
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     /**
-     * @return the contracts
+     * DOCUMENT ME!
+     *
+     * @return  the contracts
      */
     public ArrayList<ContractDTO> getContracts() {
         return contracts;
     }
 
     /**
-     * @param contracts the contracts to set
+     * DOCUMENT ME!
+     *
+     * @param  contracts  the contracts to set
      */
-    public void setContracts(ArrayList<ContractDTO> contracts) {
+    public void setContracts(final ArrayList<ContractDTO> contracts) {
         this.contracts = contracts;
     }
 
     /**
-     * @return the realOverheads
+     * DOCUMENT ME!
+     *
+     * @return  the realOverheads
      */
     public ArrayList<RealOverheadDTO> getRealOverheads() {
         return realOverheads;
     }
 
     /**
-     * @param realOverheads the realOverheads to set
+     * DOCUMENT ME!
+     *
+     * @param  realOverheads  the realOverheads to set
      */
-    public void setRealOverheads(ArrayList<RealOverheadDTO> realOverheads) {
+    public void setRealOverheads(final ArrayList<RealOverheadDTO> realOverheads) {
         this.realOverheads = realOverheads;
     }
 
@@ -77,7 +115,7 @@ public class CompanyDTO extends BasicDTO<CompanyDTO> implements Comparable<Compa
     }
 
     @Override
-    public void reset(CompanyDTO obj) {
+    public void reset(final CompanyDTO obj) {
         this.id = obj.id;
         this.name = obj.name;
         this.contracts = obj.contracts;
@@ -85,7 +123,7 @@ public class CompanyDTO extends BasicDTO<CompanyDTO> implements Comparable<Compa
     }
 
     @Override
-    public int compareTo(CompanyDTO o) {
+    public int compareTo(final CompanyDTO o) {
         return name.compareTo(o.name);
     }
 }

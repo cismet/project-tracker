@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -5,6 +12,10 @@
 package de.cismet.projecttracker.client.utilities;
 
 import com.google.gwt.user.client.ui.Label;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
@@ -15,16 +26,25 @@ import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.uicomps.SheetsPanel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
+ * DOCUMENT ME!
  *
- * @author dmeiers
+ * @author   dmeiers
+ * @version  $Revision$, $Date$
  */
 public class TimeCalculator {
 
-    public static double getWorkingHoursForActivity(ActivityDTO act) {
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   act  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static double getWorkingHoursForActivity(final ActivityDTO act) {
         double hours = 0.0;
         double dhow = 0.0;
 
@@ -32,34 +52,41 @@ public class TimeCalculator {
         try {
             contract = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay());
         } catch (InvalidInputValuesException ex) {
-            Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid Contract for Staff "
-                    + ProjectTrackerEntryPoint.getInstance().getStaff() + " and Date " + act.getDay(), ex);
+            Logger.getLogger(SheetsPanel.class.getName())
+                    .log(
+                        Level.SEVERE,
+                        "Could not get valid Contract for Staff "
+                        + ProjectTrackerEntryPoint.getInstance().getStaff()
+                        + " and Date "
+                        + act.getDay(),
+                        ex);
         }
         if (contract != null) {
             dhow = contract.getWhow() / 5;
         }
 
         if (act.getKindofactivity() == ActivityDTO.HOLIDAY) {
-            hours+=dhow;
-        } else if(act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY){
-            hours += dhow/2;
-        }else {
-            if (act.getWorkPackage() != null && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                if (act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID || act.getWorkPackage().getId() == ActivityDTO.LECTURE_ID) {
-                    if (act.getWorkinghours() == 0 && dhow > 0) {
+            hours += dhow;
+        } else if (act.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
+            hours += dhow / 2;
+        } else {
+            if ((act.getWorkPackage() != null) && (act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID)) {
+                if ((act.getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID)
+                            || (act.getWorkPackage().getId() == ActivityDTO.LECTURE_ID)) {
+                    if ((act.getWorkinghours() == 0) && (dhow > 0)) {
                         hours += dhow;
                     } else {
                         hours += act.getWorkinghours();
                     }
                 } else if (act.getWorkPackage().getId() == ActivityDTO.ILLNESS_ID) {
-                    if (act.getWorkinghours() == 0 && dhow > 0) {
+                    if ((act.getWorkinghours() == 0) && (dhow > 0)) {
                         hours += dhow;
                     } else if (act.getWorkinghours() != -1) {
                         hours += act.getWorkinghours();
                     }
-                } //                else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
-                //                    hours += act.getWorkinghours();
-                //                } 
+                } // else if (act.getWorkCategory() != null && act.getWorkCategory().getId() == TRAVEL_WORK_CATEGORY) {
+                // hours += act.getWorkinghours();
+                // }
                 else {
                     hours += act.getWorkinghours();
                 }
@@ -70,79 +97,100 @@ public class TimeCalculator {
     }
 
     /**
-     * Calculates the wokring hours for the week of year for s and appends the
-     * tim in hours to the label l
+     * Calculates the wokring hours for the week of year for s and appends the tim in hours to the label l.
      *
-     * @param year
-     * @param week
-     * @param s
-     * @param l
+     * @param  year    DOCUMENT ME!
+     * @param  week    DOCUMENT ME!
+     * @param  s       DOCUMENT ME!
+     * @param  l       DOCUMENT ME!
+     * @param  prefix  DOCUMENT ME!
      */
-    public static void getWorkingHoursForWeek(final int year, final int week, StaffDTO s, final Label l, final String prefix) {
-        BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
-            @Override
-            protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
-                if (!operationFailed) {
-                    double hours = 0;
-                    for (ActivityDTO act : result.getActivities()) {
-                        if (act.getKindofactivity() == ActivityDTO.ACTIVITY
-                                && act.getWorkPackage() != null
-                                && act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID
-                                && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                            hours += TimeCalculator.getWorkingHoursForActivity(act);
-                        }
-                    }
-                    for (HolidayType holiday : result.getHolidays()) {
-                        hours += holiday.getHours();
-                    }
+    public static void getWorkingHoursForWeek(final int year,
+            final int week,
+            final StaffDTO s,
+            final Label l,
+            final String prefix) {
+        final BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
 
-                    l.setText(prefix + DateHelper.doubleToHours(hours) + " h");
+                @Override
+                protected void afterExecution(final ActivityResponseType result, final boolean operationFailed) {
+                    if (!operationFailed) {
+                        double hours = 0;
+                        for (final ActivityDTO act : result.getActivities()) {
+                            if ((act.getKindofactivity() == ActivityDTO.ACTIVITY)
+                                        && (act.getWorkPackage() != null)
+                                        && (act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID)
+                                        && (act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID)) {
+                                hours += TimeCalculator.getWorkingHoursForActivity(act);
+                            }
+                        }
+                        for (final HolidayType holiday : result.getHolidays()) {
+                            hours += holiday.getHours();
+                        }
+
+                        l.setText(prefix + DateHelper.doubleToHours(hours) + " h");
+                    }
                 }
-            }
-        };
+            };
         ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(s, year, week, callback);
     }
 
     /**
-     * Calculates the wokring balance for the week of year for s and sets the
-     * labels text as the prefix appended the time in hours to the prefix.
+     * Calculates the wokring balance for the week of year for s and sets the labels text as the prefix appended the
+     * time in hours to the prefix.
      *
-     * @param year
-     * @param week
-     * @param s
-     * @param l
+     * @param  year    DOCUMENT ME!
+     * @param  week    DOCUMENT ME!
+     * @param  s       DOCUMENT ME!
+     * @param  l       DOCUMENT ME!
+     * @param  prefix  DOCUMENT ME!
      */
-    public static void getWorkingBalanceForWeek(final int year, final int week, StaffDTO s, final Label l, final String prefix) {
+    public static void getWorkingBalanceForWeek(final int year,
+            final int week,
+            final StaffDTO s,
+            final Label l,
+            final String prefix) {
+        final BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
 
-        BasicAsyncCallback<ActivityResponseType> callback = new BasicAsyncCallback<ActivityResponseType>() {
-            @Override
-            protected void afterExecution(ActivityResponseType result, boolean operationFailed) {
-                double hours = 0.0;
-                if (!operationFailed) {
-                    for (ActivityDTO act : result.getActivities()) {
-                        if (act.getKindofactivity() == ActivityDTO.ACTIVITY
-                                && act.getWorkPackage() != null
-                                && act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID
-                                && act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID) {
-                            hours += getWorkingHoursForActivity(act);
+                @Override
+                protected void afterExecution(final ActivityResponseType result, final boolean operationFailed) {
+                    double hours = 0.0;
+                    if (!operationFailed) {
+                        for (final ActivityDTO act : result.getActivities()) {
+                            if ((act.getKindofactivity() == ActivityDTO.ACTIVITY)
+                                        && (act.getWorkPackage() != null)
+                                        && (act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID)
+                                        && (act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID)) {
+                                hours += getWorkingHoursForActivity(act);
+                            }
                         }
-                    }
-                    for (HolidayType holiday : result.getHolidays()) {
-                        hours += holiday.getHours();
-                    }
+                        for (final HolidayType holiday : result.getHolidays()) {
+                            hours += holiday.getHours();
+                        }
 
-                    double weekDebit = 0.0;
-                    try {
-                        weekDebit = hours - ProjectTrackerEntryPoint.getInstance().getContractForStaff(week, year).getWhow();
-                    } catch (InvalidInputValuesException ex) {
-                        Logger.getLogger(SheetsPanel.class.getName()).log(Level.SEVERE, "Could not get valid "
-                                + "Contract for Staff " + ProjectTrackerEntryPoint.getInstance().getStaff()
-                                + " and Week/year" + week + "/" + year, ex);
+                        double weekDebit = 0.0;
+                        try {
+                            weekDebit = hours
+                                        - ProjectTrackerEntryPoint.getInstance().getContractForStaff(week, year)
+                                        .getWhow();
+                        } catch (InvalidInputValuesException ex) {
+                            Logger.getLogger(SheetsPanel.class.getName())
+                                    .log(
+                                        Level.SEVERE,
+                                        "Could not get valid "
+                                        + "Contract for Staff "
+                                        + ProjectTrackerEntryPoint.getInstance().getStaff()
+                                        + " and Week/year"
+                                        + week
+                                        + "/"
+                                        + year,
+                                        ex);
+                        }
+                        l.setText(prefix + DateHelper.doubleToHours(weekDebit) + " h");
                     }
-                    l.setText(prefix + DateHelper.doubleToHours(weekDebit) + " h");
                 }
-            }
-        };
-        ProjectTrackerEntryPoint.getProjectService(true).getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), year, week, callback);
+            };
+        ProjectTrackerEntryPoint.getProjectService(true)
+                .getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), year, week, callback);
     }
 }

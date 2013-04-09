@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -5,71 +12,95 @@
 package de.cismet.projecttracker.client.types;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+
 import java.util.Date;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class HolidayType implements IsSerializable {
+
+    //~ Instance fields --------------------------------------------------------
+
     private Date date;
     private boolean halfHoliday;
     private String name;
     private double hours;
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the date
+     * DOCUMENT ME!
+     *
+     * @return  the date
      */
     public Date getDate() {
         return date;
     }
 
     /**
-     * @param date the date to set
+     * DOCUMENT ME!
+     *
+     * @param  date  the date to set
      */
-    public void setDate(Date date) {
+    public void setDate(final Date date) {
         this.date = date;
     }
 
     /**
-     * @return the isHalfHoliday
+     * DOCUMENT ME!
+     *
+     * @return  the isHalfHoliday
      */
     public boolean isHalfHoliday() {
         return halfHoliday;
     }
 
     /**
-     * @param isHalfHoliday the isHalfHoliday to set
+     * DOCUMENT ME!
+     *
+     * @param  halfHoliday  the isHalfHoliday to set
      */
-    public void setHalfHoliday(boolean halfHoliday) {
+    public void setHalfHoliday(final boolean halfHoliday) {
         this.halfHoliday = halfHoliday;
     }
 
     /**
-     * @return the name
+     * DOCUMENT ME!
+     *
+     * @return  the name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * @param name the name to set
+     * DOCUMENT ME!
+     *
+     * @param  name  the name to set
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     /**
-     * @return the hours
+     * DOCUMENT ME!
+     *
+     * @return  the hours
      */
     public double getHours() {
         return hours;
     }
 
     /**
-     * @param hours the hours to set
+     * DOCUMENT ME!
+     *
+     * @param  hours  the hours to set
      */
-    public void setHours(double hours) {
+    public void setHours(final double hours) {
         this.hours = hours;
     }
 }

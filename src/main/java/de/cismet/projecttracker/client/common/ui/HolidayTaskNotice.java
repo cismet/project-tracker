@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -8,42 +15,54 @@ import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class HolidayTaskNotice extends TaskNotice {
 
-    public HolidayTaskNotice(ActivityDTO activity) {
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new HolidayTaskNotice object.
+     *
+     * @param  activity  DOCUMENT ME!
+     */
+    public HolidayTaskNotice(final ActivityDTO activity) {
         super(activity, true);
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
     protected String getTextFromActivity() {
-        String desc = getDesccription(activity.getDescription());
-        StringBuilder text = new StringBuilder("");
-        
+        final String desc = getDesccription(activity.getDescription());
+        final StringBuilder text = new StringBuilder("");
+
         if (activity.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
             text.append("Half Holiday");
         } else {
             text.append("Holiday");
         }
-        
+
         text.append("<br />").append(desc);
 
         return text.toString();
     }
-    
-    
-    protected String getDesccription(String desc) {
+
+    @Override
+    protected String getDesccription(final String desc) {
         if (desc == null) {
             return "";
         } else {
             return desc;
         }
     }
-    
-    
+
+    @Override
     protected String getTooltipTextFromActivity() {
-        StringBuilder text = new StringBuilder("");
+        final StringBuilder text = new StringBuilder("");
         if (activity.getKindofactivity() == ActivityDTO.HALF_HOLIDAY) {
             text.append("\n").append("Half Holiday");
         } else {
@@ -53,7 +72,7 @@ public class HolidayTaskNotice extends TaskNotice {
         if (activity.getDescription() != null) {
             text.append("\n").append(activity.getDescription());
         }
-        
+
         return text.toString();
     }
 }

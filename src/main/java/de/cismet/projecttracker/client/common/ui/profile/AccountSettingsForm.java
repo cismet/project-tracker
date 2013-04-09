@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -9,6 +16,7 @@ import com.github.gwtbootstrap.client.ui.ControlGroup;
 import com.github.gwtbootstrap.client.ui.Legend;
 import com.github.gwtbootstrap.client.ui.SubmitButton;
 import com.github.gwtbootstrap.client.ui.TextBox;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -19,6 +27,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
+
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
@@ -26,13 +35,19 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 
 /**
+ * DOCUMENT ME!
  *
- * @author dmeiers
+ * @author   dmeiers
+ * @version  $Revision$, $Date$
  */
 public class AccountSettingsForm extends Composite implements ClickHandler, ValueChangeHandler<Boolean> {
 
+    //~ Static fields/initializers ---------------------------------------------
+
     private static AccountSettingsFormUiBinder uiBinder = GWT.create(AccountSettingsFormUiBinder.class);
-    private ProfileDTO profile;
+
+    //~ Instance fields --------------------------------------------------------
+
     @UiField
     CheckBox autoPauseCBO;
     @UiField
@@ -49,21 +64,29 @@ public class AccountSettingsForm extends Composite implements ClickHandler, Valu
     ControlGroup residualVacationGroup;
     @UiField
     TextBox residualVacation;
+    private ProfileDTO profile;
 
-    @UiHandler("autoPauseCBO")
-    @Override
-    public void onValueChange(ValueChangeEvent<Boolean> event) {
-       pauseDuration.setEnabled(event.getValue());
-    }
+    //~ Constructors -----------------------------------------------------------
 
-    interface AccountSettingsFormUiBinder extends UiBinder<Widget, AccountSettingsForm> {
-    }
-
+    /**
+     * Creates a new AccountSettingsForm object.
+     */
     public AccountSettingsForm() {
         initWidget(uiBinder.createAndBindUi(this));
         init();
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    @UiHandler("autoPauseCBO")
+    @Override
+    public void onValueChange(final ValueChangeEvent<Boolean> event) {
+        pauseDuration.setEnabled(event.getValue());
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
     private void init() {
         final ProfileDTO p = ProjectTrackerEntryPoint.getInstance().getStaff().getProfile();
 
@@ -98,7 +121,7 @@ public class AccountSettingsForm extends Composite implements ClickHandler, Valu
 
     @Override
     @UiHandler("submitBtn")
-    public void onClick(ClickEvent event) {
+    public void onClick(final ClickEvent event) {
         if (!weekLockCB.getValue() && !dayLockCB.getValue()) {
             ProjectTrackerEntryPoint.outputBox("You have to select at least one lock option");
             return;
@@ -113,19 +136,30 @@ public class AccountSettingsForm extends Composite implements ClickHandler, Valu
         }
         staff.setProfile(profile);
 
-        BasicAsyncCallback<StaffDTO> callback = new BasicAsyncCallback<StaffDTO>() {
-            @Override
-            protected void afterExecution(StaffDTO result, boolean operationFailed) {
-                if (!operationFailed) {
-                    if (result.getId() == ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getId()) {
-                        ProjectTrackerEntryPoint.getInstance().setLoggedInStaff(result);
+        final BasicAsyncCallback<StaffDTO> callback = new BasicAsyncCallback<StaffDTO>() {
+
+                @Override
+                protected void afterExecution(final StaffDTO result, final boolean operationFailed) {
+                    if (!operationFailed) {
+                        if (result.getId() == ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getId()) {
+                            ProjectTrackerEntryPoint.getInstance().setLoggedInStaff(result);
+                        }
+                        ProjectTrackerEntryPoint.getInstance().setStaff(result);
+                        ProjectTrackerEntryPoint.outputBox("Profile succesfully updated!");
                     }
-                    ProjectTrackerEntryPoint.getInstance().setStaff(result);
-                    ProjectTrackerEntryPoint.outputBox("Profile succesfully updated!");
                 }
-            }
-        };
+            };
 
         ProjectTrackerEntryPoint.getProjectService(true).saveStaff(staff, callback);
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface AccountSettingsFormUiBinder extends UiBinder<Widget, AccountSettingsForm> {
     }
 }

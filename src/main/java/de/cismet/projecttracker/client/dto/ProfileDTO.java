@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -5,23 +12,45 @@
 package de.cismet.projecttracker.client.dto;
 
 /**
+ * DOCUMENT ME!
  *
- * @author dmeiers
+ * @author   dmeiers
+ * @version  $Revision$, $Date$
  */
 public class ProfileDTO extends BasicDTO<ProfileDTO> {
+
+    //~ Instance fields --------------------------------------------------------
 
     private boolean autoPauseEnabled;
     private boolean weekLockModeEnabled;
     private boolean dayLockModeEnabled;
     private double autoPauseDuration;
     private double residualVacation;
-    
+
     private long id;
-    
-    public ProfileDTO(){
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ProfileDTO object.
+     */
+    public ProfileDTO() {
     }
 
-    public ProfileDTO( boolean autoPauseEnabled, boolean weekLockModeEnabled, boolean dayLockModeEnabled, double pauseDuration, double residualVacation) {
+    /**
+     * Creates a new ProfileDTO object.
+     *
+     * @param  autoPauseEnabled     DOCUMENT ME!
+     * @param  weekLockModeEnabled  DOCUMENT ME!
+     * @param  dayLockModeEnabled   DOCUMENT ME!
+     * @param  pauseDuration        DOCUMENT ME!
+     * @param  residualVacation     DOCUMENT ME!
+     */
+    public ProfileDTO(final boolean autoPauseEnabled,
+            final boolean weekLockModeEnabled,
+            final boolean dayLockModeEnabled,
+            final double pauseDuration,
+            final double residualVacation) {
         this.autoPauseEnabled = autoPauseEnabled;
         this.weekLockModeEnabled = weekLockModeEnabled;
         this.dayLockModeEnabled = dayLockModeEnabled;
@@ -29,59 +58,114 @@ public class ProfileDTO extends BasicDTO<ProfileDTO> {
         this.residualVacation = residualVacation;
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public boolean getAutoPauseEnabled() {
         return autoPauseEnabled;
     }
 
-    public void setAutoPauseEnabled(boolean autoPauseEnabled) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  autoPauseEnabled  DOCUMENT ME!
+     */
+    public void setAutoPauseEnabled(final boolean autoPauseEnabled) {
         this.autoPauseEnabled = autoPauseEnabled;
     }
-    
-     public boolean getWeekLockModeEnabled() {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean getWeekLockModeEnabled() {
         return weekLockModeEnabled;
     }
 
-    public void setWeekLockModeEnabled(boolean weekLockModeEnabled) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  weekLockModeEnabled  DOCUMENT ME!
+     */
+    public void setWeekLockModeEnabled(final boolean weekLockModeEnabled) {
         this.weekLockModeEnabled = weekLockModeEnabled;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public boolean getDayLockModeEnabled() {
         return dayLockModeEnabled;
     }
 
-    public void setDayLockModeEnabled(boolean dayLockModeEnabled) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dayLockModeEnabled  DOCUMENT ME!
+     */
+    public void setDayLockModeEnabled(final boolean dayLockModeEnabled) {
         this.dayLockModeEnabled = dayLockModeEnabled;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public double getAutoPauseDuration() {
         return autoPauseDuration;
     }
 
-    public void setAutoPauseDuration(double autoPauseDuration) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  autoPauseDuration  DOCUMENT ME!
+     */
+    public void setAutoPauseDuration(final double autoPauseDuration) {
         this.autoPauseDuration = autoPauseDuration;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public double getResidualVacation() {
         return residualVacation;
     }
 
-    public void setResidualVacation(double residualVacation) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  residualVacation  DOCUMENT ME!
+     */
+    public void setResidualVacation(final double residualVacation) {
         this.residualVacation = residualVacation;
     }
 
     @Override
     public ProfileDTO createCopy() {
-        return new ProfileDTO(autoPauseEnabled, weekLockModeEnabled, dayLockModeEnabled, autoPauseDuration, residualVacation);
+        return new ProfileDTO(
+                autoPauseEnabled,
+                weekLockModeEnabled,
+                dayLockModeEnabled,
+                autoPauseDuration,
+                residualVacation);
     }
 
     @Override
-    public void reset(ProfileDTO obj) {
+    public void reset(final ProfileDTO obj) {
         this.autoPauseEnabled = obj.autoPauseEnabled;
         this.weekLockModeEnabled = obj.autoPauseEnabled;
         this.dayLockModeEnabled = obj.dayLockModeEnabled;
-        this.autoPauseDuration  = obj.autoPauseDuration;
+        this.autoPauseDuration = obj.autoPauseDuration;
         this.residualVacation = obj.residualVacation;
-        
     }
-
 }

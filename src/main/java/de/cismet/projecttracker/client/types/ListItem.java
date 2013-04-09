@@ -1,102 +1,165 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.types;
 
-import de.cismet.projecttracker.client.common.ui.listener.ListItemChangeListener;
 import java.util.ArrayList;
 
+import de.cismet.projecttracker.client.common.ui.listener.ListItemChangeListener;
+
 /**
- * This is the basic class of all ListItem classes, which are used by CustomListBox.
- * This class implements the Comparable interface to allow the sorting of list items. By default,
- * the list items will be ordered lexicographically by the name. To change this behavior, the method
- * {@link #compareTo(de.cismet.projecttracker.client.types.ListItem)} can be overridden by the sub class.
+ * This is the basic class of all ListItem classes, which are used by CustomListBox. This class implements the
+ * Comparable interface to allow the sorting of list items. By default, the list items will be ordered lexicographically
+ * by the name. To change this behavior, the method {@link #compareTo(de.cismet.projecttracker.client.types.ListItem)}
+ * can be overridden by the sub class.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ListItem implements Comparable<ListItem> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private String name;
     private String id;
     private String tooltip;
     private ArrayList<ListItemChangeListener> listener = new ArrayList<ListItemChangeListener>();
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ListItem object.
+     */
     public ListItem() {
     }
 
-    public ListItem(String id, String name) {
+    /**
+     * Creates a new ListItem object.
+     *
+     * @param  id    DOCUMENT ME!
+     * @param  name  DOCUMENT ME!
+     */
+    public ListItem(final String id, final String name) {
         this.id = id;
         this.name = name;
         this.tooltip = name;
     }
 
-    public ListItem(String id, String name, String tooltip) {
+    /**
+     * Creates a new ListItem object.
+     *
+     * @param  id       DOCUMENT ME!
+     * @param  name     DOCUMENT ME!
+     * @param  tooltip  DOCUMENT ME!
+     */
+    public ListItem(final String id, final String name, final String tooltip) {
         this.id = id;
         this.name = name;
         this.tooltip = tooltip;
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the name
+     * DOCUMENT ME!
+     *
+     * @return  the name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * @param name the name to set
+     * DOCUMENT ME!
+     *
+     * @param  name  the name to set
      */
-    public void setName(String name) {
-        String oldName = this.name;
+    public void setName(final String name) {
+        final String oldName = this.name;
         this.name = name;
         changeEvent(oldName);
     }
 
     /**
-     * @return the value
+     * DOCUMENT ME!
+     *
+     * @return  the value
      */
     public String getId() {
         return id;
     }
 
     /**
-     * @param value the value to set. This must be an unique identifier
+     * DOCUMENT ME!
+     *
+     * @param  value  the value to set. This must be an unique identifier
      */
-    public void setId(String value) {
+    public void setId(final String value) {
         this.id = value;
     }
-    
-    public void addChangeListener(ListItemChangeListener lis) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  lis  DOCUMENT ME!
+     */
+    public void addChangeListener(final ListItemChangeListener lis) {
         listener.add(lis);
     }
 
-    public boolean removeChangeListener(ListItemChangeListener lis) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   lis  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean removeChangeListener(final ListItemChangeListener lis) {
         return listener.remove(lis);
     }
 
-    private void changeEvent(String oldName) {
-        for (ListItemChangeListener tmp : listener) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  oldName  DOCUMENT ME!
+     */
+    private void changeEvent(final String oldName) {
+        for (final ListItemChangeListener tmp : listener) {
             tmp.onChange(this, oldName);
         }
     }
 
     /**
+     * DOCUMENT ME!
      *
-     * @param o
-     * @return
+     * @param   o  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
     @Override
-    public int compareTo(ListItem o) {
+    public int compareTo(final ListItem o) {
         return name.compareTo(o.name);
     }
 
     /**
-     * @return the tooltip
+     * DOCUMENT ME!
+     *
+     * @return  the tooltip
      */
     public String getTooltip() {
         return tooltip;
     }
 
     /**
-     * @param tooltip the tooltip to set
+     * DOCUMENT ME!
+     *
+     * @param  tooltip  the tooltip to set
      */
-    public void setTooltip(String tooltip) {
+    public void setTooltip(final String tooltip) {
         this.tooltip = tooltip;
     }
 }

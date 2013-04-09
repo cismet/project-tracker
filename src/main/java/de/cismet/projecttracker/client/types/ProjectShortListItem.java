@@ -1,37 +1,65 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.types;
 
 import de.cismet.projecttracker.client.dto.ProjectShortDTO;
 
-
-
 /**
- * A ListItem implementation that wraps ProjectShortDTO objects
+ * A ListItem implementation that wraps ProjectShortDTO objects.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ProjectShortListItem extends ListItem {
+
+    //~ Instance fields --------------------------------------------------------
+
     private ProjectShortDTO project;
 
-    public ProjectShortListItem(ProjectShortDTO project) {
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ProjectShortListItem object.
+     *
+     * @param  project  DOCUMENT ME!
+     */
+    public ProjectShortListItem(final ProjectShortDTO project) {
         super("" + project.getId(), project.getName());
         this.project = project;
     }
 
-    public ProjectShortListItem(String id, String name) {
+    /**
+     * Creates a new ProjectShortListItem object.
+     *
+     * @param  id    DOCUMENT ME!
+     * @param  name  DOCUMENT ME!
+     */
+    public ProjectShortListItem(final String id, final String name) {
         super(id, name);
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the project
+     * DOCUMENT ME!
+     *
+     * @return  the project
      */
     public ProjectShortDTO getProject() {
         return project;
     }
 
     /**
-     * @param project the project to set
+     * DOCUMENT ME!
+     *
+     * @param  project  the project to set
      */
-    public void setProject(ProjectShortDTO project) {
+    public void setProject(final ProjectShortDTO project) {
         this.project = project;
         setId("" + project.getId());
         setName(project.getName());

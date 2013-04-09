@@ -1,21 +1,49 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.dto;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class EstimatedComponentCostMonthDTO extends BasicDTO<EstimatedComponentCostMonthDTO> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private EstimatedComponentCostDTO estimatedWorkPackageCost;
     private int month;
     private double workinghours;
     private String description;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new EstimatedComponentCostMonthDTO object.
+     */
     public EstimatedComponentCostMonthDTO() {
     }
 
-    
-
-    public EstimatedComponentCostMonthDTO(long id, EstimatedComponentCostDTO estimatedWorkPackageCost, int month, double workinghours, String description) {
+    /**
+     * Creates a new EstimatedComponentCostMonthDTO object.
+     *
+     * @param  id                        DOCUMENT ME!
+     * @param  estimatedWorkPackageCost  DOCUMENT ME!
+     * @param  month                     DOCUMENT ME!
+     * @param  workinghours              DOCUMENT ME!
+     * @param  description               DOCUMENT ME!
+     */
+    public EstimatedComponentCostMonthDTO(final long id,
+            final EstimatedComponentCostDTO estimatedWorkPackageCost,
+            final int month,
+            final double workinghours,
+            final String description) {
         this.id = id;
         this.estimatedWorkPackageCost = estimatedWorkPackageCost;
         this.month = month;
@@ -23,60 +51,77 @@ public class EstimatedComponentCostMonthDTO extends BasicDTO<EstimatedComponentC
         this.description = description;
     }
 
+    //~ Methods ----------------------------------------------------------------
 
     /**
-     * @return the estimatedWorkPackageCost
+     * DOCUMENT ME!
+     *
+     * @return  the estimatedWorkPackageCost
      */
     public EstimatedComponentCostDTO getEstimatedWorkPackageCost() {
         return estimatedWorkPackageCost;
     }
 
     /**
-     * @param estimatedWorkPackageCost the estimatedWorkPackageCost to set
+     * DOCUMENT ME!
+     *
+     * @param  estimatedWorkPackageCost  the estimatedWorkPackageCost to set
      */
-    public void setEstimatedWorkPackageCost(EstimatedComponentCostDTO estimatedWorkPackageCost) {
+    public void setEstimatedWorkPackageCost(final EstimatedComponentCostDTO estimatedWorkPackageCost) {
         this.estimatedWorkPackageCost = estimatedWorkPackageCost;
     }
 
     /**
-     * @return the month
+     * DOCUMENT ME!
+     *
+     * @return  the month
      */
     public int getMonth() {
         return month;
     }
 
     /**
-     * @param month the month to set
+     * DOCUMENT ME!
+     *
+     * @param  month  the month to set
      */
-    public void setMonth(int month) {
+    public void setMonth(final int month) {
         this.month = month;
     }
 
     /**
-     * @return the workinghours
+     * DOCUMENT ME!
+     *
+     * @return  the workinghours
      */
     public double getWorkinghours() {
         return workinghours;
     }
 
     /**
-     * @param workinghours the workinghours to set
+     * DOCUMENT ME!
+     *
+     * @param  workinghours  the workinghours to set
      */
-    public void setWorkinghours(double workinghours) {
+    public void setWorkinghours(final double workinghours) {
         this.workinghours = workinghours;
     }
 
     /**
-     * @return the description
+     * DOCUMENT ME!
+     *
+     * @return  the description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * @param description the description to set
+     * DOCUMENT ME!
+     *
+     * @param  description  the description to set
      */
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
@@ -86,7 +131,7 @@ public class EstimatedComponentCostMonthDTO extends BasicDTO<EstimatedComponentC
     }
 
     @Override
-    public void reset(EstimatedComponentCostMonthDTO obj) {
+    public void reset(final EstimatedComponentCostMonthDTO obj) {
         this.id = obj.id;
         this.estimatedWorkPackageCost = obj.estimatedWorkPackageCost;
         this.month = obj.month;
