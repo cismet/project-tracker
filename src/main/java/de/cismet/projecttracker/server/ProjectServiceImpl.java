@@ -158,6 +158,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public void init() throws ServletException {
         super.init();
         final ServletContext context = getServletContext();
+        ConfigurationManager.getInstance().setContext(context);
         if (!initialised) {
             initialised = true;
             Utilities.initLogger(getServletContext().getRealPath("/"));
@@ -183,7 +184,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             FileReader input = null;
             final Properties jsonConfig = new Properties();
             try {
-                input = new FileReader(context.getInitParameter("confBaseDir") + System.getProperty("file.seperator")
+                 input = new FileReader(context.getInitParameter("confBaseDir") + System.getProperty("file.separator")
                                 + "json_log.properties");
                 jsonConfig.load(input);
                 JSON_LOG_BASE_DIR = jsonConfig.getProperty("base_dir");
@@ -2194,7 +2195,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 final String logDir = JSON_LOG_BASE_DIR
                             + System.getProperty("file.separator")
                             + act.getStaff().getUsername();
-               // check if the user dir exits and create it if necessary
+                // check if the user dir exits and create it if necessary
                 if (!new File(logDir).exists()) {
                     new File(logDir).mkdirs();
                 }
@@ -3160,15 +3161,16 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             final MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+//            final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
+//                        .add(Restrictions.eq("username", username))
+//                        .uniqueResult();
             final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
                         .add(Restrictions.and(
                                     Restrictions.eq("username", username),
                                     Restrictions.eq("password", md.digest())))
                         .uniqueResult();
 
-            if (staff
-                        != null) {
+            if (staff != null) {
                 final HttpSession session = getThreadLocalRequest().getSession();
                 final SessionInformation sessionInfo = new SessionInformation();
                 sessionInfo.setCurrentUser(staff);
