@@ -1,40 +1,68 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.types;
 
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 
-
-
 /**
- * A ListItem implementation that wraps ProjectComponentDTO objects
+ * A ListItem implementation that wraps ProjectComponentDTO objects.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class WorkpackageListItem extends ListItem {
+
+    //~ Instance fields --------------------------------------------------------
+
     private WorkPackageDTO workpackage;
 
-    public WorkpackageListItem(WorkPackageDTO workpackage) {
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new WorkpackageListItem object.
+     *
+     * @param  workpackage  DOCUMENT ME!
+     */
+    public WorkpackageListItem(final WorkPackageDTO workpackage) {
         super("" + workpackage.getId(), getName(workpackage));
         this.workpackage = workpackage;
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the workpackage
+     * DOCUMENT ME!
+     *
+     * @return  the workpackage
      */
     public WorkPackageDTO getWorkpackage() {
         return workpackage;
     }
 
     /**
-     * @param workpackage the workpackage to set
+     * DOCUMENT ME!
+     *
+     * @param  workpackage  the workpackage to set
      */
-    public void setWorkpackage(WorkPackageDTO workpackage) {
+    public void setWorkpackage(final WorkPackageDTO workpackage) {
         this.workpackage = workpackage;
         setId("" + workpackage.getId());
-        setName( getName(workpackage) );
+        setName(getName(workpackage));
     }
 
-
-    private static String getName(WorkPackageDTO workpackage) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   workpackage  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static String getName(final WorkPackageDTO workpackage) {
         WorkPackageDTO tmp = workpackage.getWorkPackage();
         String prefix = "";
 

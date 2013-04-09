@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -7,11 +14,31 @@ package de.cismet.projecttracker.client.common.ui.listener;
 import de.cismet.projecttracker.client.common.ui.event.TimeStoryEvent;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public interface TimeStoryListener {
-    public void timeNoticeCreated(TimeStoryEvent e);
-    public void timeNoticeChanged(TimeStoryEvent e);
-    public void timeNoticeDeleted(TimeStoryEvent e);
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    void timeNoticeCreated(TimeStoryEvent e);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    void timeNoticeChanged(TimeStoryEvent e);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    void timeNoticeDeleted(TimeStoryEvent e);
 }

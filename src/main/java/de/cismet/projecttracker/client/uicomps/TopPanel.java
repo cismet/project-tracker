@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -10,6 +17,11 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.MessageConstants;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
@@ -18,20 +30,24 @@ import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
 import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
 
-    public final static int SHEETS = 1;
-    public final static int REPORTS = 2;
-    public final static int PROFILE = 3;
-    private final static MessageConstants MESSAGES = (MessageConstants) GWT.create(MessageConstants.class);
+    //~ Static fields/initializers ---------------------------------------------
+
+    public static final int SHEETS = 1;
+    public static final int REPORTS = 2;
+    public static final int PROFILE = 3;
+    private static final MessageConstants MESSAGES = (MessageConstants)GWT.create(MessageConstants.class);
+
+    //~ Instance fields --------------------------------------------------------
+
     private Image logo = new Image(ImageConstants.INSTANCE.cLogo());
 //    private HorizontalPanel topPanel = new HorizontalPanel();
     private FlowPanel topPanel = new FlowPanel();
@@ -51,6 +67,11 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
     private boolean loggedIn = false;
     private List<ChangeHandler> changeListeners = new ArrayList<ChangeHandler>();
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new TopPanel object.
+     */
     public TopPanel() {
         init();
         topPanel.setWidth("100%");
@@ -59,6 +80,11 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         user.addChangeHandler(this);
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
     private void init() {
         user.setWidth("150px");
         containerPanel.add(logo);
@@ -85,42 +111,50 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         reportsLab.addClickHandler(this);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     public void fillUser() {
         user.clear();
         if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
             return;
         }
 
-        BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
-            @Override
-            protected void afterExecution(ArrayList<StaffDTO> result, boolean operationFailed) {
-                int i = 0;
-                int index = 0;
-                Collections.sort(result);
-                StaffDTO loggedInStaff = ProjectTrackerEntryPoint.getInstance().getStaff();
-                for (StaffDTO staff : result) {
-                    user.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
-                    if (staff.getId() == loggedInStaff.getId()) {
-                        index = i;
+        final BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
+
+                @Override
+                protected void afterExecution(final ArrayList<StaffDTO> result, final boolean operationFailed) {
+                    int i = 0;
+                    int index = 0;
+                    Collections.sort(result);
+                    final StaffDTO loggedInStaff = ProjectTrackerEntryPoint.getInstance().getStaff();
+                    for (final StaffDTO staff : result) {
+                        user.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
+                        if (staff.getId() == loggedInStaff.getId()) {
+                            index = i;
+                        }
+                        ++i;
                     }
-                    ++i;
+                    user.setSelectedIndex(index);
+                    // fire the change event since setSelected item does not
+                    Scheduler.get().scheduleDeferred(new Command() {
+
+                            @Override
+                            public void execute() {
+                                DomEvent.fireNativeEvent(Document.get().createChangeEvent(), user);
+                            }
+                        });
+                    userList = result;
                 }
-                user.setSelectedIndex(index);
-                //fire the change event since setSelected item does not
-                Scheduler.get().scheduleDeferred(new Command() {
-                    @Override
-                    public void execute() {
-                        DomEvent.fireNativeEvent(Document.get().createChangeEvent(), user);
-                    }
-                });
-                userList = result;
-            }
-        };
+            };
 
         ProjectTrackerEntryPoint.getProjectService(true).getCurrentEmployees(callback);
         userPanel.add(user);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void setActiveLab() {
         sheetsLab.removeStyleDependentName("active");
         reportsLab.removeStyleDependentName("active");
@@ -129,16 +163,21 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         activeLab.addStyleDependentName("active");
     }
 
-    public void addSignOutListener(ClickHandler handler) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  handler  DOCUMENT ME!
+     */
+    public void addSignOutListener(final ClickHandler handler) {
 //        signOut.addClickHandler(handler);
     }
 
     @Override
-    public void onClick(ClickEvent event) {
+    public void onClick(final ClickEvent event) {
         if (loggedIn) {
-            activeLab = (Label) event.getSource();
+            activeLab = (Label)event.getSource();
             setActiveLab();
-            MenuEvent newEvent = new MenuEvent();
+            final MenuEvent newEvent = new MenuEvent();
             newEvent.setSource(this);
 
             if (activeLab == sheetsLab) {
@@ -162,35 +201,71 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         }
     }
 
-    public void addMenuListener(MenuListener l) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  l  DOCUMENT ME!
+     */
+    public void addMenuListener(final MenuListener l) {
         listener.add(l);
     }
 
-    public void removeMenuListener(MenuListener l) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  l  DOCUMENT ME!
+     */
+    public void removeMenuListener(final MenuListener l) {
         listener.remove(l);
     }
 
-    public void fireMenuChangeEvent(MenuEvent e) {
-        for (MenuListener l : listener) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    public void fireMenuChangeEvent(final MenuEvent e) {
+        for (final MenuListener l : listener) {
             l.menuChangeEvent(e);
         }
     }
 
-    public void addChangeListener(ChangeHandler l) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  l  DOCUMENT ME!
+     */
+    public void addChangeListener(final ChangeHandler l) {
         changeListeners.add(l);
     }
 
-    public void removeChangeListener(ChangeHandler l) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  l  DOCUMENT ME!
+     */
+    public void removeChangeListener(final ChangeHandler l) {
         changeListeners.remove(l);
     }
 
-    public void fireChangeEvent(ChangeEvent e) {
-        for (ChangeHandler l : changeListeners) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  e  DOCUMENT ME!
+     */
+    public void fireChangeEvent(final ChangeEvent e) {
+        for (final ChangeHandler l : changeListeners) {
             l.onChange(e);
         }
     }
 
-    public void setLoggedIn(boolean loggedIn, String user) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  loggedIn  DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     */
+    public void setLoggedIn(final boolean loggedIn, final String user) {
         loginPanel.setLoggedIn(loggedIn, user);
         if (loggedIn == false) {
             activeLab = sheetsLab;
@@ -201,34 +276,47 @@ public class TopPanel extends Composite implements ClickHandler, ChangeHandler {
         profilePanel = null;
     }
 
-    public void setGravatar(String url) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  url  DOCUMENT ME!
+     */
+    public void setGravatar(final String url) {
         loginPanel.setGravatar(url);
     }
 
     @Override
-    public void onChange(ChangeEvent event) {
+    public void onChange(final ChangeEvent event) {
         ProjectTrackerEntryPoint.getInstance().setStaff(getSelectedStaff());
-        MenuEvent e = new MenuEvent();
+        final MenuEvent e = new MenuEvent();
         e.setSource(this);
         fireMenuChangeEvent(e);
         fireChangeEvent(event);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private StaffDTO getSelectedStaff() {
         try {
-            long value = Long.parseLong(user.getValue(user.getSelectedIndex()));
-            for (StaffDTO staff : userList) {
+            final long value = Long.parseLong(user.getValue(user.getSelectedIndex()));
+            for (final StaffDTO staff : userList) {
                 if (staff.getId() == value) {
                     return staff;
                 }
             }
         } catch (NumberFormatException e) {
-            //should not happen
+            // should not happen
         }
 
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     public void removeUserList() {
         userPanel.remove(user);
     }

@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -7,80 +14,96 @@ package de.cismet.projecttracker.client.common.ui;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.PickupDragController;
 import com.allen_sauer.gwt.dnd.client.drop.FlowPanelDropController;
+
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.common.ui.listener.TaskDeleteListener;
-import de.cismet.projecttracker.client.dto.ActivityDTO;
-import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import de.cismet.projecttracker.utilities.DBManagerWrapper;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.common.ui.listener.TaskDeleteListener;
+import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+
+import de.cismet.projecttracker.utilities.DBManagerWrapper;
+
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class FavouriteTaskStory extends RecentStory implements TaskDeleteListener {
 
+    //~ Instance fields --------------------------------------------------------
+
     FlowPanelDropController widgetDropController;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new FavouriteTaskStory object.
+     */
     public FavouriteTaskStory() {
         widgetDropController = new FlowPanelDropController(this.recentTasks) {
 
-            @Override
-            public void onEnter(DragContext context) {
-                super.onEnter(context);
-            }
+                @Override
+                public void onEnter(final DragContext context) {
+                    super.onEnter(context);
+                }
 
-            @Override
-            public void onDrop(DragContext context) {
+                @Override
+                public void onDrop(final DragContext context) {
 //                super.onDrop(context);
-                List<Widget> selectedWidgets = context.selectedWidgets;
-                for (Widget w : selectedWidgets) {
-                    if (w instanceof TaskNotice) {
-                        final TaskNotice origNotice = (TaskNotice) w;
+                    final List<Widget> selectedWidgets = context.selectedWidgets;
+                    for (final Widget w : selectedWidgets) {
+                        if (w instanceof TaskNotice) {
+                            final TaskNotice origNotice = (TaskNotice)w;
 
-                        final ActivityDTO activity = origNotice.getActivity().createCopy();
+                            final ActivityDTO activity = origNotice.getActivity().createCopy();
 
-                        activity.setId(0);
-                        activity.setWorkinghours(0.0);
-                        activity.setDay(null);
-                        activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
+                            activity.setId(0);
+                            activity.setWorkinghours(0.0);
+                            activity.setDay(null);
+                            activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
-                        BasicAsyncCallback favCallback = new BasicAsyncCallback<Boolean>(){
+                            final BasicAsyncCallback favCallback = new BasicAsyncCallback<Boolean>() {
 
-                            @Override
-                            protected void afterExecution(Boolean result, boolean operationFailed) {
-                                if (!operationFailed && !result) {
+                                    @Override
+                                    protected void afterExecution(final Boolean result, final boolean operationFailed) {
+                                        if (!operationFailed && !result) {
+                                            final BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
 
-                                    BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
-
-                                        @Override
-                                        protected void afterExecution(Long result, boolean operationFailed) {
-                                            if (!operationFailed) {
-                                                activity.setId(result);
-                                                addTask(activity);
-                                            }
+                                                    @Override
+                                                    protected void afterExecution(final Long result,
+                                                            final boolean operationFailed) {
+                                                        if (!operationFailed) {
+                                                            activity.setId(result);
+                                                            addTask(activity);
+                                                        }
+                                                    }
+                                                };
+                                            ProjectTrackerEntryPoint.getProjectService(true)
+                                                    .createActivity(activity, callback);
                                         }
-                                    };
-                                    ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
-                                }
-                            }
-                            
-                        };
-                        ProjectTrackerEntryPoint.getProjectService(true).isExisitingFavouriteTask(activity, favCallback);
-
+                                    }
+                                };
+                            ProjectTrackerEntryPoint.getProjectService(true)
+                                    .isExisitingFavouriteTask(activity, favCallback);
+                        }
                     }
                 }
-            }
-        };
+            };
     }
+
+    //~ Methods ----------------------------------------------------------------
 
     @Override
     protected void setLabels() {
@@ -89,35 +112,35 @@ public class FavouriteTaskStory extends RecentStory implements TaskDeleteListene
     }
 
     @Override
-    public void setTaskStory(TaskStory taskStory) {
-        //todo an Favs anpassen
+    public void setTaskStory(final TaskStory taskStory) {
+        // todo an Favs anpassen
         if (!initialised) {
             initialised = true;
             this.taskStory = taskStory;
             mondayDragController = new RestorePickupDragController(RootPanel.get(), false);
             taskStory.initDragController(mondayDragController, null);
-            //allow reordering of favourite tasks... 
-//            FlowPanelDropController dropController = new FlowPanelDropController(this.recentTasks);
-//            mondayDragController.registerDropController(dropController);
+            // allow reordering of favourite tasks... FlowPanelDropController dropController = new
+            // FlowPanelDropController(this.recentTasks); mondayDragController.registerDropController(dropController);
 
-            BasicAsyncCallback<List<ActivityDTO>> callback = new BasicAsyncCallback<List<ActivityDTO>>() {
+            final BasicAsyncCallback<List<ActivityDTO>> callback = new BasicAsyncCallback<List<ActivityDTO>>() {
 
-                @Override
-                protected void afterExecution(List<ActivityDTO> result, boolean operationFailed) {
-                    if (!operationFailed) {
-                        for (ActivityDTO activity : result) {
-                            addTask(activity);
+                    @Override
+                    protected void afterExecution(final List<ActivityDTO> result, final boolean operationFailed) {
+                        if (!operationFailed) {
+                            for (final ActivityDTO activity : result) {
+                                addTask(activity);
+                            }
                         }
                     }
-                }
-            };
+                };
 
-            ProjectTrackerEntryPoint.getProjectService(true).getFavouriteActivities(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
+            ProjectTrackerEntryPoint.getProjectService(true)
+                    .getFavouriteActivities(ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
         }
     }
 
     @Override
-    protected void addTask(ActivityDTO activity) {
+    protected void addTask(final ActivityDTO activity) {
         TaskNotice widget = null;
 
         if (activity.getKindofactivity() == ActivityDTO.ACTIVITY) {
@@ -131,23 +154,32 @@ public class FavouriteTaskStory extends RecentStory implements TaskDeleteListene
         recentTasks.add(widget);
 
         mondayDragController.makeDraggable(widget, widget.getMouseHandledWidget());
-
     }
 
-    public void registerDropController(PickupDragController controller) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  controller  DOCUMENT ME!
+     */
+    public void registerDropController(final PickupDragController controller) {
         controller.registerDropController(widgetDropController);
     }
 
-    public void registerDropControllers(Collection<PickupDragController> controllers) {
-        for (PickupDragController ctrl : controllers) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  controllers  DOCUMENT ME!
+     */
+    public void registerDropControllers(final Collection<PickupDragController> controllers) {
+        for (final PickupDragController ctrl : controllers) {
             ctrl.registerDropController(widgetDropController);
         }
     }
 
     @Override
-    public void taskDelete(Object source) {
+    public void taskDelete(final Object source) {
         if (source instanceof TaskNotice) {
-            TaskNotice task = (TaskNotice) source;
+            final TaskNotice task = (TaskNotice)source;
 
             this.recentTasks.remove(task);
         }

@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -8,27 +15,31 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.*;
+
+import java.util.Date;
+import java.util.List;
+
 import de.cismet.projecttracker.client.common.ui.event.TaskStoryEvent;
-import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.common.ui.event.TimeStoryEvent;
 import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.common.ui.listener.TimeStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
-import java.util.Date;
-import java.util.List;
+import de.cismet.projecttracker.client.helper.DateHelper;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class DailyHoursOfWork extends Composite implements TimeStoryListener, TaskStoryListener {
 
+    //~ Static fields/initializers ---------------------------------------------
+
     private static DailyHoursOfWorkUiBinder uiBinder = GWT.create(DailyHoursOfWorkUiBinder.class);
-    private Date firstDayOfWeek = new Date();
-    private Story story;
-    private TaskStory taskStory;
-    private HTML[] days;
-    private boolean initialised = false;
+
+    //~ Instance fields --------------------------------------------------------
+
     @UiField
     HTML monday;
     @UiField
@@ -45,45 +56,21 @@ public class DailyHoursOfWork extends Composite implements TimeStoryListener, Ta
     HTML sunday;
     @UiField
     AbsolutePanel boundaryPanel;
+    private Date firstDayOfWeek = new Date();
+    private Story story;
+    private TaskStory taskStory;
+    private HTML[] days;
+    private boolean initialised = false;
 
-    @Override
-    public void timeNoticeCreated(TimeStoryEvent e) {
-        fillLabel(e.getDay().getDay());;
-    }
+    //~ Constructors -----------------------------------------------------------
 
-
-    @Override
-    public void timeNoticeChanged(TimeStoryEvent e) {
-        fillLabel(e.getDay().getDay());;
-    }
-
-    @Override
-    public void timeNoticeDeleted(TimeStoryEvent e) {
-        fillLabel(e.getDay().getDay());;
-    }
-
-    @Override
-    public void taskNoticeCreated(TaskStoryEvent e) {
-        fillLabel(e.getDay().getDay());;
-    }
-
-    @Override
-    public void taskNoticeChanged(TaskStoryEvent e) {
-        fillLabel(e.getDay().getDay());;
-    }
-
-    @Override
-    public void taskNoticeDeleted(TaskStoryEvent e) {
-        fillLabel(e.getDay().getDay());;
-    }
-
-    interface DailyHoursOfWorkUiBinder extends UiBinder<Widget, DailyHoursOfWork> {
-    }
-
+    /**
+     * Creates a new DailyHoursOfWork object.
+     */
     public DailyHoursOfWork() {
         initWidget(uiBinder.createAndBindUi(this));
-        days = new HTML [7];
-        
+        days = new HTML[7];
+
         days[0] = sunday;
         days[1] = monday;
         days[2] = tuesday;
@@ -93,11 +80,56 @@ public class DailyHoursOfWork extends Composite implements TimeStoryListener, Ta
         days[6] = saturday;
     }
 
-    public void initialise(Date firstDayOfWeek, Story time, TaskStory taskStory) {
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void timeNoticeCreated(final TimeStoryEvent e) {
+        fillLabel(e.getDay().getDay());
+        ;
+    }
+
+    @Override
+    public void timeNoticeChanged(final TimeStoryEvent e) {
+        fillLabel(e.getDay().getDay());
+        ;
+    }
+
+    @Override
+    public void timeNoticeDeleted(final TimeStoryEvent e) {
+        fillLabel(e.getDay().getDay());
+        ;
+    }
+
+    @Override
+    public void taskNoticeCreated(final TaskStoryEvent e) {
+        fillLabel(e.getDay().getDay());
+        ;
+    }
+
+    @Override
+    public void taskNoticeChanged(final TaskStoryEvent e) {
+        fillLabel(e.getDay().getDay());
+        ;
+    }
+
+    @Override
+    public void taskNoticeDeleted(final TaskStoryEvent e) {
+        fillLabel(e.getDay().getDay());
+        ;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  firstDayOfWeek  DOCUMENT ME!
+     * @param  time            DOCUMENT ME!
+     * @param  taskStory       DOCUMENT ME!
+     */
+    public void initialise(final Date firstDayOfWeek, final Story time, final TaskStory taskStory) {
         this.firstDayOfWeek = firstDayOfWeek;
         this.story = time;
         this.taskStory = taskStory;
-        Date day = (Date) firstDayOfWeek.clone();
+        final Date day = (Date)firstDayOfWeek.clone();
         monday.setHTML(getText(day.getDay()));
         DateHelper.addDays(day, 1);
         tuesday.setHTML(getText(day.getDay()));
@@ -111,7 +143,7 @@ public class DailyHoursOfWork extends Composite implements TimeStoryListener, Ta
         saturday.setHTML(getText(day.getDay()));
         DateHelper.addDays(day, 1);
         sunday.setHTML(getText(day.getDay()));
-        
+
         if (!initialised) {
             story.addTimeStoryListener(this);
             taskStory.addTaskStoryListener(this);
@@ -119,32 +151,53 @@ public class DailyHoursOfWork extends Composite implements TimeStoryListener, Ta
         }
     }
 
-    private void fillLabel(int day) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  day  DOCUMENT ME!
+     */
+    private void fillLabel(final int day) {
         days[day].setHTML(getText(day));
     }
-    
-    private String getText(int day) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   day  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getText(final int day) {
         double hours = story.getTimeForDay(day);
         double hoursWorked = 0.0;
-        List<TaskNotice> tasks = taskStory.getTasksForDay(day);
+        final List<TaskNotice> tasks = taskStory.getTasksForDay(day);
 
-        for (TaskNotice tmp : tasks) {
-            if (tmp.getActivity() != null && tmp.getActivity().getWorkPackage() != null && 
-                    tmp.getActivity().getWorkPackage().getProject() != null) {
-                if (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID || 
-                        tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID) {
+        for (final TaskNotice tmp : tasks) {
+            if ((tmp.getActivity() != null) && (tmp.getActivity().getWorkPackage() != null)
+                        && (tmp.getActivity().getWorkPackage().getProject() != null)) {
+                if ((tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)
+                            || (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID)) {
                     hours -= tmp.getActivity().getWorkinghours();
-                } else if(tmp.getActivity().getWorkPackage().getId() != ActivityDTO.HOLIDAY_ID && 
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.ILLNESS_ID &&
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPECIAL_HOLIDAY_ID &&
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID &&
-                        tmp.getActivity().getWorkPackage().getId() != ActivityDTO.Travel_ID
-                        ) {
+                } else if ((tmp.getActivity().getWorkPackage().getId() != ActivityDTO.HOLIDAY_ID)
+                            && (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.ILLNESS_ID)
+                            && (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPECIAL_HOLIDAY_ID)
+                            && (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.LECTURE_ID)
+                            && (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.Travel_ID)) {
                     hoursWorked += tmp.getActivity().getWorkinghours();
                 }
             }
         }
 
-        return DateHelper.doubleToHours(hours) + " (" + DateHelper.doubleToHours( hours - hoursWorked ) + ")";
+        return DateHelper.doubleToHours(hours) + " (" + DateHelper.doubleToHours(hours - hoursWorked) + ")";
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface DailyHoursOfWorkUiBinder extends UiBinder<Widget, DailyHoursOfWork> {
     }
 }

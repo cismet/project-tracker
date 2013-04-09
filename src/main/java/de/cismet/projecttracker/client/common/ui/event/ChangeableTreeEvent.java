@@ -1,57 +1,82 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.common.ui.event;
 
 import com.google.gwt.user.client.ui.TreeItem;
 
 /**
- * ChangeableTreeEvent is used to notify interested parties that
- * the user want to performed an action in the event source.
+ * ChangeableTreeEvent is used to notify interested parties that the user want to performed an action in the event
+ * source.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ChangeableTreeEvent {
+
+    //~ Instance fields --------------------------------------------------------
+
     private TreeItem parentItem;
     private String itemName;
     private TreeItem item;
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the parentItem
+     * DOCUMENT ME!
+     *
+     * @return  the parentItem
      */
     public TreeItem getParentItem() {
         return parentItem;
     }
 
     /**
-     * @param parentItem the parentItem to set
+     * DOCUMENT ME!
+     *
+     * @param  parentItem  the parentItem to set
      */
-    public void setParentItem(TreeItem parentItem) {
+    public void setParentItem(final TreeItem parentItem) {
         this.parentItem = parentItem;
     }
 
     /**
-     * @return the itemName
+     * DOCUMENT ME!
+     *
+     * @return  the itemName
      */
     public String getItemName() {
         return itemName;
     }
 
     /**
-     * @param itemName the itemName to set
+     * DOCUMENT ME!
+     *
+     * @param  itemName  the itemName to set
      */
-    public void setItemName(String itemName) {
+    public void setItemName(final String itemName) {
         this.itemName = itemName;
     }
 
     /**
-     * @return the item
+     * DOCUMENT ME!
+     *
+     * @return  the item
      */
     public TreeItem getItem() {
         return item;
     }
 
     /**
-     * @param item the item to set
+     * DOCUMENT ME!
+     *
+     * @param  item  the item to set
      */
-    public void setItem(TreeItem item) {
+    public void setItem(final TreeItem item) {
         this.item = item;
     }
 }

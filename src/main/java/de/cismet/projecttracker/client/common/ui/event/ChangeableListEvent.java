@@ -1,42 +1,63 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.common.ui.event;
 
 import de.cismet.projecttracker.client.types.ListItem;
 
 /**
- * ChangeableListEvent is used to notify interested parties that
- * the user want to performed an action in the event source.
+ * ChangeableListEvent is used to notify interested parties that the user want to performed an action in the event
+ * source.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ChangeableListEvent {
+
+    //~ Instance fields --------------------------------------------------------
+
     private ListItem item;
     private String itemName;
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the item
+     * DOCUMENT ME!
+     *
+     * @return  the item
      */
     public ListItem getItem() {
         return item;
     }
 
     /**
-     * @param item the item to set
+     * DOCUMENT ME!
+     *
+     * @param  item  the item to set
      */
-    public void setItem(ListItem item) {
+    public void setItem(final ListItem item) {
         this.item = item;
     }
 
     /**
-     * @return the itemName
+     * DOCUMENT ME!
+     *
+     * @return  the itemName
      */
     public String getItemName() {
         return itemName;
     }
 
     /**
-     * @param itemName the itemName to set
+     * DOCUMENT ME!
+     *
+     * @param  itemName  the itemName to set
      */
-    public void setItemName(String itemName) {
+    public void setItemName(final String itemName) {
         this.itemName = itemName;
     }
 }

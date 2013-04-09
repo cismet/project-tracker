@@ -1,44 +1,75 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.types;
 
 import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 
 /**
- * A ListItem implementation that wraps ContractDTO objects
+ * A ListItem implementation that wraps ContractDTO objects.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ContractListItem extends ListItem {
+
+    //~ Instance fields --------------------------------------------------------
+
     private ContractDTO contract;
 
-    public ContractListItem(){
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ContractListItem object.
+     */
+    public ContractListItem() {
     }
 
-    public ContractListItem(ContractDTO contract) {
+    /**
+     * Creates a new ContractListItem object.
+     *
+     * @param  contract  DOCUMENT ME!
+     */
+    public ContractListItem(final ContractDTO contract) {
         this.contract = contract;
         setId("" + contract.getId());
         setName(getContractName());
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the contract
+     * DOCUMENT ME!
+     *
+     * @return  the contract
      */
     public ContractDTO getContract() {
         return contract;
     }
 
     /**
-     * @param contract the contract to set
+     * DOCUMENT ME!
+     *
+     * @param  contract  the contract to set
      */
-    public void setContract(ContractDTO contract) {
+    public void setContract(final ContractDTO contract) {
         this.contract = contract;
         setId("" + contract.getId());
         setName(getContractName());
     }
 
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private String getContractName() {
-        String label = DateHelper.formatDate( contract.getFromdate() );
+        String label = DateHelper.formatDate(contract.getFromdate());
         if (contract.getTodate() != null) {
             label += " - " + DateHelper.formatDate(contract.getTodate());
         }

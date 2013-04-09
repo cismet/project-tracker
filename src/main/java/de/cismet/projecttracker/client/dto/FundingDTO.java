@@ -1,77 +1,115 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.dto;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class FundingDTO extends BasicDTO<FundingDTO> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private ProjectShortDTO project;
     private CompanyDTO company;
     private double fundingratio;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new FundingDTO object.
+     */
     public FundingDTO() {
     }
 
-
-
-    public FundingDTO(long id, ProjectShortDTO project, CompanyDTO company, double fundingratio) {
+    /**
+     * Creates a new FundingDTO object.
+     *
+     * @param  id            DOCUMENT ME!
+     * @param  project       DOCUMENT ME!
+     * @param  company       DOCUMENT ME!
+     * @param  fundingratio  DOCUMENT ME!
+     */
+    public FundingDTO(final long id,
+            final ProjectShortDTO project,
+            final CompanyDTO company,
+            final double fundingratio) {
         this.id = id;
         this.project = project;
         this.company = company;
         this.fundingratio = fundingratio;
     }
 
-     
+    //~ Methods ----------------------------------------------------------------
 
     /**
-     * @return the project
+     * DOCUMENT ME!
+     *
+     * @return  the project
      */
     public ProjectShortDTO getProject() {
         return project;
     }
 
     /**
-     * @param project the project to set
+     * DOCUMENT ME!
+     *
+     * @param  project  the project to set
      */
-    public void setProject(ProjectShortDTO project) {
+    public void setProject(final ProjectShortDTO project) {
         this.project = project;
     }
 
     /**
-     * @return the company
+     * DOCUMENT ME!
+     *
+     * @return  the company
      */
     public CompanyDTO getCompany() {
         return company;
     }
 
     /**
-     * @param company the company to set
+     * DOCUMENT ME!
+     *
+     * @param  company  the company to set
      */
-    public void setCompany(CompanyDTO company) {
+    public void setCompany(final CompanyDTO company) {
         this.company = company;
     }
 
     /**
-     * @return the fundingratio
+     * DOCUMENT ME!
+     *
+     * @return  the fundingratio
      */
     public double getFundingratio() {
         return fundingratio;
     }
 
     /**
-     * @param fundingratio the fundingratio to set
+     * DOCUMENT ME!
+     *
+     * @param  fundingratio  the fundingratio to set
      */
-    public void setFundingratio(double fundingratio) {
+    public void setFundingratio(final double fundingratio) {
         this.fundingratio = fundingratio;
     }
 
     @Override
     public FundingDTO createCopy() {
         return new FundingDTO(id, project, company, fundingratio);
-   }
+    }
 
     @Override
-    public void reset(FundingDTO obj) {
+    public void reset(final FundingDTO obj) {
         this.id = obj.id;
         this.project = obj.project;
         this.company = obj.company;

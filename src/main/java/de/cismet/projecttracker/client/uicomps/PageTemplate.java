@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -10,24 +17,38 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class PageTemplate extends Composite implements ResizeHandler {
+
+    //~ Instance fields --------------------------------------------------------
+
     private FlowPanel mainPanel = new FlowPanel();
 //    private FlowPanel containerPanel = new FlowPanel();
     private FlowPanel pageHeaderPanel = new FlowPanel();
     private FlowPanel contentNodeParentPanel = new FlowPanel();
     private FlowPanel contentNodePanel = new FlowPanel();
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new PageTemplate object.
+     */
     public PageTemplate() {
         init();
         initWidget(mainPanel);
         setStyleName("content");
 //        setStyleName("container");
     }
-    
-    
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
     private void init() {
 //        containerPanel.setStyleName("content");
         pageHeaderPanel.setStyleName("page-header");
@@ -43,8 +64,8 @@ public class PageTemplate extends Composite implements ResizeHandler {
     }
 
     @Override
-    public void onResize(ResizeEvent event) {
-        int newHeight = event.getHeight() - contentNodePanel.getAbsoluteTop() - 150;
+    public void onResize(final ResizeEvent event) {
+        final int newHeight = event.getHeight() - contentNodePanel.getAbsoluteTop() - 150;
         contentNodePanel.setHeight(newHeight + "px");
     }
 }

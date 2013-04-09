@@ -1,24 +1,25 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.common.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.dto.*;
-import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
-import de.cismet.projecttracker.client.helper.DateHelper;
-import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import de.cismet.projecttracker.client.types.WorkpackageListItem;
-import de.cismet.web.timetracker.types.HoursOfWork;
+import com.google.gwt.user.client.ui.Widget;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,10 +27,29 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.dto.*;
+import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
+import de.cismet.projecttracker.client.helper.DateHelper;
+import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+import de.cismet.projecttracker.client.types.WorkpackageListItem;
+
+import de.cismet.web.timetracker.types.HoursOfWork;
+
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
 public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler {
+
+    //~ Static fields/initializers ---------------------------------------------
 
     private static TaskFormUiBinder uiBinder = GWT.create(TaskFormUiBinder.class);
     private static WorkCategoryDTO travelCatagory = null;
+
+    //~ Instance fields --------------------------------------------------------
+
     @UiField
     TextBox description;
     @UiField
@@ -51,17 +71,16 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     private boolean modification = false;
     private TaskNotice tn;
 
-    @Override
-    public void onChange(ChangeEvent event) {
-        if (event.getSource() == project) {
-            initWorkpackage();
-        }
-    }
+    //~ Constructors -----------------------------------------------------------
 
-    interface TaskFormUiBinder extends UiBinder<Widget, StoryForm> {
-    }
-
-    public StoryForm(DialogBox form, TaskStory tb, Date day) {
+    /**
+     * Creates a new StoryForm object.
+     *
+     * @param  form  DOCUMENT ME!
+     * @param  tb    DOCUMENT ME!
+     * @param  day   DOCUMENT ME!
+     */
+    public StoryForm(final DialogBox form, final TaskStory tb, final Date day) {
         this.form = form;
         this.caller = tb;
         this.day = day;
@@ -71,7 +90,14 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         setDefaultButton();
     }
 
-    public StoryForm(DialogBox form, TaskStory tb, TaskNotice tn) {
+    /**
+     * Creates a new StoryForm object.
+     *
+     * @param  form  DOCUMENT ME!
+     * @param  tb    DOCUMENT ME!
+     * @param  tn    DOCUMENT ME!
+     */
+    public StoryForm(final DialogBox form, final TaskStory tb, final TaskNotice tn) {
         this.form = form;
         this.caller = tb;
         this.tn = tn;
@@ -80,8 +106,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         initWidget(uiBinder.createAndBindUi(this));
         init();
         description.setText(tn.getActivity().getDescription());
-        if (tn.getActivity().getWorkCategory() != null
-                && tn.getActivity().getWorkCategory().getId() == WorkCategoryDTO.TRAVEL) {
+        if ((tn.getActivity().getWorkCategory() != null)
+                    && (tn.getActivity().getWorkCategory().getId() == WorkCategoryDTO.TRAVEL)) {
             travel.setValue(true);
         } else {
             travel.setValue(false);
@@ -90,12 +116,24 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         setProjectById(tn.getActivity().getWorkPackage().getProject().getId());
         initWorkpackage();
         setWPById(tn.getActivity().getWorkPackage().getId());
-        //todo set project und workpackage
+        // todo set project und workpackage
         project.addChangeHandler(this);
         button.setText("Save");
         setDefaultButton();
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void onChange(final ChangeEvent event) {
+        if (event.getSource() == project) {
+            initWorkpackage();
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
     private void setDefaultButton() {
         button.setFocus(true);
         description.addKeyUpHandler(this);
@@ -104,21 +142,26 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         workpackage.addKeyUpHandler(this);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  event  DOCUMENT ME!
+     */
     @UiHandler("button")
-    void onButtonClick(ClickEvent event) {
-        if (travel.getValue() && travelCatagory == null) {
-            BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
+    void onButtonClick(final ClickEvent event) {
+        if (travel.getValue() && (travelCatagory == null)) {
+            final BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
 
-                @Override
-                protected void afterExecution(WorkCategoryDTO result, boolean operationFailed) {
-                    if (!operationFailed) {
-                        if (travelCatagory == null) {
-                            travelCatagory = result;
-                            save();
+                    @Override
+                    protected void afterExecution(final WorkCategoryDTO result, final boolean operationFailed) {
+                        if (!operationFailed) {
+                            if (travelCatagory == null) {
+                                travelCatagory = result;
+                                save();
+                            }
                         }
                     }
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).getWorkCategory(WorkCategoryDTO.TRAVEL, callback);
             return;
@@ -126,11 +169,14 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         save();
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void save() {
         double workinghours = 0.0;
 
         try {
-            if (duration.getText() != null && !duration.getText().equals("")) {
+            if ((duration.getText() != null) && !duration.getText().equals("")) {
                 workinghours = DateHelper.hoursToDouble(duration.getText());
             }
         } catch (NumberFormatException e) {
@@ -148,69 +194,77 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         } else {
             newActivity.setWorkCategory(null);
         }
-       
-        if (modification) {
-            BasicAsyncCallback<ActivityDTO> callback = new BasicAsyncCallback<ActivityDTO>() {
 
-                @Override
-                protected void afterExecution(ActivityDTO result, boolean operationFailed) {
-                    if (!operationFailed) {
-                        tn.setActivity(newActivity);
-                        form.hide();
+        if (modification) {
+            final BasicAsyncCallback<ActivityDTO> callback = new BasicAsyncCallback<ActivityDTO>() {
+
+                    @Override
+                    protected void afterExecution(final ActivityDTO result, final boolean operationFailed) {
+                        if (!operationFailed) {
+                            tn.setActivity(newActivity);
+                            form.hide();
+                        }
                     }
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).saveActivity(newActivity, callback);
         } else {
-            BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
+            final BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
 
-                @Override
-                protected void afterExecution(Long result, boolean operationFailed) {
-                    if (!operationFailed) {
-                        newActivity.setId(result);
-                        caller.addTask(newActivity);
-                        form.hide();
+                    @Override
+                    protected void afterExecution(final Long result, final boolean operationFailed) {
+                        if (!operationFailed) {
+                            newActivity.setId(result);
+                            caller.addTask(newActivity);
+                            form.hide();
+                        }
                     }
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).createActivity(newActivity, callback);
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  event  DOCUMENT ME!
+     */
     @UiHandler("cancelButton")
-    void onButtoClick(ClickEvent event) {
+    void onButtoClick(final ClickEvent event) {
         form.hide();
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void init() {
-        List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
+        final List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
 //        travel.setText("Travel: ");
         if (result == null) {
-            BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
+            final BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
 
-                @Override
-                protected void afterExecution(ArrayList<ProjectDTO> result, boolean operationFailed) {
-                    for (ProjectDTO tmp : result) {
-                        ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+                    @Override
+                    protected void afterExecution(final ArrayList<ProjectDTO> result, final boolean operationFailed) {
+                        for (final ProjectDTO tmp : result) {
+                            final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
 
-                        if (period == null || DateHelper.isDayInProjectPeriod(day, period)) {
-                            project.addItem(tmp.getName(), "" + tmp.getId());
+                            if ((period == null) || DateHelper.isDayInProjectPeriod(day, period)) {
+                                project.addItem(tmp.getName(), "" + tmp.getId());
+                            }
                         }
+                        ProjectTrackerEntryPoint.getInstance().setProjects(result);
+                        projects = result;
+                        initWorkpackage();
                     }
-                    ProjectTrackerEntryPoint.getInstance().setProjects(result);
-                    projects = result;
-                    initWorkpackage();
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
         } else {
-            for (ProjectDTO tmp : result) {
-                ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+            for (final ProjectDTO tmp : result) {
+                final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
 
-                if (period == null || DateHelper.isDayInProjectPeriod(day, period)) {
+                if ((period == null) || DateHelper.isDayInProjectPeriod(day, period)) {
                     project.addItem(tmp.getName(), "" + tmp.getId());
                 }
             }
@@ -219,16 +273,20 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void initWorkpackage() {
-        ProjectDTO selectedProject = getSelectedProject();
+        final ProjectDTO selectedProject = getSelectedProject();
         if (selectedProject != null) {
             workpackage.clear();
 
             if (selectedProject.getWorkPackages() != null) {
-                WorkPackageDTO[] wps = selectedProject.getWorkPackages().toArray(new WorkPackageDTO[selectedProject.getWorkPackages().size()]);
+                final WorkPackageDTO[] wps = selectedProject.getWorkPackages()
+                            .toArray(new WorkPackageDTO[selectedProject.getWorkPackages().size()]);
                 Arrays.sort(wps);
-                for (WorkPackageDTO tmp : wps) {
-                    WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
+                for (final WorkPackageDTO tmp : wps) {
+                    final WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
                     if (tmp.getName() != null) {
@@ -239,14 +297,24 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
                 for (int i = 0; i < workpackage.getItemCount(); i++) {
                     final String itemText = workpackage.getItemText(i);
                     if (itemText.toUpperCase().startsWith("WP")) {
-                        workpackage.getElement().getElementsByTagName("option").getItem(i).setAttribute("disabled", "disabled");
+                        workpackage.getElement()
+                                .getElementsByTagName("option")
+                                .getItem(i)
+                                .setAttribute("disabled", "disabled");
                     }
                 }
             }
         }
     }
 
-    private static String extractWorkpackageName(WorkPackageDTO workpackage) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   workpackage  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static String extractWorkpackageName(final WorkPackageDTO workpackage) {
         WorkPackageDTO tmp = workpackage.getWorkPackage();
         String prefix = "";
 
@@ -258,14 +326,26 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         return prefix + workpackage.getName();
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private WorkPackageDTO getSelectedWorkpackage() {
-        String value = workpackage.getValue(workpackage.getSelectedIndex());
+        final String value = workpackage.getValue(workpackage.getSelectedIndex());
 
         return getWorkpackageById(Long.parseLong(value));
     }
 
-    private WorkPackageDTO getWorkpackageById(long id) {
-        for (WorkPackageDTO tmp : getSelectedProject().getWorkPackages()) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private WorkPackageDTO getWorkpackageById(final long id) {
+        for (final WorkPackageDTO tmp : getSelectedProject().getWorkPackages()) {
             if (tmp.getId() == id) {
                 return tmp;
             }
@@ -273,14 +353,26 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private ProjectDTO getSelectedProject() {
-        String value = project.getValue(project.getSelectedIndex());
+        final String value = project.getValue(project.getSelectedIndex());
 
         return getProjectById(Long.parseLong(value));
     }
 
-    private ProjectDTO getProjectById(long id) {
-        for (ProjectDTO tmp : projects) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private ProjectDTO getProjectById(final long id) {
+        for (final ProjectDTO tmp : projects) {
             if (tmp.getId() == id) {
                 return tmp;
             }
@@ -288,7 +380,12 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         return null;
     }
 
-    private void setProjectById(long id) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  id  DOCUMENT ME!
+     */
+    private void setProjectById(final long id) {
         for (int i = 0; i < project.getItemCount(); ++i) {
             if (project.getValue(i).equals("" + id)) {
                 project.setSelectedIndex(i);
@@ -296,7 +393,12 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
         }
     }
 
-    private void setWPById(long id) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  id  DOCUMENT ME!
+     */
+    private void setWPById(final long id) {
         for (int i = 0; i < workpackage.getItemCount(); ++i) {
             if (workpackage.getValue(i).equals("" + id)) {
                 workpackage.setSelectedIndex(i);
@@ -305,9 +407,19 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler 
     }
 
     @Override
-    public void onKeyUp(KeyUpEvent event) {
+    public void onKeyUp(final KeyUpEvent event) {
         if (event.getNativeKeyCode() == 13) {
             save();
         }
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface TaskFormUiBinder extends UiBinder<Widget, StoryForm> {
     }
 }

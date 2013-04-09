@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -8,19 +15,25 @@ import com.allen_sauer.gwt.dnd.client.DragEndEvent;
 import com.allen_sauer.gwt.dnd.client.DragHandler;
 import com.allen_sauer.gwt.dnd.client.DragStartEvent;
 import com.allen_sauer.gwt.dnd.client.VetoDragException;
+
 import com.google.gwt.user.client.ui.Widget;
+
+import java.util.Date;
+import java.util.List;
+
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import java.util.Date;
-import java.util.List;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class TaskDragHandler {
+
 //implements DragHandler {
 //    @Override
 //    public void onPreviewDragStart(DragStartEvent event)

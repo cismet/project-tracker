@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.common.ui;
 
 import com.google.gwt.core.client.GWT;
@@ -39,14 +37,17 @@ import de.cismet.projecttracker.client.types.TimePeriod;
 /**
  * DOCUMENT ME!
  *
- * @version $Revision$, $Date$
+ * @version  $Revision$, $Date$
  */
 public class Story extends Composite implements ClickHandler, TaskDeleteListener, TimeNoticeListener {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static StoryUiBinder uiBinder = GWT.create(StoryUiBinder.class);
     private static final String DOW_TOOLTIP_SUFFX = "\n(click to add a new time slot)";
+
     //~ Instance fields --------------------------------------------------------
+
     @UiField
     FlowPanel monday;
     @UiField
@@ -85,6 +86,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     private List<TimeStoryListener> listener = new ArrayList<TimeStoryListener>();
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new Story object.
      */
@@ -129,10 +131,11 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     }
 
     //~ Methods ----------------------------------------------------------------
+
     @Override
     public void taskDelete(final Object source) {
         if (source instanceof TimeNotice) {
-            final TimeNotice time = (TimeNotice) source;
+            final TimeNotice time = (TimeNotice)source;
 
             for (final FlowPanel tmpPanel : taskMap.keySet()) {
                 final List<TimeNotice> tmpList = taskMap.get(tmpPanel);
@@ -154,7 +157,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
 
     @Override
     public void timeChanged(final Object source) {
-        final TimeStoryEvent e = new TimeStoryEvent(this, false, ((TimeNotice) source).getStart());
+        final TimeStoryEvent e = new TimeStoryEvent(this, false, ((TimeNotice)source).getStart());
         for (final TimeStoryListener tmp : listener) {
             tmp.timeNoticeChanged(e);
         }
@@ -163,9 +166,9 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param start DOCUMENT ME!
-     * @param end DOCUMENT ME!
-     * @param columnPanel DOCUMENT ME!
+     * @param  start        DOCUMENT ME!
+     * @param  end          DOCUMENT ME!
+     * @param  columnPanel  DOCUMENT ME!
      */
     public void addTask(final ActivityDTO start, final ActivityDTO end, final FlowPanel columnPanel) {
         final TimeNotice widget = new TimeNotice(start, end);
@@ -180,8 +183,8 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param firstDayOfWeek DOCUMENT ME!
-     * @param activities DOCUMENT ME!
+     * @param  firstDayOfWeek  DOCUMENT ME!
+     * @param  activities      DOCUMENT ME!
      */
     public void setTimes(final Date firstDayOfWeek, final List<ActivityDTO> activities) {
         this.firstDayOfWeek = firstDayOfWeek;
@@ -225,7 +228,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
      */
     private void setDates() {
         mondayLab.setTitle("\t" + DateHelper.formatDate(firstDayOfWeek) + DOW_TOOLTIP_SUFFX);
-        final Date tmpDay = (Date) firstDayOfWeek.clone();
+        final Date tmpDay = (Date)firstDayOfWeek.clone();
         DateHelper.addDays(tmpDay, 1);
         tuesdayLab.setTitle("\t" + DateHelper.formatDate(tmpDay) + DOW_TOOLTIP_SUFFX);
         DateHelper.addDays(tmpDay, 1);
@@ -243,9 +246,9 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param event DOCUMENT ME!
+     * @param      event  DOCUMENT ME!
      *
-     * @UiHandler ("addTask")
+     * @UiHandler  ("addTask")
      */
     void onAddTaskClick(final ClickEvent event) {
 //        DialogBox form = new DialogBox();
@@ -269,9 +272,9 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param day DOCUMENT ME!
-     * @param begin DOCUMENT ME!
-     * @param end DOCUMENT ME!
+     * @param  day    DOCUMENT ME!
+     * @param  begin  DOCUMENT ME!
+     * @param  end    DOCUMENT ME!
      */
     public void addTask(final int day, final ActivityDTO begin, final ActivityDTO end) {
         this.addTask(begin, end, daysOfWeek[day]);
@@ -299,9 +302,9 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param day DOCUMENT ME!
+     * @param   day  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public double getTimeForDay(final int day) {
         final FlowPanel test = daysOfWeek[day];
@@ -318,9 +321,9 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param day DOCUMENT ME!
+     * @param   day  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public List<TimeNotice> getTimeNoticesForDay(final int day) {
         return taskMap.get(daysOfWeek[day]);
@@ -329,60 +332,62 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param day DOCUMENT ME!
+     * @param  day  DOCUMENT ME!
      */
     private void addTime(final Date day) {
         final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
-            @Override
-            protected void afterExecution(final Boolean result, final boolean operationFailed) {
-                if (!operationFailed) {
-                    if (!result) {
-                        final List<TimeNotice> timeList = Story.this.taskMap.get(
-                                Story.this.daysOfWeek[day.getDay()]);
-                        if (timeList.isEmpty()) {
-                            final BasicAsyncCallback<TimePeriod> callback = new BasicAsyncCallback<TimePeriod>() {
-                                @Override
-                                protected void afterExecution(final TimePeriod result,
-                                        final boolean operationFailed) {
-                                    if (!operationFailed) {
-                                        Date start = result.getStart();
-                                        Date end = result.getEnd();
 
-                                        if (start == null) {
-                                            // todo: sinvolleren Defaultwert nutzen
-                                            start = new Date();//new Date(1900, 1, 1, 10, 0, 0);
-                                        }
+                @Override
+                protected void afterExecution(final Boolean result, final boolean operationFailed) {
+                    if (!operationFailed) {
+                        if (!result) {
+                            final List<TimeNotice> timeList = Story.this.taskMap.get(
+                                    Story.this.daysOfWeek[day.getDay()]);
+                            if (timeList.isEmpty()) {
+                                final BasicAsyncCallback<TimePeriod> callback = new BasicAsyncCallback<TimePeriod>() {
+
+                                        @Override
+                                        protected void afterExecution(final TimePeriod result,
+                                                final boolean operationFailed) {
+                                            if (!operationFailed) {
+                                                Date start = result.getStart();
+                                                final Date end = result.getEnd();
+
+                                                if (start == null) {
+                                                    // todo: sinvolleren Defaultwert nutzen
+                                                    start = new Date(); // new Date(1900, 1, 1, 10, 0, 0);
+                                                }
 
 //                                        if (end == null) {
 //                                            end = new Date();
 //                                        }
 
-                                        addTimeStartEnd(day, start, end);
+                                                addTimeStartEnd(day, start, end);
+                                            }
+                                        }
+                                    };
+
+                                ProjectTrackerEntryPoint.getProjectService(true)
+                                        .getStartEndOfWork(ProjectTrackerEntryPoint.getInstance().getStaff(),
+                                            day,
+                                            callback);
+                            } else {
+                                Date max = null;
+
+                                for (final TimeNotice tmp : timeList) {
+                                    if ((max == null) || ((tmp.getEnd() != null) && tmp.getEnd().after(max))) {
+                                        max = tmp.getEnd();
                                     }
                                 }
-                            };
 
-                            ProjectTrackerEntryPoint.getProjectService(true)
-                                    .getStartEndOfWork(ProjectTrackerEntryPoint.getInstance().getStaff(),
-                                    day,
-                                    callback);
-                        } else {
-                            Date max = null;
-
-                            for (final TimeNotice tmp : timeList) {
-                                if ((max == null) || ((tmp.getEnd() != null) && tmp.getEnd().after(max))) {
-                                    max = tmp.getEnd();
-                                }
+                                max = new Date(max.getTime() + 60000);
+                                timeList.get(timeList.size() - 1).getStart();
+                                addTimeStartEnd(day, max, null);
                             }
-
-                            max = new Date(max.getTime() + 60000);
-                            timeList.get(timeList.size() - 1).getStart();
-                            addTimeStartEnd(day, max, null);
                         }
                     }
                 }
-            }
-        };
+            };
         ProjectTrackerEntryPoint.getProjectService(true)
                 .isDayLocked(day, ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
     }
@@ -390,13 +395,13 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param day DOCUMENT ME!
-     * @param startTime DOCUMENT ME!
-     * @param endTime DOCUMENT ME!
+     * @param  day        DOCUMENT ME!
+     * @param  startTime  DOCUMENT ME!
+     * @param  endTime    DOCUMENT ME!
      */
     private void addTimeStartEnd(final Date day, final Date startTime, final Date endTime) {
         final ActivityDTO start = new ActivityDTO();
-        final ActivityDTO end = (endTime == null ? null : new ActivityDTO());
+        final ActivityDTO end = ((endTime == null) ? null : new ActivityDTO());
 
         if (startTime.getHours() >= 4) {
             start.setDay(DateHelper.createDateObject(day, startTime));
@@ -407,7 +412,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
             start.setDay(DateHelper.createDateObject(day, new Date(2010, 01, 01, 04, 01, 00)));
             if (end != null) {
                 end.setDay(DateHelper.createDateObject(day, endTime));
-            
+
                 if (end.getDay().before(start.getDay())) {
                     end.setDay(DateHelper.createDateObject(day, start.getDay()));
                     end.setDay(new Date(end.getDay().getTime() + 60000));
@@ -419,31 +424,33 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
         start.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
 
         final BasicAsyncCallback<Long> startCallback = new BasicAsyncCallback<Long>() {
-            @Override
-            protected void afterExecution(final Long result, final boolean operationFailed) {
-                if (!operationFailed) {
-                    start.setId(result);
-                    
-                    if (end == null) {
+
+                @Override
+                protected void afterExecution(final Long result, final boolean operationFailed) {
+                    if (!operationFailed) {
+                        start.setId(result);
+
+                        if (end == null) {
+                            addTask(day.getDay(), start, end);
+                            final TimeStoryEvent e = new TimeStoryEvent(Story.this, true, day);
+                            fireTimeNoticeCreated(e);
+                        }
+                    }
+                }
+            };
+
+        final BasicAsyncCallback<Long> endCallback = new BasicAsyncCallback<Long>() {
+
+                @Override
+                protected void afterExecution(final Long result, final boolean operationFailed) {
+                    if (!operationFailed) {
+                        end.setId(result);
                         addTask(day.getDay(), start, end);
                         final TimeStoryEvent e = new TimeStoryEvent(Story.this, true, day);
                         fireTimeNoticeCreated(e);
                     }
                 }
-            }
-        };
-
-        final BasicAsyncCallback<Long> endCallback = new BasicAsyncCallback<Long>() {
-            @Override
-            protected void afterExecution(final Long result, final boolean operationFailed) {
-                if (!operationFailed) {
-                    end.setId(result);
-                    addTask(day.getDay(), start, end);
-                    final TimeStoryEvent e = new TimeStoryEvent(Story.this, true, day);
-                    fireTimeNoticeCreated(e);
-                }
-            }
-        };
+            };
 
         ProjectTrackerEntryPoint.getProjectService(true).createActivity(start, startCallback);
 
@@ -457,12 +464,12 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param day DOCUMENT ME!
+     * @param   day  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private Date calcDateForDay(final int day) {
-        final Date newDate = (Date) firstDayOfWeek.clone();
+        final Date newDate = (Date)firstDayOfWeek.clone();
         DateHelper.addDays(newDate, day);
 
         return newDate;
@@ -471,7 +478,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param e DOCUMENT ME!
+     * @param  e  DOCUMENT ME!
      */
     private void fireTimeNoticeCreated(final TimeStoryEvent e) {
         for (final TimeStoryListener l : listener) {
@@ -482,7 +489,7 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param l DOCUMENT ME!
+     * @param  l  DOCUMENT ME!
      */
     public void addTimeStoryListener(final TimeStoryListener l) {
         listener.add(l);
@@ -491,17 +498,18 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
     /**
      * DOCUMENT ME!
      *
-     * @param l DOCUMENT ME!
+     * @param  l  DOCUMENT ME!
      */
     public void removeTimeStoryListener(final TimeStoryListener l) {
         listener.remove(l);
     }
 
     //~ Inner Interfaces -------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     interface StoryUiBinder extends UiBinder<Widget, Story> {
     }

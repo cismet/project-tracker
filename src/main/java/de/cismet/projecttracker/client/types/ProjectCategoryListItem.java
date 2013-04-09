@@ -1,31 +1,65 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.types;
 
 import de.cismet.projecttracker.client.dto.ProjectCategoryDTO;
 
-
 /**
- * A ListItem implementation that wraps ProjectCategoryDTO objects
+ * A ListItem implementation that wraps ProjectCategoryDTO objects.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ProjectCategoryListItem extends ListItem {
+
+    //~ Instance fields --------------------------------------------------------
+
     ProjectCategoryDTO projectCategory;
 
-    public ProjectCategoryListItem(ProjectCategoryDTO projectCategory) {
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ProjectCategoryListItem object.
+     *
+     * @param  projectCategory  DOCUMENT ME!
+     */
+    public ProjectCategoryListItem(final ProjectCategoryDTO projectCategory) {
         super("" + projectCategory.getId(), projectCategory.getName());
         this.projectCategory = projectCategory;
     }
 
-
-    public ProjectCategoryListItem(String id, String name) {
+    /**
+     * Creates a new ProjectCategoryListItem object.
+     *
+     * @param  id    DOCUMENT ME!
+     * @param  name  DOCUMENT ME!
+     */
+    public ProjectCategoryListItem(final String id, final String name) {
         super(id, name);
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public ProjectCategoryDTO getProjectCategory() {
         return projectCategory;
     }
 
-    public void setProjectCategory(ProjectCategoryDTO projectCategory) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  projectCategory  DOCUMENT ME!
+     */
+    public void setProjectCategory(final ProjectCategoryDTO projectCategory) {
         this.projectCategory = projectCategory;
         setId("" + projectCategory.getId());
         setName(projectCategory.getName());

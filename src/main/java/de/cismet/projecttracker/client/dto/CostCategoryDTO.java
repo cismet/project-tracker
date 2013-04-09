@@ -1,17 +1,28 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.dto;
 
 import java.util.ArrayList;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class CostCategoryDTO extends BasicDTO<CostCategoryDTO> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private String name;
     private ProjectDTO project;
     private String description;
@@ -20,12 +31,34 @@ public class CostCategoryDTO extends BasicDTO<CostCategoryDTO> {
     private ArrayList<ProjectCostsDTO> projectCosts = new ArrayList<ProjectCostsDTO>(0);
     private ArrayList<WorkPackageDTO> workPackages = new ArrayList<WorkPackageDTO>(0);
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new CostCategoryDTO object.
+     */
     public CostCategoryDTO() {
     }
 
-    
-
-    public CostCategoryDTO(long id, String name, ProjectDTO project, String description, double fundingrate, double vat, ArrayList<ProjectCostsDTO> projectCosts, ArrayList<WorkPackageDTO> workPackages) {
+    /**
+     * Creates a new CostCategoryDTO object.
+     *
+     * @param  id            DOCUMENT ME!
+     * @param  name          DOCUMENT ME!
+     * @param  project       DOCUMENT ME!
+     * @param  description   DOCUMENT ME!
+     * @param  fundingrate   DOCUMENT ME!
+     * @param  vat           DOCUMENT ME!
+     * @param  projectCosts  DOCUMENT ME!
+     * @param  workPackages  DOCUMENT ME!
+     */
+    public CostCategoryDTO(final long id,
+            final String name,
+            final ProjectDTO project,
+            final String description,
+            final double fundingrate,
+            final double vat,
+            final ArrayList<ProjectCostsDTO> projectCosts,
+            final ArrayList<WorkPackageDTO> workPackages) {
         this.id = id;
         this.name = name;
         this.project = project;
@@ -36,103 +69,131 @@ public class CostCategoryDTO extends BasicDTO<CostCategoryDTO> {
         this.workPackages = workPackages;
     }
 
-
+    //~ Methods ----------------------------------------------------------------
 
     /**
-     * @return the name
+     * DOCUMENT ME!
+     *
+     * @return  the name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * @param name the name to set
+     * DOCUMENT ME!
+     *
+     * @param  name  the name to set
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     /**
-     * @return the project
+     * DOCUMENT ME!
+     *
+     * @return  the project
      */
     public ProjectDTO getProject() {
         return project;
     }
 
     /**
-     * @param project the project to set
+     * DOCUMENT ME!
+     *
+     * @param  project  the project to set
      */
-    public void setProject(ProjectDTO project) {
+    public void setProject(final ProjectDTO project) {
         this.project = project;
     }
 
     /**
-     * @return the description
+     * DOCUMENT ME!
+     *
+     * @return  the description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * @param description the description to set
+     * DOCUMENT ME!
+     *
+     * @param  description  the description to set
      */
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
     /**
-     * @return the fundingrate
+     * DOCUMENT ME!
+     *
+     * @return  the fundingrate
      */
     public double getFundingrate() {
         return fundingrate;
     }
 
     /**
-     * @param fundingrate the fundingrate to set
+     * DOCUMENT ME!
+     *
+     * @param  fundingrate  the fundingrate to set
      */
-    public void setFundingrate(double fundingrate) {
+    public void setFundingrate(final double fundingrate) {
         this.fundingrate = fundingrate;
     }
 
     /**
-     * @return the vat
+     * DOCUMENT ME!
+     *
+     * @return  the vat
      */
     public double getVat() {
         return vat;
     }
 
     /**
-     * @param vat the vat to set
+     * DOCUMENT ME!
+     *
+     * @param  vat  the vat to set
      */
-    public void setVat(double vat) {
+    public void setVat(final double vat) {
         this.vat = vat;
     }
 
     /**
-     * @return the projectCosts
+     * DOCUMENT ME!
+     *
+     * @return  the projectCosts
      */
     public ArrayList<ProjectCostsDTO> getProjectCosts() {
         return projectCosts;
     }
 
     /**
-     * @param projectCosts the projectCosts to set
+     * DOCUMENT ME!
+     *
+     * @param  projectCosts  the projectCosts to set
      */
-    public void setProjectCosts(ArrayList<ProjectCostsDTO> projectCosts) {
+    public void setProjectCosts(final ArrayList<ProjectCostsDTO> projectCosts) {
         this.projectCosts = projectCosts;
     }
 
     /**
-     * @return the workPackages
+     * DOCUMENT ME!
+     *
+     * @return  the workPackages
      */
     public ArrayList<WorkPackageDTO> getWorkPackages() {
         return workPackages;
     }
 
     /**
-     * @param workPackages the workPackages to set
+     * DOCUMENT ME!
+     *
+     * @param  workPackages  the workPackages to set
      */
-    public void setWorkPackages(ArrayList<WorkPackageDTO> workPackages) {
+    public void setWorkPackages(final ArrayList<WorkPackageDTO> workPackages) {
         this.workPackages = workPackages;
     }
 
@@ -142,7 +203,7 @@ public class CostCategoryDTO extends BasicDTO<CostCategoryDTO> {
     }
 
     @Override
-    public void reset(CostCategoryDTO obj) {
+    public void reset(final CostCategoryDTO obj) {
         this.id = obj.getId();
         this.name = obj.getName();
         this.project = obj.getProject();

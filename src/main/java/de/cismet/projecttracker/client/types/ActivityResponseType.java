@@ -1,46 +1,70 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.cismet.projecttracker.client.types;
 
-import de.cismet.projecttracker.client.dto.ActivityDTO;
 import java.io.Serializable;
+
 import java.util.List;
 
+import de.cismet.projecttracker.client.dto.ActivityDTO;
+
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ActivityResponseType implements Serializable {
+
+    //~ Instance fields --------------------------------------------------------
+
     private List<ActivityDTO> activities;
     private List<HolidayType> holidays;
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the activities
+     * DOCUMENT ME!
+     *
+     * @return  the activities
      */
     public List<ActivityDTO> getActivities() {
         return activities;
     }
 
     /**
-     * @param activities the activities to set
+     * DOCUMENT ME!
+     *
+     * @param  activities  the activities to set
      */
-    public void setActivities(List<ActivityDTO> activities) {
+    public void setActivities(final List<ActivityDTO> activities) {
         this.activities = activities;
     }
 
     /**
-     * @return the holidays
+     * DOCUMENT ME!
+     *
+     * @return  the holidays
      */
     public List<HolidayType> getHolidays() {
         return holidays;
     }
 
     /**
-     * @param holidays the holidays to set
+     * DOCUMENT ME!
+     *
+     * @param  holidays  the holidays to set
      */
-    public void setHolidays(List<HolidayType> holidays) {
+    public void setHolidays(final List<HolidayType> holidays) {
         this.holidays = holidays;
     }
 }

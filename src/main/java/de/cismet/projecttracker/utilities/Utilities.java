@@ -1,27 +1,40 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.utilities;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.util.*;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * This class privides some static methods with basic functionality.
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class Utilities {
 
+    //~ Static fields/initializers ---------------------------------------------
+
     private static final Logger logger = Logger.getLogger(Utilities.class);
-    private final static String LOG4J_CONFIG_FILE = "WEB-INF/config/log4j.properties";
-    private final static String ADMIN_MAIL_ADDRESS = "sabine.trier@cismet.de";
+    private static final String LOG4J_CONFIG_FILE = "WEB-INF/config/log4j.properties";
+    private static final String ADMIN_MAIL_ADDRESS = "sabine.trier@cismet.de";
     private static Properties fMailServerConfig = new Properties();
     private static final Map<String, EMailContent> toSend = new Hashtable<String, EMailContent>();
     private static final Timer sendTimer;
@@ -29,22 +42,33 @@ public class Utilities {
     static {
         sendTimer = new Timer(true);
         sendTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                checkCollectedEmails();
-            }
-        }, 300000, 60000);
+
+                @Override
+                public void run() {
+                    checkCollectedEmails();
+                }
+            }, 300000, 60000);
     }
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new Utilities object.
+     */
     public Utilities() {
     }
 
-    private static synchronized void checkCollectedEmails() {
-        GregorianCalendar now = new GregorianCalendar();
-        List<String> keys = new ArrayList<String>(toSend.keySet());
+    //~ Methods ----------------------------------------------------------------
 
-        for (String address : keys) {
-            EMailContent c = toSend.get(address);
+    /**
+     * DOCUMENT ME!
+     */
+    private static synchronized void checkCollectedEmails() {
+        final GregorianCalendar now = new GregorianCalendar();
+        final List<String> keys = new ArrayList<String>(toSend.keySet());
+
+        for (final String address : keys) {
+            final EMailContent c = toSend.get(address);
             if (c.getTimeToSend().before(now)) {
                 sendEmail(c.getAddress(), c.getSubject(), c.getBody());
                 toSend.remove(address);
@@ -53,23 +77,29 @@ public class Utilities {
     }
 
     /**
-     * initialize the LOG4J Logger
+     * initialize the LOG4J Logger.
+     *
+     * @param  applicationPath  DOCUMENT ME!
      */
-    public static void initLogger(String applicationPath) {
+    public static void initLogger(final String applicationPath) {
         PropertyConfigurator.configureAndWatch(applicationPath + LOG4J_CONFIG_FILE);
     }
 
     /**
      * Send a single email.
+     *
+     * @param  address  DOCUMENT ME!
+     * @param  subject  DOCUMENT ME!
+     * @param  body     DOCUMENT ME!
      */
-    public static void sendEmail(String address, String subject, String body) {
+    public static void sendEmail(final String address, final String subject, final String body) {
         fetchConfig();
-        Session session = Session.getDefaultInstance(fMailServerConfig, null);
-        MimeMessage message = new MimeMessage(session);
+        final Session session = Session.getDefaultInstance(fMailServerConfig, null);
+        final MimeMessage message = new MimeMessage(session);
         try {
-            //the "from" address may be set in code, or set in the
-            //config file under "mail.from" ; here, the latter style is used
-            //message.setFrom( new InternetAddress(aFromEmailAddr) );
+            // the "from" address may be set in code, or set in the
+            // config file under "mail.from" ; here, the latter style is used
+            // message.setFrom( new InternetAddress(aFromEmailAddr) );
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
             if (!address.equals(ADMIN_MAIL_ADDRESS)) {
                 message.addRecipient(Message.RecipientType.BCC, new InternetAddress(ADMIN_MAIL_ADDRESS));
@@ -85,10 +115,14 @@ public class Utilities {
 
     /**
      * Send a single email.
+     *
+     * @param  address  DOCUMENT ME!
+     * @param  subject  DOCUMENT ME!
+     * @param  body     DOCUMENT ME!
      */
-    public static synchronized void sendCollectedEmail(String address, String subject, String body) {
+    public static synchronized void sendCollectedEmail(final String address, final String subject, final String body) {
         EMailContent mail = toSend.get(address);
-        GregorianCalendar time = new GregorianCalendar();
+        final GregorianCalendar time = new GregorianCalendar();
         time.add(GregorianCalendar.MINUTE, 5);
 
         if (mail == null) {

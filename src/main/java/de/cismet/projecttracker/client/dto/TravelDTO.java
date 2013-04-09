@@ -1,18 +1,29 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.dto;
 
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class TravelDTO extends BasicDTO<TravelDTO> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private StaffDTO staff;
     private ProjectShortDTO project;
     private double grossprice;
@@ -25,13 +36,42 @@ public class TravelDTO extends BasicDTO<TravelDTO> {
     private Date paymentdate;
     private ArrayList<TravelDocumentDTO> traveldocuments = new ArrayList<TravelDocumentDTO>(0);
 
+    //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new TravelDTO object.
+     */
     public TravelDTO() {
     }
 
-
-
-    public TravelDTO(long id, StaffDTO staff, ProjectShortDTO project, double grossprice, double netprice, double allowablevat, Date date, String destination, String description, String storagelocation, Date paymentdate, ArrayList<TravelDocumentDTO> traveldocuments) {
+    /**
+     * Creates a new TravelDTO object.
+     *
+     * @param  id               DOCUMENT ME!
+     * @param  staff            DOCUMENT ME!
+     * @param  project          DOCUMENT ME!
+     * @param  grossprice       DOCUMENT ME!
+     * @param  netprice         DOCUMENT ME!
+     * @param  allowablevat     DOCUMENT ME!
+     * @param  date             DOCUMENT ME!
+     * @param  destination      DOCUMENT ME!
+     * @param  description      DOCUMENT ME!
+     * @param  storagelocation  DOCUMENT ME!
+     * @param  paymentdate      DOCUMENT ME!
+     * @param  traveldocuments  DOCUMENT ME!
+     */
+    public TravelDTO(final long id,
+            final StaffDTO staff,
+            final ProjectShortDTO project,
+            final double grossprice,
+            final double netprice,
+            final double allowablevat,
+            final Date date,
+            final String destination,
+            final String description,
+            final String storagelocation,
+            final Date paymentdate,
+            final ArrayList<TravelDocumentDTO> traveldocuments) {
         this.id = id;
         this.staff = staff;
         this.project = project;
@@ -46,167 +86,225 @@ public class TravelDTO extends BasicDTO<TravelDTO> {
         this.traveldocuments = traveldocuments;
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * @return the staff
+     * DOCUMENT ME!
+     *
+     * @return  the staff
      */
     public StaffDTO getStaff() {
         return staff;
     }
 
     /**
-     * @param staff the staff to set
+     * DOCUMENT ME!
+     *
+     * @param  staff  the staff to set
      */
-    public void setStaff(StaffDTO staff) {
+    public void setStaff(final StaffDTO staff) {
         this.staff = staff;
     }
 
     /**
-     * @return the project
+     * DOCUMENT ME!
+     *
+     * @return  the project
      */
     public ProjectShortDTO getProject() {
         return project;
     }
 
     /**
-     * @param project the project to set
+     * DOCUMENT ME!
+     *
+     * @param  project  the project to set
      */
-    public void setProject(ProjectShortDTO project) {
+    public void setProject(final ProjectShortDTO project) {
         this.project = project;
     }
 
     /**
-     * @return the grossprice
+     * DOCUMENT ME!
+     *
+     * @return  the grossprice
      */
     public double getGrossprice() {
         return grossprice;
     }
 
     /**
-     * @param grossprice the grossprice to set
+     * DOCUMENT ME!
+     *
+     * @param  grossprice  the grossprice to set
      */
-    public void setGrossprice(double grossprice) {
+    public void setGrossprice(final double grossprice) {
         this.grossprice = grossprice;
     }
 
     /**
-     * @return the netprice
+     * DOCUMENT ME!
+     *
+     * @return  the netprice
      */
     public double getNetprice() {
         return netprice;
     }
 
     /**
-     * @param netprice the netprice to set
+     * DOCUMENT ME!
+     *
+     * @param  netprice  the netprice to set
      */
-    public void setNetprice(double netprice) {
+    public void setNetprice(final double netprice) {
         this.netprice = netprice;
     }
 
     /**
-     * @return the allowablevat
+     * DOCUMENT ME!
+     *
+     * @return  the allowablevat
      */
     public double getAllowablevat() {
         return allowablevat;
     }
 
     /**
-     * @param allowablevat the allowablevat to set
+     * DOCUMENT ME!
+     *
+     * @param  allowablevat  the allowablevat to set
      */
-    public void setAllowablevat(double allowablevat) {
+    public void setAllowablevat(final double allowablevat) {
         this.allowablevat = allowablevat;
     }
 
     /**
-     * @return the date
+     * DOCUMENT ME!
+     *
+     * @return  the date
      */
     public Date getDate() {
         return date;
     }
 
     /**
-     * @param date the date to set
+     * DOCUMENT ME!
+     *
+     * @param  date  the date to set
      */
-    public void setDate(Date date) {
+    public void setDate(final Date date) {
         this.date = date;
     }
 
     /**
-     * @return the destination
+     * DOCUMENT ME!
+     *
+     * @return  the destination
      */
     public String getDestination() {
         return destination;
     }
 
     /**
-     * @param destination the destination to set
+     * DOCUMENT ME!
+     *
+     * @param  destination  the destination to set
      */
-    public void setDestination(String destination) {
+    public void setDestination(final String destination) {
         this.destination = destination;
     }
 
     /**
-     * @return the description
+     * DOCUMENT ME!
+     *
+     * @return  the description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * @param description the description to set
+     * DOCUMENT ME!
+     *
+     * @param  description  the description to set
      */
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
     /**
-     * @return the storagelocation
+     * DOCUMENT ME!
+     *
+     * @return  the storagelocation
      */
     public String getStoragelocation() {
         return storagelocation;
     }
 
     /**
-     * @param storagelocation the storagelocation to set
+     * DOCUMENT ME!
+     *
+     * @param  storagelocation  the storagelocation to set
      */
-    public void setStoragelocation(String storagelocation) {
+    public void setStoragelocation(final String storagelocation) {
         this.storagelocation = storagelocation;
     }
 
     /**
-     * @return the paymentdate
+     * DOCUMENT ME!
+     *
+     * @return  the paymentdate
      */
     public Date getPaymentdate() {
         return paymentdate;
     }
 
     /**
-     * @param paymentdate the paymentdate to set
+     * DOCUMENT ME!
+     *
+     * @param  paymentdate  the paymentdate to set
      */
-    public void setPaymentdate(Date paymentdate) {
+    public void setPaymentdate(final Date paymentdate) {
         this.paymentdate = paymentdate;
     }
 
     /**
-     * @return the traveldocuments
+     * DOCUMENT ME!
+     *
+     * @return  the traveldocuments
      */
     public ArrayList<TravelDocumentDTO> getTraveldocuments() {
         return traveldocuments;
     }
 
     /**
-     * @param traveldocuments the traveldocuments to set
+     * DOCUMENT ME!
+     *
+     * @param  traveldocuments  the traveldocuments to set
      */
-    public void setTraveldocuments(ArrayList<TravelDocumentDTO> traveldocuments) {
+    public void setTraveldocuments(final ArrayList<TravelDocumentDTO> traveldocuments) {
         this.traveldocuments = traveldocuments;
     }
 
     @Override
     public TravelDTO createCopy() {
-        return new TravelDTO(id, staff, project, grossprice, netprice, allowablevat, date, destination, description, storagelocation, paymentdate, traveldocuments);
+        return new TravelDTO(
+                id,
+                staff,
+                project,
+                grossprice,
+                netprice,
+                allowablevat,
+                date,
+                destination,
+                description,
+                storagelocation,
+                paymentdate,
+                traveldocuments);
     }
 
     @Override
-    public void reset(TravelDTO obj) {
+    public void reset(final TravelDTO obj) {
         this.id = obj.id;
         this.staff = obj.staff;
         this.project = obj.project;

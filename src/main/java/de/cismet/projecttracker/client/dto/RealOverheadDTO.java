@@ -1,24 +1,51 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.projecttracker.client.dto;
 
 import java.util.Date;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class RealOverheadDTO extends BasicDTO<RealOverheadDTO> {
-     private CompanyDTO company;
-     private double overheadratio;
-     private Date validfrom;
-     private Date validto;
 
+    //~ Instance fields --------------------------------------------------------
+
+    private CompanyDTO company;
+    private double overheadratio;
+    private Date validfrom;
+    private Date validto;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new RealOverheadDTO object.
+     */
     public RealOverheadDTO() {
     }
 
-
-     
-
-    public RealOverheadDTO(long id, CompanyDTO company, double overheadratio, Date validfrom, Date validto) {
+    /**
+     * Creates a new RealOverheadDTO object.
+     *
+     * @param  id             DOCUMENT ME!
+     * @param  company        DOCUMENT ME!
+     * @param  overheadratio  DOCUMENT ME!
+     * @param  validfrom      DOCUMENT ME!
+     * @param  validto        DOCUMENT ME!
+     */
+    public RealOverheadDTO(final long id,
+            final CompanyDTO company,
+            final double overheadratio,
+            final Date validfrom,
+            final Date validto) {
         this.id = id;
         this.company = company;
         this.overheadratio = overheadratio;
@@ -26,60 +53,77 @@ public class RealOverheadDTO extends BasicDTO<RealOverheadDTO> {
         this.validto = validto;
     }
 
+    //~ Methods ----------------------------------------------------------------
 
     /**
-     * @return the company
+     * DOCUMENT ME!
+     *
+     * @return  the company
      */
     public CompanyDTO getCompany() {
         return company;
     }
 
     /**
-     * @param company the company to set
+     * DOCUMENT ME!
+     *
+     * @param  company  the company to set
      */
-    public void setCompany(CompanyDTO company) {
+    public void setCompany(final CompanyDTO company) {
         this.company = company;
     }
 
     /**
-     * @return the overheadratio
+     * DOCUMENT ME!
+     *
+     * @return  the overheadratio
      */
     public double getOverheadratio() {
         return overheadratio;
     }
 
     /**
-     * @param overheadratio the overheadratio to set
+     * DOCUMENT ME!
+     *
+     * @param  overheadratio  the overheadratio to set
      */
-    public void setOverheadratio(double overheadratio) {
+    public void setOverheadratio(final double overheadratio) {
         this.overheadratio = overheadratio;
     }
 
     /**
-     * @return the validfrom
+     * DOCUMENT ME!
+     *
+     * @return  the validfrom
      */
     public Date getValidfrom() {
         return validfrom;
     }
 
     /**
-     * @param validfrom the validfrom to set
+     * DOCUMENT ME!
+     *
+     * @param  validfrom  the validfrom to set
      */
-    public void setValidfrom(Date validfrom) {
+    public void setValidfrom(final Date validfrom) {
         this.validfrom = validfrom;
     }
 
     /**
-     * @return the validto
+     * DOCUMENT ME!
+     *
+     * @return  the validto
      */
     public Date getValidto() {
         return validto;
     }
 
     /**
-     * @param validto the validto to set
+     * DOCUMENT ME!
+     *
+     * @param  validto  the validto to set
      */
-    public void setValidto(Date validto) {
+    public void setValidto(final Date validto) {
         this.validto = validto;
     }
 
@@ -89,7 +133,7 @@ public class RealOverheadDTO extends BasicDTO<RealOverheadDTO> {
     }
 
     @Override
-    public void reset(RealOverheadDTO obj) {
+    public void reset(final RealOverheadDTO obj) {
         this.id = obj.getId();
         this.company = obj.getCompany();
         this.overheadratio = obj.getOverheadratio();

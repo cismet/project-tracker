@@ -1,30 +1,58 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.projecttracker.client.dto;
+
+import java.util.Date;
 
 import de.cismet.projecttracker.client.MessageConstants;
 import de.cismet.projecttracker.client.helper.DateHelper;
-import java.util.Date;
 
 /**
+ * DOCUMENT ME!
  *
- * @author therter
+ * @author   therter
+ * @version  $Revision$, $Date$
  */
 public class ProjectPeriodDTO extends BasicDTO<ProjectPeriodDTO> implements Comparable<ProjectPeriodDTO> {
+
+    //~ Instance fields --------------------------------------------------------
+
     private ProjectDTO project;
     private Date fromdate;
     private Date todate;
     private Date asof;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ProjectPeriodDTO object.
+     */
     public ProjectPeriodDTO() {
     }
 
-     
-
-    public ProjectPeriodDTO(long id, ProjectDTO project, Date fromdate, Date todate, Date asof) {
+    /**
+     * Creates a new ProjectPeriodDTO object.
+     *
+     * @param  id        DOCUMENT ME!
+     * @param  project   DOCUMENT ME!
+     * @param  fromdate  DOCUMENT ME!
+     * @param  todate    DOCUMENT ME!
+     * @param  asof      DOCUMENT ME!
+     */
+    public ProjectPeriodDTO(final long id,
+            final ProjectDTO project,
+            final Date fromdate,
+            final Date todate,
+            final Date asof) {
         this.id = id;
         this.project = project;
         this.fromdate = fromdate;
@@ -32,61 +60,77 @@ public class ProjectPeriodDTO extends BasicDTO<ProjectPeriodDTO> implements Comp
         this.asof = asof;
     }
 
-     
+    //~ Methods ----------------------------------------------------------------
 
     /**
-     * @return the project
+     * DOCUMENT ME!
+     *
+     * @return  the project
      */
     public ProjectDTO getProject() {
         return project;
     }
 
     /**
-     * @param project the project to set
+     * DOCUMENT ME!
+     *
+     * @param  project  the project to set
      */
-    public void setProject(ProjectDTO project) {
+    public void setProject(final ProjectDTO project) {
         this.project = project;
     }
 
     /**
-     * @return the fromdate
+     * DOCUMENT ME!
+     *
+     * @return  the fromdate
      */
     public Date getFromdate() {
         return fromdate;
     }
 
     /**
-     * @param fromdate the fromdate to set
+     * DOCUMENT ME!
+     *
+     * @param  fromdate  the fromdate to set
      */
-    public void setFromdate(Date fromdate) {
+    public void setFromdate(final Date fromdate) {
         this.fromdate = fromdate;
     }
 
     /**
-     * @return the todate
+     * DOCUMENT ME!
+     *
+     * @return  the todate
      */
     public Date getTodate() {
         return todate;
     }
 
     /**
-     * @param todate the todate to set
+     * DOCUMENT ME!
+     *
+     * @param  todate  the todate to set
      */
-    public void setTodate(Date todate) {
+    public void setTodate(final Date todate) {
         this.todate = todate;
     }
 
     /**
-     * @return the asof
+     * DOCUMENT ME!
+     *
+     * @return  the asof
      */
     public Date getAsof() {
         return asof;
     }
 
     /**
-     * @param asof the asof to set
+     * DOCUMENT ME!
+     *
+     * @param  asof  the asof to set
      */
-    public void setAsof(Date asof) {
+    public void setAsof(final Date asof) {
         this.asof = asof;
     }
 
@@ -96,7 +140,7 @@ public class ProjectPeriodDTO extends BasicDTO<ProjectPeriodDTO> implements Comp
     }
 
     @Override
-    public void reset(ProjectPeriodDTO obj) {
+    public void reset(final ProjectPeriodDTO obj) {
         this.id = obj.id;
         this.project = obj.project;
         this.fromdate = obj.fromdate;
@@ -106,26 +150,28 @@ public class ProjectPeriodDTO extends BasicDTO<ProjectPeriodDTO> implements Comp
 
     @Override
     public String toString() {
-        MessageConstants messages = getMessagesInstance();
+        final MessageConstants messages = getMessagesInstance();
 
-        //the MessageConstants instance is only available in the client mode
+        // the MessageConstants instance is only available in the client mode
         if (messages != null) {
-            return messages.periodMessage(DateHelper.formatDateTime(asof), DateHelper.formatDate(fromdate), DateHelper.formatDate(todate));
+            return messages.periodMessage(DateHelper.formatDateTime(asof),
+                    DateHelper.formatDate(fromdate),
+                    DateHelper.formatDate(todate));
         } else {
             return super.toString();
         }
     }
 
     @Override
-    public int compareTo(ProjectPeriodDTO o) {
-        if (o == null || o.asof == null) {
+    public int compareTo(final ProjectPeriodDTO o) {
+        if ((o == null) || (o.asof == null)) {
             return -1;
         }
         if (asof == null) {
             return 1;
         }
-        long diff = asof.getTime() - o.asof.getTime();
-        
+        final long diff = asof.getTime() - o.asof.getTime();
+
         return (int)Math.signum(diff);
     }
 }
