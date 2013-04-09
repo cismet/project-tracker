@@ -90,7 +90,7 @@ public class ReportDownload extends BasicServlet {
     @Override
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
-        reportManager = new ReportManager(config.getServletContext().getRealPath("/"));
+        reportManager = new ReportManager(config.getServletContext().getRealPath("/"),ConfigurationManager.getInstance().getConfBaseDir());
     }
 
     /**
@@ -165,7 +165,7 @@ public class ReportDownload extends BasicServlet {
      */
     private void returnFile(final String id, final HttpServletResponse response) throws IOException {
         final ServletOutputStream out = response.getOutputStream();
-        final DBManager dbManager = new DBManager();
+        final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
 
         try {
             final long reportId = Long.parseLong(id);

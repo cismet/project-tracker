@@ -163,7 +163,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     @Override
     public void init() throws ServletException {
         super.init();
-
+        ConfigurationManager.getInstance().setContext(getServletContext());
         if (!initialised) {
             initialised = true;
             Utilities.initLogger(getServletContext().getRealPath("/"));
@@ -179,7 +179,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 logger.error("the language resource bundle is not complete.", e);
             }
 
-            reportManager = new ReportManager(getServletContext().getRealPath("/"));
+            reportManager = new ReportManager(getServletContext().getRealPath("/"), ConfigurationManager.getInstance().getConfBaseDir());
 
             // start the timer that checks pause tasks
 

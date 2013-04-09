@@ -109,7 +109,7 @@ public class QuickBooking extends BasicServlet {
         final String username = request.getParameter("username");
         final String password = request.getParameter("password");
         final String operation = request.getParameter("operation");
-        final DBManager dbManager = new DBManager();
+        final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
         final ServletOutputStream out = response.getOutputStream();
 
         try {
