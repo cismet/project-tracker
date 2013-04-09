@@ -72,6 +72,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -120,7 +121,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     @Override
     public void init() throws ServletException {
         super.init();
-
+        ServletContext context = getServletContext();
+        String foo = context.getInitParameter("testParam");
         if (!initialised) {
             initialised = true;
             Utilities.initLogger(getServletContext().getRealPath("/"));
@@ -1767,7 +1769,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private void writeJsonLogFile(ActivityDTO act) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException {
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(act.getDay());
-        cal.set(GregorianCalendar.HOUR_OF_DAY,0);
+        cal.set(GregorianCalendar.HOUR_OF_DAY, 0);
         ArrayList<ActivityDTO> userActs = getActivityByDay(act.getStaff(), cal.getTime());
         BufferedWriter bfw = null;
         ObjectMapper mapper = new ObjectMapper();
@@ -1815,7 +1817,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 bfw.write(json, 0, json.length());
 
             } catch (JsonProcessingException ex) {
-               logger.error("Cannot create json object for activity "+act.toString(), ex);
+                logger.error("Cannot create json object for activity " + act.toString(), ex);
             } finally {
                 if (bfw != null) {
                     bfw.close();
@@ -2589,7 +2591,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             md.update(pasword.getBytes());
 
 //            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
-            Staff staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
+            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.and(Restrictions.eq("username", username), Restrictions.eq("password", md.digest()))).uniqueResult();
 
             if (staff
                     != null) {
