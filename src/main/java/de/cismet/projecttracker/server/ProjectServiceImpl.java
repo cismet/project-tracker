@@ -7,6 +7,10 @@
 ****************************************************/
 package de.cismet.projecttracker.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import org.apache.log4j.Logger;
@@ -16,6 +20,13 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -30,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -137,6 +149,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static boolean initialised = false;
     private static DTOManager dtoManager = new DTOManager();
     private static final GregorianCalendar accountBalanceDueDate = new GregorianCalendar(2012, 2, 1);
+    private static String JSON_LOG_BASE_DIR;
 //    private static final int PAUSE_CHECKER_DAYS = 2;
 
     //~ Methods ----------------------------------------------------------------
@@ -144,7 +157,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     @Override
     public void init() throws ServletException {
         super.init();
-        ConfigurationManager.getInstance().setContext(getServletContext());
+        final ServletContext context = getServletContext();
         if (!initialised) {
             initialised = true;
             Utilities.initLogger(getServletContext().getRealPath("/"));
@@ -165,7 +178,18 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             // start the timer that checks pause tasks
 
-// PauseChecker pauseChecker = new PauseChecker(this, PAUSE_CHECKER_DAYS);
+//            PauseChecker pauseChecker = new PauseChecker(this, PAUSE_CHECKER_DAYS);
+            // load the base dir for json log files
+            FileReader input = null;
+            final Properties jsonConfig = new Properties();
+            try {
+                input = new FileReader(context.getInitParameter("confBaseDir") + System.getProperty("file.seperator")
+                                + "json_log.properties");
+                jsonConfig.load(input);
+                JSON_LOG_BASE_DIR = jsonConfig.getProperty("base_dir");
+            } catch (IOException e) {
+                logger.error("Cannot open and load json_log properties file.", e);
+            }
         }
     }
 
@@ -2118,6 +2142,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 throw new DataRetrievalException(LanguageBundle.ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT);
             }
 
+            // if a day gets locked save a log file containing json objects of all activites for that day
+            if (act.getKindofactivity() == ActivityDTO.LOCKED_DAY) {
+                writeJsonLogFile(activity);
+            }
             if (act.getWorkCategory() == null) {
                 act.setWorkCategory((WorkCategory)dbManager.getObject(WorkCategory.class, WorkCategoryDTO.WORK));
             }
@@ -2135,6 +2163,83 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             return id;
         } finally {
             dbManager.closeSession();
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   act  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    private void writeJsonLogFile(final ActivityDTO act) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException {
+        final GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(act.getDay());
+        cal.set(GregorianCalendar.HOUR_OF_DAY, 0);
+        final ArrayList<ActivityDTO> userActs = getActivityByDay(act.getStaff(), cal.getTime());
+        BufferedWriter bfw = null;
+        final ObjectMapper mapper = new ObjectMapper();
+        try {
+            try {
+                final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+                final String json = writer.writeValueAsString(userActs);
+
+                final String logDir = JSON_LOG_BASE_DIR
+                            + System.getProperty("file.separator")
+                            + act.getStaff().getUsername();
+               // check if the user dir exits and create it if necessary
+                if (!new File(logDir).exists()) {
+                    new File(logDir).mkdirs();
+                }
+
+                final StringBuilder fileNameBuilder = new StringBuilder();
+                fileNameBuilder.append(logDir);
+
+                /*
+                 * since a day can be unlocked and locked again it is possible that a log file exists already in that
+                 * case we append a number to the filename
+                 */
+                final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                final String date = df.format(act.getDay());
+                fileNameBuilder.append(System.getProperty("file.separator"));
+                fileNameBuilder.append(date);
+                final File[] files = new File(logDir).listFiles(new FilenameFilter() {
+
+                            @Override
+                            public boolean accept(final File file, final String string) {
+                                if (string.matches(date + ".*")) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            }
+                        });
+
+                if (files.length > 0) {
+                    fileNameBuilder.append("#");
+                    fileNameBuilder.append(files.length);
+                }
+
+                // write the json object to file
+                final File logFile = new File(fileNameBuilder.toString());
+                bfw = new BufferedWriter(new FileWriter(logFile));
+                bfw.write(json, 0, json.length());
+            } catch (JsonProcessingException ex) {
+                logger.error("Cannot create json object for activity " + act.toString(), ex);
+            } finally {
+                if (bfw != null) {
+                    bfw.close();
+                }
+            }
+        } catch (IOException ex) {
+            logger.error("Cannot write the json object to file.", ex);
         }
     }
 
@@ -2245,8 +2350,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             // same identifier value was already associated with the session
             // activityHib.setWorkCategory((WorkCategory)dtoManager.merge( getWorkCategories().get(0)));
             final String actText = act.toString();
+
             activityHib.setReports(act.getReports());
-            if (activityHib.getWorkCategory() == null) {
+            if (activityHib.getWorkCategory()
+                        == null) {
                 activityHib.setWorkCategory((WorkCategory)dbManager.getObject(
                         WorkCategory.class,
                         WorkCategoryDTO.WORK));
@@ -2254,7 +2361,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
             dbManager.closeSession();
             dbManager = new DBManagerWrapper();
+
             dbManager.saveObject(activityHib);
+
             if ((activityHib.getStaff().getId() != getUserId()) && (activityHib.getDay() != null)) {
                 sendChangedActivityEmail(activityHib, origAct, activityHib.getStaff().getEmail());
             }
@@ -2349,12 +2458,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     throw new PersistentLayerException(LanguageBundle.CANNOT_CHANGE_ACTIVITY);
                 }
             }
-
             String actText = null;
             Staff st = null;
             Date day = null;
 
-            if (act.getDay() != null) {
+            if (act.getDay()
+                        != null) {
                 actText = act.toString();
                 st = act.getStaff();
                 day = act.getDay();
@@ -3286,7 +3395,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         try {
             final Staff s = (Staff)dbManager.getObject(Staff.class, getUserId());
 
-            if (s.getLastmodification() != null) {
+            if (s.getLastmodification()
+                        != null) {
                 s.setLastmodification(null);
                 saveStaff((StaffDTO)dtoManager.clone(s));
 
@@ -3815,6 +3925,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
         Activity lockedDayActivity = null;
         Criteria crit = null;
+
         try {
             crit = dbManager.getSession().createCriteria(Activity.class)
                         .add(Restrictions.and(

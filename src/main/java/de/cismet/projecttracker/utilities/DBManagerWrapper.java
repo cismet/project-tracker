@@ -21,6 +21,7 @@ import de.cismet.projecttracker.client.exceptions.PersistentLayerException;
 
 import de.cismet.projecttracker.report.db.entities.BasicHibernateEntity;
 import de.cismet.projecttracker.report.query.DBManager;
+
 import de.cismet.projecttracker.server.ConfigurationManager;
 
 /**

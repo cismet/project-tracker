@@ -11,6 +11,10 @@
  */
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.ArrayList;
 
 /**
@@ -19,6 +23,10 @@ import java.util.ArrayList;
  * @author   therter
  * @version  $Revision$, $Date$
  */
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.IntSequenceGenerator.class,
+    property = "@JsonCostCategoryId"
+)
 public class CostCategoryDTO extends BasicDTO<CostCategoryDTO> {
 
     //~ Instance fields --------------------------------------------------------
@@ -28,7 +36,9 @@ public class CostCategoryDTO extends BasicDTO<CostCategoryDTO> {
     private String description;
     private double fundingrate;
     private double vat;
+    @JsonIgnore
     private ArrayList<ProjectCostsDTO> projectCosts = new ArrayList<ProjectCostsDTO>(0);
+    @JsonIgnore
     private ArrayList<WorkPackageDTO> workPackages = new ArrayList<WorkPackageDTO>(0);
 
     //~ Constructors -----------------------------------------------------------

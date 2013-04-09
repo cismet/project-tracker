@@ -11,6 +11,10 @@
  */
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -22,6 +26,10 @@ import de.cismet.projecttracker.client.helper.DateHelper;
  * @author   therter
  * @version  $Revision$, $Date$
  */
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.IntSequenceGenerator.class,
+    property = "id"
+)
 public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO> {
 
     //~ Instance fields --------------------------------------------------------
@@ -31,7 +39,9 @@ public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO>
     private int permissions;
     private String username;
     private String email;
+    @JsonIgnore
     private ArrayList<ContractDTO> contracts = new ArrayList<ContractDTO>(0);
+    @JsonIgnore
     private ProfileDTO profile;
 
     //~ Constructors -----------------------------------------------------------
@@ -222,6 +232,7 @@ public class StaffDTO extends BasicDTO<StaffDTO> implements Comparable<StaffDTO>
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public boolean isActiveStaff() {
         final Date now = new Date();
         final ArrayList<ContractDTO> cont = getContracts();

@@ -11,12 +11,19 @@
  */
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 /**
  * DOCUMENT ME!
  *
  * @author   therter
  * @version  $Revision$, $Date$
  */
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.IntSequenceGenerator.class,
+    property = "@JsonWorkCategoryId"
+)
 public class WorkCategoryDTO extends BasicDTO<WorkCategoryDTO> {
 
     //~ Static fields/initializers ---------------------------------------------

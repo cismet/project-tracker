@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
+<Context antiJARLocking="true" path="/ProjectTracker">
+    <Parameter name="confBaseDir" value="/home/daniel/git_repo/project-tracker/ProjectTracker/conf"
+=======
 <Context antiJARLocking="true" path="/ProjectTrackerTest">
     <Parameter name="configBaseDir" value="/home/daniel/git_repo/project-tracker/ProjectTracker"
+>>>>>>> feature/6-json-log-file
          override="false"/>
 </Context>

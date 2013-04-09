@@ -11,6 +11,10 @@
  */
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.ArrayList;
 
 /**
@@ -19,6 +23,10 @@ import java.util.ArrayList;
  * @author   therter
  * @version  $Revision$, $Date$
  */
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.IntSequenceGenerator.class,
+    property = "@id"
+)
 public class ProjectShortDTO extends BasicDTO<BasicDTO> implements Comparable<ProjectShortDTO> {
 
     //~ Instance fields --------------------------------------------------------
@@ -27,6 +35,7 @@ public class ProjectShortDTO extends BasicDTO<BasicDTO> implements Comparable<Pr
     protected String description;
     protected double overheadratio;
     protected ProjectCategoryDTO projectCategory;
+    @JsonIgnore
     protected ArrayList<ProjectPeriodDTO> projectPeriods = new ArrayList<ProjectPeriodDTO>(0);
 
     //~ Constructors -----------------------------------------------------------

@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.projecttracker.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 
 /**
@@ -20,6 +22,7 @@ public class ProjectBodyDTO extends BasicDTO<ProjectBodyDTO> implements Comparab
     //~ Instance fields --------------------------------------------------------
 
     private String name;
+    @JsonIgnore
     private ArrayList<ProjectShortDTO> projects = new ArrayList<ProjectShortDTO>(0);
 
     //~ Constructors -----------------------------------------------------------
