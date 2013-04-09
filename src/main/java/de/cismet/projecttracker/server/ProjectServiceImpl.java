@@ -4283,7 +4283,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public double getTotalVacationForYear(final StaffDTO staff, final Date year) {
         return getTotalVacationDaysForYear(year, staff);
     }
-<<<<<<< HEAD
+
 
     /**
      * if one of the parameters is null this parameter doesnt gets taken into account for filtering
@@ -4339,6 +4339,4 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         return result;
     }
 }
-=======
-}
->>>>>>> 484ad02bb6317ac9574d3a99f4de5d211aa9e602
+

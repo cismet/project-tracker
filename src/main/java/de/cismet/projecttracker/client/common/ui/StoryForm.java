@@ -20,6 +20,15 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimpleCheckBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.ProjectDTO;
+import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
+import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
+import de.cismet.projecttracker.client.dto.WorkPackageDTO;
+import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
+import de.cismet.projecttracker.client.helper.DateHelper;
+import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,12 +65,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     private boolean modification = false;
     private TaskNotice tn;
 
-    @Override
-    public void onChange(ChangeEvent event) {
-        if (event.getSource() == project) {
-            initWorkpackage();
-        }
-    }
 
     @Override
     public void onClick(ClickEvent event) {
@@ -427,13 +430,4 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         }
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    interface TaskFormUiBinder extends UiBinder<Widget, StoryForm> {
-    }
 }
