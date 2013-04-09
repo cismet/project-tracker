@@ -21,6 +21,7 @@ import de.cismet.projecttracker.client.exceptions.PersistentLayerException;
 
 import de.cismet.projecttracker.report.db.entities.BasicHibernateEntity;
 import de.cismet.projecttracker.report.query.DBManager;
+import de.cismet.projecttracker.server.ConfigurationManager;
 
 /**
  * This class wraps the class DBManager and replaces its exceptions with exceptions, which can be handled by the
@@ -46,7 +47,7 @@ public class DBManagerWrapper {
      */
     private void checkSession() {
         if ((manager == null) || !manager.isSessionOpen()) {
-            manager = new DBManager();
+            manager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
         }
     }
 
