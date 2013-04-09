@@ -228,7 +228,7 @@ public class DocumentUpload extends BasicServlet {
      * @throws  PersistentLayerException  DOCUMENT ME!
      */
     private void saveContractDocument(final UploadDocumentType uploadDoc) throws PersistentLayerException {
-        final DBManager dbManager = new DBManager();
+        final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
         final ContractDocument doc = new ContractDocument();
         final Contract tmpContract = new Contract();
 
@@ -256,7 +256,7 @@ public class DocumentUpload extends BasicServlet {
      * @throws  PersistentLayerException  DOCUMENT ME!
      */
     private void saveTravelDocument(final UploadDocumentType uploadDoc) throws PersistentLayerException {
-        final DBManager dbManager = new DBManager();
+        final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
         final TravelDocument doc = new TravelDocument();
         final Travel tmpTravel = new Travel();
 

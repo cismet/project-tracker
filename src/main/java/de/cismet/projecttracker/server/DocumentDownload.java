@@ -166,7 +166,7 @@ public class DocumentDownload extends BasicServlet {
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
     private ContractDocument getContractDocument(final String id) throws DataRetrievalException {
-        final DBManager dbManager = new DBManager();
+        final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
 
         try {
             final ContractDocument doc = (ContractDocument)dbManager.getObject(ContractDocument.class, new Long(id));
@@ -195,7 +195,7 @@ public class DocumentDownload extends BasicServlet {
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
     private TravelDocument getTravelDocument(final String id) throws DataRetrievalException {
-        final DBManager dbManager = new DBManager();
+        final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
 
         try {
             final TravelDocument doc = (TravelDocument)dbManager.getObject(TravelDocument.class, new Long(id));
