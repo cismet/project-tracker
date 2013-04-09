@@ -1,40 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <!--
-    GWT-Maven archetype generated POM
-  -->
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.cismet.web</groupId>
-    <artifactId>project-tracker-new-look</artifactId>
-    <packaging>war</packaging>
+    
+    <parent>
+        <groupId>de.cismet</groupId>
+        <artifactId>cismet-parent</artifactId>
+        <version>2.0</version>
+    </parent>
+    
+    <!--
+        GWT-Maven archetype generated POM
+      -->
+    <groupId>de.cismet.projecttracker</groupId>
+    <artifactId>project-tracker</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>ProjectTracker WebApp-New Look</name>
-    <repositories>
-        <repository>
-            <id>slim</id>
-            <url>http://slim3.googlecode.com/svn/trunk/repository</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>gwt-bootstrap</id>
-            <name>GWT-Bootstrap SNAPSHOTS</name>
-            <url>http://gwtbootstrap.github.com/maven/snapshots</url>
-        </repository>
-    </repositories>  
+    <packaging>war</packaging>
+    
+    <name>ProjectTracker WebApp</name>
+    <description>!!! DESCRIPTION PENDING !!!</description>
+    
     <properties>
       <!-- convenience to define GWT version in one place -->
         <gwt.version>2.4.0</gwt.version>
-
-      <!--  tell the compiler we can use 1.5 -->
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>de.cismet.projecttracker</groupId>
+            <artifactId>report-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.web</groupId>
+            <artifactId>time-tracker</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        
       <!--  GWT dependencies (from central repo) -->
         <dependency>
             <groupId>com.google.gwt</groupId>
@@ -49,6 +51,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.allen-sauer.gwt.dnd</groupId>
+            <artifactId>gwt-dnd</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.gwtbootstrap</groupId>
+            <artifactId>gwt-bootstrap</artifactId>
+            <version>2.0.4.0</version>
+        </dependency>
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.12</version>
@@ -58,7 +70,6 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.4.2</version>
         </dependency>
-
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
@@ -70,40 +81,28 @@
             <version>1.4</version>
         </dependency>
         <dependency>
-            <groupId>de.cismet.web</groupId>
-            <artifactId>ReportAPI</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
             <version>1.4.3</version>
         </dependency>
-        <dependency>
-            <groupId>de.cismet.web</groupId>
-            <artifactId>timetracker-web-app</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-    <!-- test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.allen-sauer.gwt.dnd</groupId>
-            <artifactId>gwt-dnd</artifactId>
-            <version>3.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.gwtbootstrap</groupId>
-            <artifactId>gwt-bootstrap</artifactId>
-            <version>2.0.4.0-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>cismet-repo</id>
+            <url>https://repo.cismet.de/repo</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+                <updatePolicy>daily</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+                <updatePolicy>interval:60</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <outputDirectory>war/WEB-INF/classes</outputDirectory>
@@ -117,7 +116,6 @@
                         <goals>
                             <goal>compile</goal>
                             <goal>generateAsync</goal>
-              <!--goal>test</goal-->
                         </goals>
                     </execution>
                 </executions>
@@ -141,72 +139,6 @@
             </plugin>
             -->
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0.2</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-      <!--plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.2</version>
-        <executions>
-          <execution>
-            <id>generate-jar</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <classesDirectory>war/WEB-INF/classes</classesDirectory>
-        </configuration>
-      </plugin-->
-
-        <!--plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>copy-plugins</id>
-                    <phase>prepare-package</phase>
-                    <goals>
-                        <goal>copy</goal>
-                    </goals>
-                    <configuration>
-                        <artifactItems>
-                            <artifactItem>
-                                <groupId>de.cismet.web</groupId>
-                                <artifactId>EUTimesheet</artifactId>
-                                <version>1.0-SNAPSHOT</version>
-                                <classifier>jar-with-dependencies</classifier>
-                                <type>jar</type>
-                            </artifactItem>
-                            <artifactItem>
-                                <groupId>de.cismet.web</groupId>
-                                <artifactId>TimePlan</artifactId>
-                                <version>1.0-SNAPSHOT</version>
-                                <classifier>jar-with-dependencies</classifier>
-                                <type>jar</type>
-                            </artifactItem>
-                            <artifactItem>
-                                <groupId>de.cismet.web</groupId>
-                                <artifactId>SimpleStaffReport</artifactId>
-                                <version>1.0-SNAPSHOT</version>
-                                <classifier>jar-with-dependencies</classifier>
-                                <type>jar</type>
-                            </artifactItem>
-                        </artifactItems>
-                        <outputDirectory>target/ProjectTracker/WEB-INF/reports</outputDirectory>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin-->
         </plugins>
         <finalName>ProjectTracker</finalName>
     </build>
