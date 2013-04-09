@@ -59,10 +59,10 @@ import de.cismet.projecttracker.utilities.EmailTaskNotice;
 import de.cismet.web.timetracker.types.HoursOfWork;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
@@ -122,7 +122,6 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     public void init() throws ServletException {
         super.init();
         ServletContext context = getServletContext();
-        String foo = context.getInitParameter("testParam");
         if (!initialised) {
             initialised = true;
             Utilities.initLogger(getServletContext().getRealPath("/"));
@@ -142,10 +141,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
 
 //            PauseChecker pauseChecker = new PauseChecker(this, PAUSE_CHECKER_DAYS);
             //load the base dir for json log files
-            InputStream input = null;
+            FileReader input = null;
             Properties jsonConfig = new Properties();
             try {
-                input = ProjectServiceImpl.class.getResourceAsStream("/de/cismet/projecttracker/server/json_log.properties");
+                input = new FileReader(context.getInitParameter("confBaseDir")+System.getProperty("file.seperator")+"json_log.properties"); 
                 jsonConfig.load(input);
                 JSON_LOG_BASE_DIR = jsonConfig.getProperty("base_dir");
             } catch (IOException e) {
