@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -10,36 +17,67 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
-import de.cismet.projecttracker.client.helper.DateHelper;
+
 import java.util.Date;
 
-/**
- *
- * @author daniel
- */
-public class StatisticsPanel extends Composite{
-     private static StatisticsPanelUiBinder uiBinder = GWT.create(StatisticsPanelUiBinder.class);
-     @UiField
-     SpanElement totalHours;
-     @UiField
-     SpanElement staffCount;
-     @UiField
-     SpanElement activityCount;
-     @UiField
-     SpanElement firstDate;
-     @UiField
-     SpanElement lastDate;
-     
-    interface StatisticsPanelUiBinder extends UiBinder<Widget, StatisticsPanel> {
-    }
+import de.cismet.projecttracker.client.helper.DateHelper;
 
-    public StatisticsPanel(double totalWh, int staffCount, int activityCount, Date firstDate, Date lastDate) {
+/**
+ * DOCUMENT ME!
+ *
+ * @author   daniel
+ * @version  $Revision$, $Date$
+ */
+public class StatisticsPanel extends Composite {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static StatisticsPanelUiBinder uiBinder = GWT.create(StatisticsPanelUiBinder.class);
+
+    //~ Instance fields --------------------------------------------------------
+
+    @UiField
+    SpanElement totalHours;
+    @UiField
+    SpanElement staffCount;
+    @UiField
+    SpanElement activityCount;
+    @UiField
+    SpanElement firstDate;
+    @UiField
+    SpanElement lastDate;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new StatisticsPanel object.
+     *
+     * @param  totalWh        DOCUMENT ME!
+     * @param  staffCount     DOCUMENT ME!
+     * @param  activityCount  DOCUMENT ME!
+     * @param  firstDate      DOCUMENT ME!
+     * @param  lastDate       DOCUMENT ME!
+     */
+    public StatisticsPanel(final double totalWh,
+            final int staffCount,
+            final int activityCount,
+            final Date firstDate,
+            final Date lastDate) {
         initWidget(uiBinder.createAndBindUi(this));
         this.totalHours.setInnerText(DateHelper.doubleToHours(totalWh));
-        this.staffCount.setInnerText(""+staffCount);
-        this.activityCount.setInnerText(""+activityCount);
+        this.staffCount.setInnerText("" + staffCount);
+        this.activityCount.setInnerText("" + activityCount);
         this.firstDate.setInnerText(DateHelper.formatDate(firstDate));
         this.lastDate.setInnerText(DateHelper.formatDate(lastDate));
     }
-    
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface StatisticsPanelUiBinder extends UiBinder<Widget, StatisticsPanel> {
+    }
 }

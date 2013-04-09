@@ -35,6 +35,7 @@ import de.cismet.projecttracker.client.uicomps.SheetsPanel;
  * @version  $Revision$, $Date$
  */
 public class IllnessChecker implements TaskStoryListener {
+
     //~ Instance fields --------------------------------------------------------
 
 // private static final Logger LOG = new Logger

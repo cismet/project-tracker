@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.*;
 
 import java.security.MessageDigest;
@@ -91,26 +92,6 @@ import de.cismet.projecttracker.utilities.LanguageBundle;
 import de.cismet.projecttracker.utilities.Utilities;
 
 import de.cismet.web.timetracker.types.HoursOfWork;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.logging.Level;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import org.apache.log4j.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.criterion.*;
 
 /**
  * DOCUMENT ME!
@@ -179,7 +160,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 logger.error("the language resource bundle is not complete.", e);
             }
 
-            reportManager = new ReportManager(getServletContext().getRealPath("/"), ConfigurationManager.getInstance().getConfBaseDir());
+            reportManager = new ReportManager(getServletContext().getRealPath("/"),
+                    ConfigurationManager.getInstance().getConfBaseDir());
 
             // start the timer that checks pause tasks
 
@@ -4284,59 +4266,74 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         return getTotalVacationDaysForYear(year, staff);
     }
 
-
     /**
-     * if one of the parameters is null this parameter doesnt gets taken into account for filtering
+     * if one of the parameters is null this parameter doesnt gets taken into account for filtering.
+     *
+     * @param   workpackages  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
      */
     @Override
-    public ArrayList<ActivityDTO> getActivites(List<WorkPackageDTO> workpackages, List<StaffDTO> staff, Date from, Date til, String description) throws InvalidInputValuesException, DataRetrievalException, PermissionDenyException, NoSessionException {
+    public ArrayList<ActivityDTO> getActivites(final List<WorkPackageDTO> workpackages,
+            final List<StaffDTO> staff,
+            final Date from,
+            final Date til,
+            final String description) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException {
         final ArrayList<ActivityDTO> result = new ArrayList<ActivityDTO>();
-        DBManagerWrapper dbManager = new DBManagerWrapper();
+        final DBManagerWrapper dbManager = new DBManagerWrapper();
         Session hibernateSession = null;
         Transaction tx = null;
         final Conjunction conjuction = Restrictions.conjunction();
-        if (workpackages != null && !workpackages.isEmpty()) {
+        if ((workpackages != null) && !workpackages.isEmpty()) {
             final ArrayList<Long> wpIds = new ArrayList<Long>();
-            for (WorkPackageDTO wp : workpackages) {
+            for (final WorkPackageDTO wp : workpackages) {
                 wpIds.add(wp.getId());
             }
             conjuction.add(Restrictions.in("workPackage.id", wpIds));
         }
-        
-        if(staff != null && !staff.isEmpty()){
+
+        if ((staff != null) && !staff.isEmpty()) {
             final ArrayList<Long> staffIds = new ArrayList<Long>();
-            for(StaffDTO s : staff){
+            for (final StaffDTO s : staff) {
                 staffIds.add(s.getId());
             }
             conjuction.add(Restrictions.in("staff.id", staffIds));
         }
         conjuction.add(Restrictions.isNotNull("day"));
-        if(from != null && til != null && from.compareTo(til)<0){
+        if ((from != null) && (til != null) && (from.compareTo(til) < 0)) {
             conjuction.add(Restrictions.ge("day", from));
             conjuction.add(Restrictions.le("day", til));
         }
-        
-        if(description!=null){
+
+        if (description != null) {
             conjuction.add(Restrictions.ilike("description", description, MatchMode.ANYWHERE));
         }
-        
+
         try {
             hibernateSession = dbManager.getSession();
             tx = hibernateSession.beginTransaction();
 //            Criterion wpRestriction = Restrictions.in("workPackage.id", wpIds);
-            Criteria crit = hibernateSession.createCriteria(Activity.class).
-                    add((conjuction));
+            final Criteria crit = hibernateSession.createCriteria(Activity.class).add((conjuction));
             result.addAll(dtoManager.clone(crit.list()));
             tx.commit();
-        } 
-        catch (Exception ex) {
+        } catch (Exception ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             tx.rollback();
-        } 
-        finally {
+        } finally {
             dbManager.closeSession();
         }
         return result;
     }
 }
-

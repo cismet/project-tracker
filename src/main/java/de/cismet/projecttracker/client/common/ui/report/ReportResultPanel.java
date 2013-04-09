@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -5,15 +12,11 @@
 package de.cismet.projecttracker.client.common.ui.report;
 
 import com.github.gwtbootstrap.client.ui.AccordionGroup;
+
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.common.ui.FlowPanelWithSpacer;
-import de.cismet.projecttracker.client.dto.ActivityDTO;
-import de.cismet.projecttracker.client.dto.StaffDTO;
-import de.cismet.projecttracker.client.dto.WorkPackageDTO;
-import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,14 +24,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.common.ui.FlowPanelWithSpacer;
+import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
+import de.cismet.projecttracker.client.dto.WorkPackageDTO;
+import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+
 /**
+ * DOCUMENT ME!
  *
- * @author daniel
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
 public class ReportResultPanel extends Composite {
 
-    private FlowPanel mainPanel = new FlowPanel();
+    //~ Instance fields --------------------------------------------------------
+
     AccordionGroup activityAccordionPanel = new AccordionGroup();
+
+    private FlowPanel mainPanel = new FlowPanel();
     private FlowPanel activityList = new FlowPanel();
     private FlowPanel summaryPanel = new FlowPanel();
     private ReportFilterPanel filterPanel;
@@ -39,12 +54,24 @@ public class ReportResultPanel extends Composite {
     private Date firstActivity = null;
     private Date lastActivity = null;
 
-    public ReportResultPanel(ReportFilterPanel filterPanel) {
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ReportResultPanel object.
+     *
+     * @param  filterPanel  DOCUMENT ME!
+     */
+    public ReportResultPanel(final ReportFilterPanel filterPanel) {
         initWidget(mainPanel);
         this.filterPanel = filterPanel;
         init();
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
     private void init() {
         mainPanel.setStyleName("report-results-area verticalScroller");
         mainPanel.add(summaryPanel);
@@ -52,6 +79,9 @@ public class ReportResultPanel extends Composite {
         activityAccordionPanel.setDefaultOpen(false);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     public void refresh() {
         hoursInTotal = 0;
         activityCount = 0;
@@ -65,70 +95,91 @@ public class ReportResultPanel extends Composite {
         activityList.clear();
 
         final HashMap<String, Object> params = filterPanel.getSearchParams();
-        final List<WorkPackageDTO> workpackages = (List< WorkPackageDTO>) params.get(ReportFilterPanel.WORKPACKAGE_KEY);
-        final ArrayList<StaffDTO> staff = (ArrayList<StaffDTO>) params.get(ReportFilterPanel.STAFF_KEY);
+        final List<WorkPackageDTO> workpackages = (List<WorkPackageDTO>)params.get(ReportFilterPanel.WORKPACKAGE_KEY);
+        final ArrayList<StaffDTO> staff = (ArrayList<StaffDTO>)params.get(ReportFilterPanel.STAFF_KEY);
         Date from = null;
         Date to = null;
         if (params.containsKey(ReportFilterPanel.DATE_FROM_KEY)) {
-            from = (Date) params.get(ReportFilterPanel.DATE_FROM_KEY);
+            from = (Date)params.get(ReportFilterPanel.DATE_FROM_KEY);
         }
         if (params.containsKey(ReportFilterPanel.DATE_TO_KEY)) {
-            to = (Date) params.get(ReportFilterPanel.DATE_TO_KEY);
+            to = (Date)params.get(ReportFilterPanel.DATE_TO_KEY);
         }
-        final String descr = (String) params.get(ReportFilterPanel.DESC_KEY);
+        final String descr = (String)params.get(ReportFilterPanel.DESC_KEY);
 
-        BasicAsyncCallback<ArrayList<ActivityDTO>> cb = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
-            @Override
-            protected void afterExecution(ArrayList<ActivityDTO> result, boolean operationFailed) {
-                Label l = new Label();
-                l.setStyleName("report-result-lbl");
-                if (operationFailed) {
-                    l.setText("Error during acticity search");
-                    l.addStyleName("label label-important report-result-error-lbl");
-                    mainPanel.add(l);
-                    return;
+        final BasicAsyncCallback<ArrayList<ActivityDTO>> cb = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
+
+                @Override
+                protected void afterExecution(final ArrayList<ActivityDTO> result, final boolean operationFailed) {
+                    final Label l = new Label();
+                    l.setStyleName("report-result-lbl");
+                    if (operationFailed) {
+                        l.setText("Error during acticity search");
+                        l.addStyleName("label label-important report-result-error-lbl");
+                        mainPanel.add(l);
+                        return;
+                    }
+                    if ((result == null) || result.isEmpty()) {
+                        l.setText("No corresponding activites can be found");
+                        mainPanel.add(l);
+                        return;
+                    }
+                    processActivites(result);
+                    fillSummaryPanel();
+                    generateAndPropagateStatisticsPanel();
+                    addActivitesToResultsPanel(result);
                 }
-                if (result == null || result.isEmpty()) {
-                    l.setText("No corresponding activites can be found");
-                    mainPanel.add(l);
-                    return;
-                }
-                processActivites(result);
-                fillSummaryPanel();
-                generateAndPropagateStatisticsPanel();
-                addActivitesToResultsPanel(result);
-            }
-        };
-        //call the service..
+            };
+        // call the service..
         ProjectTrackerEntryPoint.getProjectService(true).getActivites(workpackages, staff, from, to, descr, cb);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void generateAndPropagateStatisticsPanel() {
-        StatisticsPanel statPan = new StatisticsPanel(hoursInTotal, userMap.keySet().size(), activityCount, firstActivity, lastActivity);
+        final StatisticsPanel statPan = new StatisticsPanel(
+                hoursInTotal,
+                userMap.keySet().size(),
+                activityCount,
+                firstActivity,
+                lastActivity);
         filterPanel.setStatisticsPanel(statPan);
     }
 
-    private void addActivitesToResultsPanel(ArrayList<ActivityDTO> result) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  result  DOCUMENT ME!
+     */
+    private void addActivitesToResultsPanel(final ArrayList<ActivityDTO> result) {
         final FlowPanelWithSpacer activityPanel = new FlowPanelWithSpacer();
-        for (ActivityDTO act : result) {
+        for (final ActivityDTO act : result) {
             activityPanel.add(new ReportTaskNotice(act));
         }
         activityAccordionPanel.add(activityPanel);
         mainPanel.add(activityAccordionPanel);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void fillSummaryPanel() {
         final ReportResultsSummaryDataGrid table = new ReportResultsSummaryDataGrid(userMap, wpMap);
         summaryPanel.add(table);
         mainPanel.add(summaryPanel);
     }
 
-    private void processActivites(ArrayList<ActivityDTO> result) {
-
-        for (ActivityDTO tmp : result) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  result  DOCUMENT ME!
+     */
+    private void processActivites(final ArrayList<ActivityDTO> result) {
+        for (final ActivityDTO tmp : result) {
             hoursInTotal += tmp.getWorkinghours();
             activityCount++;
-            //find the earliest activity...
+            // find the earliest activity...
             if (firstActivity == null) {
                 firstActivity = tmp.getDay();
             } else {
@@ -137,7 +188,7 @@ public class ReportResultPanel extends Composite {
                 }
             }
 
-            //fin the latest activity
+            // fin the latest activity
             if (lastActivity == null) {
                 lastActivity = tmp.getDay();
             } else {
@@ -160,6 +211,5 @@ public class ReportResultPanel extends Composite {
             wpActivitySet.add(tmp);
             wpMap.put(wp, wpActivitySet);
         }
-
     }
 }

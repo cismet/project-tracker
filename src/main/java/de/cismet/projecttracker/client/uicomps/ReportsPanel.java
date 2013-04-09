@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -14,6 +21,12 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.FlowPanelWithSpacer;
 import de.cismet.projecttracker.client.common.ui.TaskNotice;
@@ -26,16 +39,19 @@ import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 /**
+ * DOCUMENT ME!
  *
- * @author daniel
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
-public class ReportsPanel extends Composite implements MenuListener, ChangeHandler, ReportSearchParamListener, ResizeHandler {
+public class ReportsPanel extends Composite implements MenuListener,
+    ChangeHandler,
+    ReportSearchParamListener,
+    ResizeHandler {
+
+    //~ Instance fields --------------------------------------------------------
 
     private FlowPanel mainPanel = new FlowPanel();
     private FlowPanel contentPanel = new FlowPanel();
@@ -44,14 +60,21 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
     private ReportResultPanel resultsPanel;
     private ReportFilterPanel filterPanel;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ReportsPanel object.
+     */
     public ReportsPanel() {
         init();
         initWidget(mainPanel);
         setStyleName("content");
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     @Override
-    public void menuChangeEvent(MenuEvent e) {
+    public void menuChangeEvent(final MenuEvent e) {
         if (e.getNumber() == TopPanel.REPORTS) {
             RootPanel.get("contentId").clear();
             RootPanel.get("contentId").add(this);
@@ -60,12 +83,14 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
     }
 
     @Override
-    public void onChange(ChangeEvent event) {
+    public void onChange(final ChangeEvent event) {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void init() {
-
         contentPanel.setStyleName("report-content");
         initFilterArea();
         initResultsArea();
@@ -78,6 +103,9 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
         resize(Window.getClientHeight());
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void initFilterArea() {
         filterContainerPanel.setStyleName("report-filter-area");
         final Label lblHeader = new Label("Activity Quick-Search");
@@ -88,6 +116,9 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
         filterContainerPanel.add(filterPanel);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void initResultsArea() {
         resultsPanel = new ReportResultPanel(filterPanel);
     }
@@ -97,8 +128,12 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
         resultsPanel.refresh();
     }
 
-    private void resize(int heigth) {
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  heigth  DOCUMENT ME!
+     */
+    private void resize(final int heigth) {
         int newHeight = heigth - 300;
         if (newHeight < 150) {
             newHeight = 150;
@@ -110,7 +145,7 @@ public class ReportsPanel extends Composite implements MenuListener, ChangeHandl
     }
 
     @Override
-    public void onResize(ResizeEvent event) {
+    public void onResize(final ResizeEvent event) {
         resize(event.getHeight());
     }
 }

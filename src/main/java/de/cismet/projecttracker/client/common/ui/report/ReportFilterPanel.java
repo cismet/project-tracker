@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -5,18 +12,19 @@
 package de.cismet.projecttracker.client.common.ui.report;
 
 import com.github.gwtbootstrap.client.ui.CheckBox;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Command;
@@ -29,15 +37,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
-import de.cismet.projecttracker.client.common.ui.*;
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.dto.ProjectDTO;
-import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
-import de.cismet.projecttracker.client.dto.StaffDTO;
-import de.cismet.projecttracker.client.dto.WorkPackageDTO;
-import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
-import de.cismet.projecttracker.client.helper.DateHelper;
-import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,20 +46,45 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.common.ui.*;
+import de.cismet.projecttracker.client.dto.ProjectDTO;
+import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
+import de.cismet.projecttracker.client.dto.WorkPackageDTO;
+import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
+import de.cismet.projecttracker.client.helper.DateHelper;
+import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+
 /**
+ * DOCUMENT ME!
  *
- * @author daniel
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
-public class ReportFilterPanel extends Composite implements ChangeHandler, ClickHandler, ValueChangeHandler<Date>, KeyUpHandler {
+public class ReportFilterPanel extends Composite implements ChangeHandler,
+    ClickHandler,
+    ValueChangeHandler<Date>,
+    KeyUpHandler {
+
+    //~ Static fields/initializers ---------------------------------------------
 
     private static ReportFilterPanelUiBinder uiBinder = GWT.create(ReportFilterPanelUiBinder.class);
+    public static final String WORKPACKAGE_KEY = "WP";
+    public static final String STAFF_KEY = "STAFF";
+    public static final String DATE_FROM_KEY = "FROM";
+    public static final String DATE_TO_KEY = "TO";
+    public static final String DESC_KEY = "DESCRIPTION";
+
+    //~ Instance fields --------------------------------------------------------
+
     @UiField
     TextBox description;
     @UiField
     ListBox project;
     @UiField
     ListBox workpackage;
-    @UiField(provided=true)
+    @UiField(provided = true)
     com.github.gwtbootstrap.client.ui.ListBox users = new com.github.gwtbootstrap.client.ui.ListBox(true);
     @UiField
     HorizontalPanel datepickerPanel;
@@ -70,11 +95,14 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     CheckBox dateFilterCB;
     private List<ProjectDTO> projects;
     private List<ReportSearchParamListener> listeners = new LinkedList<ReportSearchParamListener>();
-    public static final String WORKPACKAGE_KEY = "WP";
-    public static final String STAFF_KEY = "STAFF";
-    public static final String DATE_FROM_KEY = "FROM";
-    public static final String DATE_TO_KEY = "TO";
-    public static final String DESC_KEY = "DESCRIPTION";
+    Timer t = new Timer() {
+
+            @Override
+            public void run() {
+                fireSearchParamsChanged();
+            }
+        };
+
     private List<StaffDTO> userList = new ArrayList<StaffDTO>();
     private WeekDatePicker periodFrom = new WeekDatePicker();
     private Button periodFromButton = new Button("<i class='icon-calendar'></i>", this);
@@ -83,15 +111,23 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     private boolean isFromPickerVisible = false;
     private boolean isToPickerVisible = false;
     private long lastInvocation = -1;
-    Timer t = new Timer() {
-        @Override
-        public void run() {
-            fireSearchParamsChanged();
-        }
-    };
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ReportFilterPanel object.
+     */
+    public ReportFilterPanel() {
+        initWidget(uiBinder.createAndBindUi(this));
+        init();
+        project.addChangeHandler(this);
+        workpackage.addChangeHandler(this);
+    }
+
+    //~ Methods ----------------------------------------------------------------
 
     @Override
-    public void onChange(ChangeEvent event) {
+    public void onChange(final ChangeEvent event) {
         if (event.getSource() == project) {
             initWorkpackage();
         }
@@ -99,7 +135,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     }
 
     @Override
-    public void onClick(ClickEvent event) {
+    public void onClick(final ClickEvent event) {
         if (event.getSource() == periodFromButton) {
             if (isFromPickerVisible) {
                 isFromPickerVisible = false;
@@ -122,12 +158,12 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
     }
 
     @Override
-    public void onValueChange(ValueChangeEvent<Date> event) {
+    public void onValueChange(final ValueChangeEvent<Date> event) {
         fireSearchParamsChanged();
     }
 
     @Override
-    public void onKeyUp(KeyUpEvent event) {
+    public void onKeyUp(final KeyUpEvent event) {
         final long time = System.currentTimeMillis();
         if (lastInvocation > 0) {
             final double msBetweenInvocations = time - lastInvocation;
@@ -137,46 +173,39 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         }
         lastInvocation = time;
         t.schedule(800);
-
     }
 
-    interface ReportFilterPanelUiBinder extends UiBinder<Widget, ReportFilterPanel> {
-    }
-
-    public ReportFilterPanel() {
-        initWidget(uiBinder.createAndBindUi(this));
-        init();
-        project.addChangeHandler(this);
-        workpackage.addChangeHandler(this);
-    }
-
+    /**
+     * DOCUMENT ME!
+     */
     private void init() {
         loggedInUser = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
-        List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
+        final List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
 //        travel.setText("Travel: ");
         if (result == null) {
-            BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
-                @Override
-                protected void afterExecution(ArrayList<ProjectDTO> result, boolean operationFailed) {
-                    for (ProjectDTO tmp : result) {
-                        ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
-                        //TODO do not use the current day..
-                        if (period == null || DateHelper.isDayInProjectPeriod(new Date(), period)) {
-                            project.addItem(tmp.getName(), "" + tmp.getId());
+            final BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
+
+                    @Override
+                    protected void afterExecution(final ArrayList<ProjectDTO> result, final boolean operationFailed) {
+                        for (final ProjectDTO tmp : result) {
+                            final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+                            // TODO do not use the current day..
+                            if ((period == null) || DateHelper.isDayInProjectPeriod(new Date(), period)) {
+                                project.addItem(tmp.getName(), "" + tmp.getId());
+                            }
                         }
+                        ProjectTrackerEntryPoint.getInstance().setProjects(result);
+                        projects = result;
+                        initWorkpackage();
                     }
-                    ProjectTrackerEntryPoint.getInstance().setProjects(result);
-                    projects = result;
-                    initWorkpackage();
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
         } else {
-            for (ProjectDTO tmp : result) {
-                ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
-                //TODO do not use the current day..
-                if (period == null || DateHelper.isDayInProjectPeriod(new Date(), period)) {
+            for (final ProjectDTO tmp : result) {
+                final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+                // TODO do not use the current day..
+                if ((period == null) || DateHelper.isDayInProjectPeriod(new Date(), period)) {
                     project.addItem(tmp.getName(), "" + tmp.getId());
                 }
             }
@@ -192,7 +221,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         periodFrom.setAutoClose(true);
         periodFrom.setStyleName("report-datePicker");
         periodFrom.setWeekStart(1);
-        //StartDate 01.01.2012
+        // StartDate 01.01.2012
         periodFrom.setValue(new Date(112, 0, 1));
         periodFrom.addValueChangeHandler(this);
         periodFromButton.setWidth("10px;");
@@ -224,16 +253,20 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
 //        description.addChangeHandler(this);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void initWorkpackage() {
-        ProjectDTO selectedProject = getSelectedProject();
+        final ProjectDTO selectedProject = getSelectedProject();
         workpackage.clear();
         workpackage.addItem("* all WorkPackages", "-1");
         if (selectedProject != null) {
             if (selectedProject.getWorkPackages() != null) {
-                WorkPackageDTO[] wps = selectedProject.getWorkPackages().toArray(new WorkPackageDTO[selectedProject.getWorkPackages().size()]);
+                final WorkPackageDTO[] wps = selectedProject.getWorkPackages()
+                            .toArray(new WorkPackageDTO[selectedProject.getWorkPackages().size()]);
                 Arrays.sort(wps);
-                for (WorkPackageDTO tmp : wps) {
-                    WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
+                for (final WorkPackageDTO tmp : wps) {
+                    final WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
                     if (tmp.getName() != null) {
@@ -244,15 +277,18 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
                 for (int i = 0; i < workpackage.getItemCount(); i++) {
                     final String itemText = workpackage.getItemText(i);
                     if (itemText.toUpperCase().startsWith("WP")) {
-                        workpackage.getElement().getElementsByTagName("option").getItem(i).setAttribute("disabled", "disabled");
+                        workpackage.getElement()
+                                .getElementsByTagName("option")
+                                .getItem(i)
+                                .setAttribute("disabled", "disabled");
                     }
                 }
             }
         } else {
             // we have selected the all project...
-            for (ProjectDTO proj : ProjectTrackerEntryPoint.getInstance().getProjects()) {
-                for (WorkPackageDTO wp : proj.getWorkPackages()) {
-                    WorkPackagePeriodDTO period = wp.determineMostRecentPeriod();
+            for (final ProjectDTO proj : ProjectTrackerEntryPoint.getInstance().getProjects()) {
+                for (final WorkPackageDTO wp : proj.getWorkPackages()) {
+                    final WorkPackagePeriodDTO period = wp.determineMostRecentPeriod();
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
                     if (wp.getName() != null) {
@@ -262,7 +298,10 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
                     for (int i = 0; i < workpackage.getItemCount(); i++) {
                         final String itemText = workpackage.getItemText(i);
                         if (itemText.toUpperCase().startsWith("WP")) {
-                            workpackage.getElement().getElementsByTagName("option").getItem(i).setAttribute("disabled", "disabled");
+                            workpackage.getElement()
+                                    .getElementsByTagName("option")
+                                    .getItem(i)
+                                    .setAttribute("disabled", "disabled");
                         }
                     }
                 }
@@ -271,64 +310,82 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void initUsers() {
         if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
             final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
             users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
             users.setSelectedIndex(0);
-            //fire the change event since setSelected item does not
+            // fire the change event since setSelected item does not
             Scheduler.get().scheduleDeferred(new Command() {
-                @Override
-                public void execute() {
-                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), users);
-                }
-            });
+
+                    @Override
+                    public void execute() {
+                        DomEvent.fireNativeEvent(Document.get().createChangeEvent(), users);
+                    }
+                });
             users.setEnabled(false);
             userList.add(staff);
         } else {
-            BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
-                @Override
-                protected void afterExecution(ArrayList<StaffDTO> result, boolean operationFailed) {
-                    users.addItem("* all Users", "-1");
-                    users.setSelectedIndex(-1);
-                    int i = 0;
-                    int index = 0;
-                    Collections.sort(result);
-                    StaffDTO loggedInStaff = ProjectTrackerEntryPoint.getInstance().getStaff();
-                    for (StaffDTO staff : result) {
-                        users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
-                        if (staff.getId() == loggedInStaff.getId()) {
-                            index = i;
+            final BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
+
+                    @Override
+                    protected void afterExecution(final ArrayList<StaffDTO> result, final boolean operationFailed) {
+                        users.addItem("* all Users", "-1");
+                        users.setSelectedIndex(-1);
+                        int i = 0;
+                        int index = 0;
+                        Collections.sort(result);
+                        final StaffDTO loggedInStaff = ProjectTrackerEntryPoint.getInstance().getStaff();
+                        for (final StaffDTO staff : result) {
+                            users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
+                            if (staff.getId() == loggedInStaff.getId()) {
+                                index = i;
+                            }
+                            ++i;
                         }
-                        ++i;
+                        users.setSelectedIndex(index);
+                        // fire the change event since setSelected item does not
+                        Scheduler.get().scheduleDeferred(new Command() {
+
+                                @Override
+                                public void execute() {
+                                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), users);
+                                }
+                            });
+                        userList = result;
                     }
-                    users.setSelectedIndex(index);
-                    //fire the change event since setSelected item does not
-                    Scheduler.get().scheduleDeferred(new Command() {
-                        @Override
-                        public void execute() {
-                            DomEvent.fireNativeEvent(Document.get().createChangeEvent(), users);
-                        }
-                    });
-                    userList = result;
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).getCurrentEmployees(callback);
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private ProjectDTO getSelectedProject() {
-        String value = project.getValue(project.getSelectedIndex());
+        final String value = project.getValue(project.getSelectedIndex());
         if (value.equals("-1")) {
-            //the all option is selected return null
+            // the all option is selected return null
             return null;
         }
         return getProjectById(Long.parseLong(value));
     }
 
-    private ProjectDTO getProjectById(long id) {
-        for (ProjectDTO tmp : projects) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private ProjectDTO getProjectById(final long id) {
+        for (final ProjectDTO tmp : projects) {
             if (tmp.getId() == id) {
                 return tmp;
             }
@@ -336,27 +393,39 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private WorkPackageDTO getSelectedWorkpackage() {
-        String value = workpackage.getValue(workpackage.getSelectedIndex());
+        final String value = workpackage.getValue(workpackage.getSelectedIndex());
         if (value.equals("-1")) {
-            //the all option is selected so return null
+            // the all option is selected so return null
             return null;
         }
         return getWorkpackageById(Long.parseLong(value));
     }
 
-    private WorkPackageDTO getWorkpackageById(long id) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private WorkPackageDTO getWorkpackageById(final long id) {
         final ProjectDTO proj = getSelectedProject();
         if (proj == null) {
-            for (ProjectDTO p : ProjectTrackerEntryPoint.getInstance().getProjects()) {
-                for (WorkPackageDTO tmp : p.getWorkPackages()) {
+            for (final ProjectDTO p : ProjectTrackerEntryPoint.getInstance().getProjects()) {
+                for (final WorkPackageDTO tmp : p.getWorkPackages()) {
                     if (tmp.getId() == id) {
                         return tmp;
                     }
                 }
             }
         } else {
-            for (WorkPackageDTO tmp : proj.getWorkPackages()) {
+            for (final WorkPackageDTO tmp : proj.getWorkPackages()) {
                 if (tmp.getId() == id) {
                     return tmp;
                 }
@@ -365,7 +434,14 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         return null;
     }
 
-    private static String extractWorkpackageName(WorkPackageDTO workpackage) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   workpackage  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static String extractWorkpackageName(final WorkPackageDTO workpackage) {
         WorkPackageDTO tmp = workpackage.getWorkPackage();
         String prefix = "";
 
@@ -377,44 +453,72 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         return prefix + workpackage.getName();
     }
 
-    public void addSearchParamListener(ReportSearchParamListener l) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  l  DOCUMENT ME!
+     */
+    public void addSearchParamListener(final ReportSearchParamListener l) {
         this.listeners.add(l);
     }
 
-    public void removeSearchParamListener(ReportSearchParamListener l) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  l  DOCUMENT ME!
+     */
+    public void removeSearchParamListener(final ReportSearchParamListener l) {
         listeners.remove(l);
     }
 
-    public void setStatisticsPanel(Composite p) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  p  DOCUMENT ME!
+     */
+    public void setStatisticsPanel(final Composite p) {
         statisticWrapper.clear();
         statisticWrapper.add(p);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void fireSearchParamsChanged() {
-        for (ReportSearchParamListener l : listeners) {
+        for (final ReportSearchParamListener l : listeners) {
             l.searchParamsChanged();
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private StaffDTO getSelectedUser() {
         try {
-            long value = Long.parseLong(users.getValue(users.getSelectedIndex()));
+            final long value = Long.parseLong(users.getValue(users.getSelectedIndex()));
             if (value == -1) {
-                //search for all users, return null
+                // search for all users, return null
                 return null;
             }
-            for (StaffDTO staff : userList) {
+            for (final StaffDTO staff : userList) {
                 if (staff.getId() == value) {
                     return staff;
                 }
             }
         } catch (NumberFormatException e) {
-            //should not happen
+            // should not happen
         }
 
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public HashMap<String, Object> getSearchParams() {
         final HashMap<String, Object> map = new HashMap<String, Object>();
         final List<WorkPackageDTO> workpackages = new LinkedList<WorkPackageDTO>();
@@ -422,11 +526,11 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         if (wp != null) {
             workpackages.add(wp);
         } else {
-            //we have to check what project is selected...
+            // we have to check what project is selected...
             final ProjectDTO proj = getSelectedProject();
             /*
-             * if the selected Proj is not null we have to search for all Workpackages of this Project. 
-             * Otherwise (which means all project are relevant) we have to do nothing  
+             * if the selected Proj is not null we have to search for all Workpackages of this Project. Otherwise (which
+             * means all project are relevant) we have to do nothing
              */
             if (proj != null) {
                 workpackages.addAll(proj.getWorkPackages());
@@ -440,7 +544,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
 //            searchStaff.add(staff);
 //        }
         final List<StaffDTO> selectedUsers = getSelectedUsers();
-        if(selectedUsers!=null){
+        if (selectedUsers != null) {
             searchStaff.addAll(selectedUsers);
         }
         map.put(STAFF_KEY, searchStaff);
@@ -455,16 +559,21 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         return map;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private ArrayList<StaffDTO> getSelectedUsers() {
-        ArrayList<StaffDTO> selectedItems = new ArrayList<StaffDTO>();
+        final ArrayList<StaffDTO> selectedItems = new ArrayList<StaffDTO>();
         for (int i = 0; i < users.getItemCount(); i++) {
             if (users.isItemSelected(i)) {
                 final long value = Long.parseLong(users.getValue(i));
                 if (value == -1) {
-                    //search for all users, return null
+                    // search for all users, return null
                     return null;
                 }
-                for (StaffDTO staff : userList) {
+                for (final StaffDTO staff : userList) {
                     if (staff.getId() == value) {
                         selectedItems.add(staff);
                         break;
@@ -475,6 +584,9 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
         return selectedItems;
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     public void refresh() {
         if (ProjectTrackerEntryPoint.getInstance().getLoggedInStaff() != loggedInUser) {
             userList.clear();
@@ -482,5 +594,15 @@ public class ReportFilterPanel extends Composite implements ChangeHandler, Click
             users.setEnabled(true);
             initUsers();
         }
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface ReportFilterPanelUiBinder extends UiBinder<Widget, ReportFilterPanel> {
     }
 }

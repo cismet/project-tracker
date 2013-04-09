@@ -90,7 +90,8 @@ public class ReportDownload extends BasicServlet {
     @Override
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
-        reportManager = new ReportManager(config.getServletContext().getRealPath("/"),ConfigurationManager.getInstance().getConfBaseDir());
+        reportManager = new ReportManager(config.getServletContext().getRealPath("/"),
+                ConfigurationManager.getInstance().getConfBaseDir());
     }
 
     /**

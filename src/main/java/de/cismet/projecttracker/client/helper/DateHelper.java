@@ -245,63 +245,67 @@ public class DateHelper {
             return false;
         }
 
-        return (date.getYear() == otherDate.getYear()
-                && date.getMonth() == otherDate.getMonth()
-                && date.getDate() == otherDate.getDate());
+        return ((date.getYear() == otherDate.getYear())
+                        && (date.getMonth() == otherDate.getMonth())
+                        && (date.getDate() == otherDate.getDate()));
     }
 
     /**
-     * @param date
-     * @param otherDate
-     * @return true, if and only if the two given date objects represents the same day. 
-     *         A logical ProjectTracker day starts at 4 am.
+     * DOCUMENT ME!
+     *
+     * @param   date       DOCUMENT ME!
+     * @param   otherDate  DOCUMENT ME!
+     *
+     * @return  true, if and only if the two given date objects represents the same day. A logical ProjectTracker day
+     *          starts at 4 am.
      */
-    public static boolean isSameDaySV(Date date, Date otherDate) {
-        if (date == null && otherDate == null) {
+    public static boolean isSameDaySV(final Date date, final Date otherDate) {
+        if ((date == null) && (otherDate == null)) {
             return true;
         } else if ((date == null) || (otherDate == null)) {
             return false;
         }
-        if (date.getYear() == otherDate.getYear() && date.getMonth() == otherDate.getMonth()) {
+        if ((date.getYear() == otherDate.getYear()) && (date.getMonth() == otherDate.getMonth())) {
             final int dateDay = date.getDay();
             final int otherDateDay = otherDate.getDay();
             final int diff = dateDay - otherDateDay;
             if (diff == 0) {
-                if(date.getHours()<4 && otherDate.getHours()>4 || date.getHours()>4 && otherDate.getHours()<4){
+                if (((date.getHours() < 4) && (otherDate.getHours() > 4))
+                            || ((date.getHours() > 4) && (otherDate.getHours() < 4))) {
                     return false;
                 }
                 return true;
             } else if (diff == 1) {
-                //date is one day after otherDay, check if the time
-                if (date.getHours() < 4 && otherDate.getHours()>4) {
+                // date is one day after otherDay, check if the time
+                if ((date.getHours() < 4) && (otherDate.getHours() > 4)) {
                     return true;
                 }
                 return false;
             } else if (diff == -1) {
-                if (otherDate.getHours() < 4 && date.getHours()>4) {
+                if ((otherDate.getHours() < 4) && (date.getHours() > 4)) {
                     return true;
                 }
                 return false;
             } else {
                 return false;
             }
-
         } else {
             return false;
         }
     }
 
     /**
-     * compares two calendar objects
+     * compares two calendar objects.
      *
-     * @param date1
-     * @param date2
-     * @return true, if and only if date1 is less or equal to date2. The result only depends on the dates, which are
-     * contained in the given GregorianCalendar objects. The times will be ignored.
+     * @param   date1  DOCUMENT ME!
+     * @param   date2  DOCUMENT ME!
+     *
+     * @return  true, if and only if date1 is less or equal to date2. The result only depends on the dates, which are
+     *          contained in the given GregorianCalendar objects. The times will be ignored.
      */
-    public static boolean isDateLessOrEqual(Date date1, Date date2) {
-        int firstDate = (date1.getYear() + 1900) * 10000 + date1.getMonth() * 100 + date1.getDate();
-        int secondDate = (date2.getYear() + 1900) * 10000 + date2.getMonth() * 100 + date2.getDate();
+    public static boolean isDateLessOrEqual(final Date date1, final Date date2) {
+        final int firstDate = ((date1.getYear() + 1900) * 10000) + (date1.getMonth() * 100) + date1.getDate();
+        final int secondDate = ((date2.getYear() + 1900) * 10000) + (date2.getMonth() * 100) + date2.getDate();
 
         return (firstDate <= secondDate);
     }
@@ -386,9 +390,9 @@ public class DateHelper {
      */
     public static int getWeekOfYear(final Date date) {
         final Date givenDate = new Date(date.getTime());
-        final Date firstWeek = new Date(givenDate.getTime());    // this operation can change the timezone, so the
-                                                                 // timezoneOffset must be considered in the following
-                                                                 // calculations
+        final Date firstWeek = new Date(givenDate.getTime()); // this operation can change the timezone, so the
+                                                              // timezoneOffset must be considered in the following
+                                                              // calculations
         firstWeek.setMonth(0);
         firstWeek.setDate(4);
         // givenDate should contain the same day of week as the firstWeek but
@@ -411,21 +415,31 @@ public class DateHelper {
             week = 1;
         }
 
-        return (int) week;
-    }
-
-    public static String getDayAbbreviation(Date d) {
-        return d.getDay() == 0 ? DAYS_OF_WEEK_LONG[6] : DAYS_OF_WEEK_LONG[d.getDay() - 1];
+        return (int)week;
     }
 
     /**
-     * @param start
-     * @param end
-     * @return the count of months, which are contained within the given time interval
+     * DOCUMENT ME!
+     *
+     * @param   d  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    public static int getMonthsOfPeriod(Date start, Date end) {
-        int year = end.getYear() - start.getYear();
-        int months = end.getMonth() - start.getMonth();
+    public static String getDayAbbreviation(final Date d) {
+        return (d.getDay() == 0) ? DAYS_OF_WEEK_LONG[6] : DAYS_OF_WEEK_LONG[d.getDay() - 1];
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   start  DOCUMENT ME!
+     * @param   end    DOCUMENT ME!
+     *
+     * @return  the count of months, which are contained within the given time interval
+     */
+    public static int getMonthsOfPeriod(final Date start, final Date end) {
+        final int year = end.getYear() - start.getYear();
+        final int months = end.getMonth() - start.getMonth();
         int day = 1;
 
         if (end.getDate() < start.getDate()) {

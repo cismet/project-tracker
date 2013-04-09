@@ -20,6 +20,12 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimpleCheckBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
@@ -30,12 +36,14 @@ import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
 public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler, ClickHandler {
+
+    //~ Static fields/initializers ---------------------------------------------
 
     private static TaskFormUiBinder uiBinder = GWT.create(TaskFormUiBinder.class);
     private static WorkCategoryDTO travelCatagory = null;
@@ -65,18 +73,16 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     private boolean modification = false;
     private TaskNotice tn;
 
+    //~ Constructors -----------------------------------------------------------
 
-    @Override
-    public void onClick(ClickEvent event) {
-        if (event.getSource() == wpDateFilterCB) {
-            initWorkpackage();;
-        }
-    }
-
-    interface TaskFormUiBinder extends UiBinder<Widget, StoryForm> {
-    }
-
-    public StoryForm(DialogBox form, TaskStory tb, Date day) {
+    /**
+     * Creates a new StoryForm object.
+     *
+     * @param  form  DOCUMENT ME!
+     * @param  tb    DOCUMENT ME!
+     * @param  day   DOCUMENT ME!
+     */
+    public StoryForm(final DialogBox form, final TaskStory tb, final Date day) {
         this.form = form;
         this.caller = tb;
         this.day = day;
@@ -121,6 +127,14 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     //~ Methods ----------------------------------------------------------------
 
     @Override
+    public void onClick(final ClickEvent event) {
+        if (event.getSource() == wpDateFilterCB) {
+            initWorkpackage();
+            ;
+        }
+    }
+
+    @Override
     public void onChange(final ChangeEvent event) {
         if (event.getSource() == project) {
             initWorkpackage();
@@ -144,19 +158,20 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
      * @param  event  DOCUMENT ME!
      */
     @UiHandler("button")
-    void onButtonClick(ClickEvent event) {
-        if (travel.getValue() && travelCatagory == null) {
-            BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
-                @Override
-                protected void afterExecution(WorkCategoryDTO result, boolean operationFailed) {
-                    if (!operationFailed) {
-                        if (travelCatagory == null) {
-                            travelCatagory = result;
-                            save();
+    void onButtonClick(final ClickEvent event) {
+        if (travel.getValue() && (travelCatagory == null)) {
+            final BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
+
+                    @Override
+                    protected void afterExecution(final WorkCategoryDTO result, final boolean operationFailed) {
+                        if (!operationFailed) {
+                            if (travelCatagory == null) {
+                                travelCatagory = result;
+                                save();
+                            }
                         }
                     }
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).getWorkCategory(WorkCategoryDTO.TRAVEL, callback);
             return;
@@ -235,26 +250,28 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
      */
     private void init() {
         wpDateFilterCB.setValue(true);
-        wpDateFilterCB.setTitle(" if selected, only WorkPackages which are in the current period of the project, are shown");
+        wpDateFilterCB.setTitle(
+            " if selected, only WorkPackages which are in the current period of the project, are shown");
         wpDateFilterCB.addClickHandler(this);
-        List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
+        final List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
 //        travel.setText("Travel: ");
         if (result == null) {
-            BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
-                @Override
-                protected void afterExecution(ArrayList<ProjectDTO> result, boolean operationFailed) {
-                    for (ProjectDTO tmp : result) {
-                        ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+            final BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
 
-                        if (period == null || DateHelper.isDayInProjectPeriod(day, period)) {
-                            project.addItem(tmp.getName(), "" + tmp.getId());
+                    @Override
+                    protected void afterExecution(final ArrayList<ProjectDTO> result, final boolean operationFailed) {
+                        for (final ProjectDTO tmp : result) {
+                            final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+
+                            if ((period == null) || DateHelper.isDayInProjectPeriod(day, period)) {
+                                project.addItem(tmp.getName(), "" + tmp.getId());
+                            }
                         }
+                        ProjectTrackerEntryPoint.getInstance().setProjects(result);
+                        projects = result;
+                        initWorkpackage();
                     }
-                    ProjectTrackerEntryPoint.getInstance().setProjects(result);
-                    projects = result;
-                    initWorkpackage();
-                }
-            };
+                };
 
             ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
         } else {
@@ -282,24 +299,25 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
                 final WorkPackageDTO[] wps = selectedProject.getWorkPackages()
                             .toArray(new WorkPackageDTO[selectedProject.getWorkPackages().size()]);
                 Arrays.sort(wps);
-                //for the abwesenheits package we want urlaub,krank, pause at the beginning
+                // for the abwesenheits package we want urlaub,krank, pause at the beginning
                 if (selectedProject.getName().equals("Abwesenheit")) {
                     int alreadyAdded = 0;
                     for (int i = 0; i < wps.length; i++) {
-                        WorkPackageDTO wp = wps[i];
-                        if (wp.getId() == ActivityDTO.HOLIDAY_ID || wp.getId() == ActivityDTO.ILLNESS_ID || wp.getId() == ActivityDTO.PAUSE_ID) {
-                            WorkPackageDTO tmp = wps[alreadyAdded];
+                        final WorkPackageDTO wp = wps[i];
+                        if ((wp.getId() == ActivityDTO.HOLIDAY_ID) || (wp.getId() == ActivityDTO.ILLNESS_ID)
+                                    || (wp.getId() == ActivityDTO.PAUSE_ID)) {
+                            final WorkPackageDTO tmp = wps[alreadyAdded];
                             wps[alreadyAdded] = wp;
                             wps[i] = tmp;
                             alreadyAdded++;
                         }
                     }
                 }
-                for (WorkPackageDTO tmp : wps) {
-                    WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
+                for (final WorkPackageDTO tmp : wps) {
+                    final WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
                     if (wpDateFilterCB.getValue()) {
-                        if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
+                        if ((period == null) || DateHelper.isDayInWorkPackagePeriod(day, period)) {
                             if (tmp.getName() != null) {
                                 workpackage.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
                             }
@@ -430,4 +448,13 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         }
     }
 
+    //~ Inner Interfaces -------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    interface TaskFormUiBinder extends UiBinder<Widget, StoryForm> {
+    }
 }
