@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -49,38 +47,43 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 /**
  * DOCUMENT ME!
  *
- * @author daniel
- * @version $Revision$, $Date$
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
 public class ReportResultsSummaryDataGrid extends FlowPanel {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
     private static String WP_SUMMARY_HEADER = "Workpackage Summary";
     private static String MONTH_SUMMARY_HEADER = "Month Summary";
+
     //~ Instance fields --------------------------------------------------------
+
     CellTable<StaffSummaryEntry> grid = new CellTable<StaffSummaryEntry>();
     private HashMap<StaffDTO, Set<ActivityDTO>> userMap = new HashMap<StaffDTO, Set<ActivityDTO>>();
     private HashMap<StaffDTO, Image> userIconMap = new HashMap<StaffDTO, Image>();
     private HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap = new HashMap<WorkPackageDTO, Set<ActivityDTO>>();
-    private HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>> detailSection =
-            new HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>>();
-    private final Set<Integer> expandedStaffEntries = new HashSet<Integer>();
+    private HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>> wpdetailSection =
+        new HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>>();
+    private HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>> monthDetailSection =
+        new HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>>();
+//    private final Set<Integer> expandedStaffEntries = new HashSet<Integer>();
+    private final Set<Integer> expandedStaffWPEntries = new HashSet<Integer>();
     private final Set<Integer> expandedStaffMonthEntries = new HashSet<Integer>();
-    /**
-     * Column to expand friends list.
-     */
+    /** Column to expand friends list. */
     private Column<StaffSummaryEntry, String> staffIconColumn;
     private Column<StaffSummaryEntry, String> staffNameColumn;
     private Column<StaffSummaryEntry, String> wpNameColumn;
     private Column<StaffSummaryEntry, String> whColumn;
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new ReportResultsSummaryDataGrid object.
      *
-     * @param userMap DOCUMENT ME!
-     * @param wpMap DOCUMENT ME!
+     * @param  userMap  DOCUMENT ME!
+     * @param  wpMap    DOCUMENT ME!
      */
     public ReportResultsSummaryDataGrid(final HashMap<StaffDTO, Set<ActivityDTO>> userMap,
             final HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap) {
@@ -100,55 +103,72 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      */
     private void initializeColumns() {
         staffNameColumn = new Column<StaffSummaryEntry, String>(new ClickableTextCell()) {
-            @Override
-            public String getValue(final StaffSummaryEntry object) {
-                return object.staffName;
-            }
-        };
-        staffNameColumn.setFieldUpdater(new FieldUpdater<StaffSummaryEntry, String>() {
-            @Override
-            public void update(final int index, final StaffSummaryEntry object, final String value) {
-                if (expandedStaffEntries.contains(object.id)) {
-                    expandedStaffEntries.remove(object.id);
-                } else {
-                    expandedStaffEntries.add(object.id);
+
+                @Override
+                public String getValue(final StaffSummaryEntry object) {
+                    return object.staffName;
                 }
-                // Redraw the modified row.
-                grid.redrawRow(index);
-            }
-        });
+            };
+        staffNameColumn.setFieldUpdater(new FieldUpdater<StaffSummaryEntry, String>() {
+
+                @Override
+                public void update(final int index, final StaffSummaryEntry object, final String value) {
+                    // handling for workpackage summary
+                    if (expandedStaffWPEntries.contains(object.id)) {
+                        expandedStaffWPEntries.remove(object.id);
+                    } else {
+                        if (object.staffName.equals(WP_SUMMARY_HEADER)) {
+                            expandedStaffWPEntries.add(object.id);
+                        }
+                    }
+                    // handling for monthly summary
+                    if (expandedStaffMonthEntries.contains(object.id)) {
+                        expandedStaffMonthEntries.remove(object.id);
+                    } else {
+                        if (object.staffName.equals(MONTH_SUMMARY_HEADER)) {
+                            expandedStaffMonthEntries.add(object.id);
+                        }
+                    }
+                    // Redraw the modified row.
+                    grid.redrawRow(index);
+                }
+            });
 
         wpNameColumn = new Column<StaffSummaryEntry, String>(new ClickableTextCell()) {
-            @Override
-            public String getValue(final StaffSummaryEntry object) {
-                return object.wpName;
-            }
-        };
-        wpNameColumn.setFieldUpdater(new FieldUpdater<StaffSummaryEntry, String>() {
-            @Override
-            public void update(int index, StaffSummaryEntry object, String value) {
-                if (expandedStaffMonthEntries.contains(object.id)) {
-                    expandedStaffMonthEntries.remove(object.id);
-                } else {
-                    if (object.wpName.equals(this)) {
-                        expandedStaffMonthEntries.add(object.id);
-                    }
+
+                @Override
+                public String getValue(final StaffSummaryEntry object) {
+                    return object.wpName;
                 }
-                grid.redrawRow(index);
-            }
-        });
+            };
+        wpNameColumn.setFieldUpdater(new FieldUpdater<StaffSummaryEntry, String>() {
+
+                @Override
+                public void update(final int index, final StaffSummaryEntry object, final String value) {
+                    if (expandedStaffWPEntries.contains(object.id)) {
+                        expandedStaffWPEntries.remove(object.id);
+                    } else {
+                        if (object.wpName.equals(WP_SUMMARY_HEADER)) {
+                            expandedStaffWPEntries.add(object.id);
+                        }
+                    }
+                    grid.redrawRow(index);
+                }
+            });
 
         whColumn = new Column<StaffSummaryEntry, String>(new TextCell()) {
-            @Override
-            public String getValue(final StaffSummaryEntry object) {
-                return DateHelper.doubleToHours(object.wh);
-            }
-        };
+
+                @Override
+                public String getValue(final StaffSummaryEntry object) {
+                    return DateHelper.doubleToHours(object.wh);
+                }
+            };
         whColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     }
 
@@ -163,8 +183,8 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             String iconUrl = "";
             if (s.getEmail() != null) {
                 iconUrl = GRAVATAR_URL_PREFIX
-                        + ProjectTrackerEntryPoint.getInstance().md5(s.getEmail())
-                        + "?s=32";
+                            + ProjectTrackerEntryPoint.getInstance().md5(s.getEmail())
+                            + "?s=32";
             }
             double whPerstaff = 0;
             final Set<ActivityDTO> userSet = userMap.get(s);
@@ -185,12 +205,17 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             final StaffSummaryEntry staffOverview = new StaffSummaryEntry(
                     iconUrl,
                     s.getFirstname()
-                    + s.getName(),
+                            + s.getName(),
                     "",
                     whPerstaff);
             tableEntries.add(staffOverview);
+            final StaffSummaryEntry staffWPOverview = new StaffSummaryEntry(null, WP_SUMMARY_HEADER, "", 0);
+            tableEntries.add(staffWPOverview);
+            final StaffSummaryEntry staffMonthOverview = new StaffSummaryEntry(null, MONTH_SUMMARY_HEADER, "", 0);
+            tableEntries.add(staffMonthOverview);
             final HashSet<StaffSummaryEntry> wpOverview = new HashSet<StaffSummaryEntry>();
-            // calculate the detail section
+            final HashSet<StaffSummaryEntry> monthOverview = new HashSet<StaffSummaryEntry>();
+            // calculate the wp detail section
             for (final WorkPackageDTO wp : wpMap.keySet()) {
                 final Set<ActivityDTO> wpSet = new HashSet<ActivityDTO>(wpMap.get(wp));
                 // intersect with the user set
@@ -200,10 +225,12 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                     for (final ActivityDTO act : wpSet) {
                         summarizedWorkingTime += act.getWorkinghours();
                     }
-                    wpOverview.add(new StaffSummaryEntry("", "", wp.getName(), summarizedWorkingTime));
+                    wpOverview.add(new StaffSummaryEntry(null, "", wp.getName(), summarizedWorkingTime));
                 }
             }
-            wpOverview.add(new StaffSummaryEntry("", "", "", 0));
+            wpdetailSection.put(staffWPOverview, wpOverview);
+
+            // create the monthly detail section
             final ArrayList<YearMonth> list = new ArrayList<YearMonth>();
             list.addAll(monthMap.keySet());
             Collections.sort(list);
@@ -213,18 +240,20 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                 for (final ActivityDTO act : monthSet) {
                     monthWH += act.getWorkinghours();
                 }
-                wpOverview.add(new StaffSummaryEntry(
+                monthOverview.add(new StaffSummaryEntry(
                         "",
                         "",
                         ym.getYear()
-                        + " - "
-                        + DateHelper.NAME_OF_MONTH[ym.getMonth()],
+                                + " - "
+                                + DateHelper.NAME_OF_MONTH[ym.getMonth()],
                         monthWH));
             }
-            detailSection.put(staffOverview, wpOverview);
+            monthDetailSection.put(staffMonthOverview, monthOverview);
             // if there is just one user show the wp details directly
             if (userMap.keySet().size() == 1) {
-                expandedStaffEntries.add(staffOverview.id);
+//                expandedStaffEntries.add(staffOverview.id);
+                expandedStaffMonthEntries.add(staffMonthOverview.id);
+                expandedStaffWPEntries.add(staffWPOverview.id);
             }
         }
         grid.setPageSize(tableEntries.size());
@@ -234,19 +263,22 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @author daniel
-     * @version $Revision$, $Date$
+     * @author   daniel
+     * @version  $Revision$, $Date$
      */
     private class ReportsResultSummaryTableBuilder extends AbstractCellTableBuilder<StaffSummaryEntry> {
 
         //~ Instance fields ----------------------------------------------------
+
         private final String rowStyle;
         private final String cellStyle;
 
         //~ Constructors -------------------------------------------------------
+
         /**
          * Creates a new ReportsResultSummaryTableBuilder object.
          */
@@ -258,29 +290,36 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         protected void buildRowImpl(final StaffSummaryEntry rowValue, final int absRowIndex) {
             buildRow(rowValue, absRowIndex, false);
 
-            // Display list of friends.
-            if (expandedStaffEntries.contains(rowValue.id) && detailSection.containsKey(rowValue)) {
-                buildRow(new StaffSummaryEntry("", "", WP_SUMMARY_HEADER, 0),absRowIndex,true);
-                buildRow(new StaffSummaryEntry("", "", MONTH_SUMMARY_HEADER, 0),absRowIndex,true);
-                
-//                final Set<StaffSummaryEntry> workPackageEntry = detailSection.get(rowValue);
-//                for (final StaffSummaryEntry entry : workPackageEntry) {
-//                    buildRow(entry, absRowIndex, true);
-//                }
-//                if(expandedStaffMonthEntries.contains(rowValue.id && det))
+            // Display workpackage summary if corresponding node is expanded.
+// if (expandedStaffEntries.contains(rowValue.id)) { // && detailSection.containsKey(rowValue)) {
+            if (expandedStaffWPEntries.contains(rowValue.id) && wpdetailSection.containsKey(rowValue)) {
+                final Set<StaffSummaryEntry> workPackageEntry = wpdetailSection.get(rowValue);
+                for (final StaffSummaryEntry entry : workPackageEntry) {
+                    buildRow(entry, absRowIndex, true);
+                }
             }
+            // Display month summary if corresponding node is expanded.
+            if (expandedStaffMonthEntries.contains(rowValue.id) && monthDetailSection.containsKey(rowValue)) {
+                final Set<StaffSummaryEntry> workPackageEntry = monthDetailSection.get(rowValue);
+                for (final StaffSummaryEntry entry : workPackageEntry) {
+                    buildRow(entry, absRowIndex, true);
+                }
+            }
+
+//            }
         }
 
         /**
          * DOCUMENT ME!
          *
-         * @param rowValue DOCUMENT ME!
-         * @param absRowIndex DOCUMENT ME!
-         * @param wpFlag DOCUMENT ME!
+         * @param  rowValue     DOCUMENT ME!
+         * @param  absRowIndex  DOCUMENT ME!
+         * @param  wpFlag       DOCUMENT ME!
          */
         private void buildRow(final StaffSummaryEntry rowValue, final int absRowIndex, final boolean wpFlag) {
             // Calculate the row styles.
@@ -317,7 +356,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             td = row.startTD();
             td.className(cellStyles);
             if (wpFlag) {
-                td.text(rowValue.wpName);
+                renderCell(td, createContext(1), wpNameColumn, rowValue);
             } else {
                 td.text("");
             }
@@ -335,17 +374,19 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     /**
      * Renders custom table header. Includes the staff name, workpackage name and summarized working hours
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     private class CustomHeaderBuilder extends AbstractHeaderOrFooterBuilder<StaffSummaryEntry> {
 
         //~ Instance fields ----------------------------------------------------
+
         private Header<String> checkBoxHeader = new TextHeader("Collapse");
         private Header<String> staffNameHeader = new TextHeader("Staff");
         private Header<String> wpHeader = new TextHeader("Workpackage");
         private Header<String> whHeader = new TextHeader("Hours");
 
         //~ Constructors -------------------------------------------------------
+
         /**
          * Creates a new CustomHeaderBuilder object.
          */
@@ -355,6 +396,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         protected boolean buildHeaderOrFooterImpl() {
             // header above the checkbox
@@ -390,20 +432,22 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     private final class YearMonth implements Comparable<YearMonth> {
 
         //~ Instance fields ----------------------------------------------------
+
         private int month;
         private int year;
 
         //~ Constructors -------------------------------------------------------
+
         /**
          * Creates a new YearMonth object.
          *
-         * @param year DOCUMENT ME!
-         * @param month DOCUMENT ME!
+         * @param  year   DOCUMENT ME!
+         * @param  month  DOCUMENT ME!
          */
         public YearMonth(final int year, final int month) {
             this.year = year;
@@ -411,10 +455,11 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         }
 
         //~ Methods ------------------------------------------------------------
+
         /**
          * DOCUMENT ME!
          *
-         * @return DOCUMENT ME!
+         * @return  DOCUMENT ME!
          */
         public int getMonth() {
             return month;
@@ -423,7 +468,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         /**
          * DOCUMENT ME!
          *
-         * @param month DOCUMENT ME!
+         * @param  month  DOCUMENT ME!
          */
         public void setMonth(final int month) {
             this.month = month;
@@ -432,7 +477,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         /**
          * DOCUMENT ME!
          *
-         * @return DOCUMENT ME!
+         * @return  DOCUMENT ME!
          */
         public int getYear() {
             return year;
@@ -441,7 +486,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         /**
          * DOCUMENT ME!
          *
-         * @param year DOCUMENT ME!
+         * @param  year  DOCUMENT ME!
          */
         public void setYear(final int year) {
             this.year = year;
@@ -453,7 +498,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                 return true;
             }
             if (o instanceof YearMonth) {
-                final YearMonth ym = (YearMonth) o;
+                final YearMonth ym = (YearMonth)o;
                 if ((ym.getMonth() == this.month) && (ym.getYear() == this.year)) {
                     return true;
                 }
@@ -490,11 +535,12 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     private final class StaffSummaryEntry {
 
         //~ Instance fields ----------------------------------------------------
+
         public String iconUrl;
         public final String staffName;
         public final String wpName;
@@ -502,13 +548,14 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         public final Integer id;
 
         //~ Constructors -------------------------------------------------------
+
         /**
          * Creates a new StaffSummaryEntry object.
          *
-         * @param url DOCUMENT ME!
-         * @param staffName DOCUMENT ME!
-         * @param wpName DOCUMENT ME!
-         * @param wh DOCUMENT ME!
+         * @param  url        DOCUMENT ME!
+         * @param  staffName  DOCUMENT ME!
+         * @param  wpName     DOCUMENT ME!
+         * @param  wh         DOCUMENT ME!
          */
         public StaffSummaryEntry(final String url, final String staffName, final String wpName, final double wh) {
             this.iconUrl = url;
