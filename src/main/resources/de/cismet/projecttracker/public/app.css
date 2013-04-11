@@ -228,6 +228,11 @@ footer{
 .report-table-wpRow{
     background-color: #ffffff;
 }
+
+.report-table-detail-header{
+    background: #F9F9F9;
+}
+
 .report-table-no-border{
     outline: none;
     vertical-align: middle !important;
@@ -235,6 +240,12 @@ footer{
 
 .report-table-wpCell{
     font-size: 12px;
+    line-height: 18px !important;
+    padding: 4px !important;
+}
+
+.report-table-detailHeaderCell{
+    font-size: 13px;
     line-height: 18px !important;
     padding: 4px !important;
 }
