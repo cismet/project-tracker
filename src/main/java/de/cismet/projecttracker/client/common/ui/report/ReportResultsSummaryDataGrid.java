@@ -173,11 +173,11 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             double whPerstaff = 0;
             final Set<ActivityDTO> userSet = userMap.get(s);
             // calculate the first row, genreate the month map
-            final HashMap<YearMonth, Set<ActivityDTO>> monthMap = new HashMap<YearMonth, Set<ActivityDTO>>();
+            final HashMap<YearMonthKey, Set<ActivityDTO>> monthMap = new HashMap<YearMonthKey, Set<ActivityDTO>>();
             if (!userSet.isEmpty()) {
                 for (final ActivityDTO act : userSet) {
                     whPerstaff += act.getWorkinghours();
-                    final YearMonth ym = new YearMonth(DateHelper.getYear(act.getDay()), act.getDay().getMonth());
+                    final YearMonthKey ym = new YearMonthKey(DateHelper.getYear(act.getDay()), act.getDay().getMonth());
                     Set<ActivityDTO> monthSet = monthMap.get(ym);
                     if (monthSet == null) {
                         monthSet = new HashSet<ActivityDTO>();
@@ -215,10 +215,10 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             wpdetailSection.put(staffWPOverview, wpOverview);
 
             // create the monthly detail section
-            final ArrayList<YearMonth> list = new ArrayList<YearMonth>();
+            final ArrayList<YearMonthKey> list = new ArrayList<YearMonthKey>();
             list.addAll(monthMap.keySet());
             Collections.sort(list);
-            for (final YearMonth ym : list) {
+            for (final YearMonthKey ym : list) {
                 final Set<ActivityDTO> monthSet = monthMap.get(ym);
                 double monthWH = 0;
                 for (final ActivityDTO act : monthSet) {
@@ -369,13 +369,6 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
      */
     private class CustomHeaderBuilder extends AbstractHeaderOrFooterBuilder<StaffSummaryEntry> {
 
-        //~ Instance fields ----------------------------------------------------
-
-        private Header<String> checkBoxHeader = new TextHeader("Collapse");
-        private Header<String> staffNameHeader = new TextHeader("Staff");
-        private Header<String> wpHeader = new TextHeader("Workpackage");
-        private Header<String> whHeader = new TextHeader("Hours");
-
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -401,10 +394,6 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             th.className("report-table-staffCol");
             th.text("Staff").endTH();
 
-//            th = tr.startTH().colSpan(1);
-//            th.className("report-table-wpCol");
-//            th.text("Staff").endTH();
-
             // workpackageheader.
             th = tr.startTH().colSpan(1);
             th.className("report-table-wpCol");
@@ -421,11 +410,11 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     }
 
     /**
-     * DOCUMENT ME!
+     * YearMonthKey is used as key value to generate the montly summary detail section of the grid.
      *
      * @version  $Revision$, $Date$
      */
-    private final class YearMonth implements Comparable<YearMonth> {
+    private final class YearMonthKey implements Comparable<YearMonthKey> {
 
         //~ Instance fields ----------------------------------------------------
 
@@ -440,7 +429,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
          * @param  year   DOCUMENT ME!
          * @param  month  DOCUMENT ME!
          */
-        public YearMonth(final int year, final int month) {
+        public YearMonthKey(final int year, final int month) {
             this.year = year;
             this.month = month;
         }
@@ -488,8 +477,8 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             if (o == this) {
                 return true;
             }
-            if (o instanceof YearMonth) {
-                final YearMonth ym = (YearMonth)o;
+            if (o instanceof YearMonthKey) {
+                final YearMonthKey ym = (YearMonthKey)o;
                 if ((ym.getMonth() == this.month) && (ym.getYear() == this.year)) {
                     return true;
                 }
@@ -506,7 +495,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         }
 
         @Override
-        public int compareTo(final YearMonth t) {
+        public int compareTo(final YearMonthKey t) {
             if (t.getYear() < this.getYear()) {
                 return 1;
             } else if (t.getYear() > this.getYear()) {
@@ -524,7 +513,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     }
 
     /**
-     * DOCUMENT ME!
+     * A StaffSummaryEntry containts the data that represents a row of the data grid.
      *
      * @version  $Revision$, $Date$
      */
