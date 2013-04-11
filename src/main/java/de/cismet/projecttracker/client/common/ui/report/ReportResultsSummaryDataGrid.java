@@ -138,27 +138,13 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                 }
             });
 
-        wpNameColumn = new Column<StaffSummaryEntry, String>(new ClickableTextCell()) {
+        wpNameColumn = new Column<StaffSummaryEntry, String>(new TextCell()) {
 
                 @Override
                 public String getValue(final StaffSummaryEntry object) {
                     return object.wpName;
                 }
             };
-        wpNameColumn.setFieldUpdater(new FieldUpdater<StaffSummaryEntry, String>() {
-
-                @Override
-                public void update(final int index, final StaffSummaryEntry object, final String value) {
-                    if (expandedStaffWPEntries.contains(object.id)) {
-                        expandedStaffWPEntries.remove(object.id);
-                    } else {
-                        if (object.wpName.equals(WP_SUMMARY_HEADER)) {
-                            expandedStaffWPEntries.add(object.id);
-                        }
-                    }
-                    grid.redrawRow(index);
-                }
-            });
 
         whColumn = new Column<StaffSummaryEntry, String>(new TextCell()) {
 
