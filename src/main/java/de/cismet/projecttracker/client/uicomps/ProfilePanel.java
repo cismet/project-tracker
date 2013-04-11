@@ -314,8 +314,9 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
                         if (result != 0) {
                             remainingVacation += result;
                             carryOverContent.setText("+ " + formatDays(result) + " Days");
+                            carryOver.removeStyleName("noDisplay");
                         } else {
-                            pageHeaderHolidayPanel.remove(carryOver);
+                            carryOver.addStyleName("noDisplay");
                         }
                         ProjectTrackerEntryPoint.getProjectService(true)
                                 .getVacationDaysTaken(new Date(), staff, vacationDaysTakenCallback);
