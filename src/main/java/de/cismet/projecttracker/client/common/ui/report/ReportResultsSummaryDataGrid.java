@@ -62,16 +62,14 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
 
     CellTable<StaffSummaryEntry> grid = new CellTable<StaffSummaryEntry>();
     private HashMap<StaffDTO, Set<ActivityDTO>> userMap = new HashMap<StaffDTO, Set<ActivityDTO>>();
-    private HashMap<StaffDTO, Image> userIconMap = new HashMap<StaffDTO, Image>();
     private HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap = new HashMap<WorkPackageDTO, Set<ActivityDTO>>();
     private HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>> wpdetailSection =
         new HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>>();
     private HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>> monthDetailSection =
         new HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>>();
-//    private final Set<Integer> expandedStaffEntries = new HashSet<Integer>();
     private final Set<Integer> expandedStaffWPEntries = new HashSet<Integer>();
     private final Set<Integer> expandedStaffMonthEntries = new HashSet<Integer>();
-    /** Column to expand friends list. */
+    /** Columns to expand friends list. */
     private Column<StaffSummaryEntry, String> staffIconColumn;
     private Column<StaffSummaryEntry, String> staffNameColumn;
     private Column<StaffSummaryEntry, String> wpNameColumn;
@@ -296,7 +294,6 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             buildRow(rowValue, absRowIndex, false);
 
             // Display workpackage summary if corresponding node is expanded.
-// if (expandedStaffEntries.contains(rowValue.id)) { // && detailSection.containsKey(rowValue)) {
             if (expandedStaffWPEntries.contains(rowValue.id) && wpdetailSection.containsKey(rowValue)) {
                 final Set<StaffSummaryEntry> workPackageEntry = wpdetailSection.get(rowValue);
                 for (final StaffSummaryEntry entry : workPackageEntry) {
@@ -310,8 +307,6 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                     buildRow(entry, absRowIndex, true);
                 }
             }
-
-//            }
         }
 
         /**
@@ -327,10 +322,16 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             if (wpFlag) {
                 trClasses.append(" report-table-wpRow");
             }
+            if (rowValue.staffName.equals(WP_SUMMARY_HEADER) || rowValue.staffName.equals(MONTH_SUMMARY_HEADER)) {
+                trClasses.append(" report-table-detail-header");
+            }
             // Calculate the cell styles.
             String cellStyles = cellStyle;
             if (wpFlag) {
                 cellStyles += " report-table-wpCell";
+            }
+            if (rowValue.staffName.equals(WP_SUMMARY_HEADER) || rowValue.staffName.equals(MONTH_SUMMARY_HEADER)) {
+                cellStyles += " report-table-detailHeaderCell";
             }
             final TableRowBuilder row = startRow();
             row.className(trClasses.toString());
@@ -340,13 +341,17 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             td.className(cellStyles);
             if (!wpFlag) {
                 SpanBuilder spB = td.startSpan();
-                final ImageBuilder imgB = spB.startImage();
-                imgB.src(rowValue.iconUrl);
-                imgB.className("report-table-staffIcon");
-                spB.endImage();
+                if (rowValue.iconUrl != null) {
+                    final ImageBuilder imgB = spB.startImage();
+                    imgB.src(rowValue.iconUrl);
+                    imgB.className("report-table-staffIcon");
+                    spB.endImage();
+                }
                 spB.endSpan();
                 spB = td.startSpan();
-//                    spB.text(rowValue.staffName);
+                if (rowValue.staffName.equals(WP_SUMMARY_HEADER) || rowValue.staffName.equals(MONTH_SUMMARY_HEADER)) {
+                    spB.attribute("style", "margin-left:60px;");
+                }
                 renderCell(spB, createContext(1), staffNameColumn, rowValue);
                 spB.endSpan();
             }
