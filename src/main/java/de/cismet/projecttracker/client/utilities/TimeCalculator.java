@@ -13,6 +13,7 @@ package de.cismet.projecttracker.client.utilities;
 
 import com.google.gwt.user.client.ui.Label;
 
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,29 +41,25 @@ public class TimeCalculator {
     /**
      * DOCUMENT ME!
      *
-     * @param   act  DOCUMENT ME!
+     * @param   act             DOCUMENT ME!
+     * @param   calculatePause  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static double getWorkingHoursForActivity(final ActivityDTO act) {
+    public static double getWorkingHoursForActivity(final ActivityDTO act, final boolean calculatePause) {
         double hours = 0.0;
         double dhow = 0.0;
 
         ContractDTO contract = null;
-        try {
-            contract = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay());
-        } catch (InvalidInputValuesException ex) {
-            Logger.getLogger(SheetsPanel.class.getName())
-                    .log(
-                        Level.SEVERE,
-                        "Could not get valid Contract for Staff "
-                        + ProjectTrackerEntryPoint.getInstance().getStaff()
-                        + " and Date "
-                        + act.getDay(),
-                        ex);
-        }
+        contract = getContractForDay(act.getStaff(), act.getDay());
         if (contract != null) {
             dhow = contract.getWhow() / 5;
+        }
+
+        // if the pause should be taken into account return the pause time
+        if (calculatePause && (act.getWorkCategory() != null)
+                    && (act.getWorkPackage().getId() == ActivityDTO.PAUSE_ID)) {
+            return act.getWorkinghours();
         }
 
         if (act.getKindofactivity() == ActivityDTO.HOLIDAY) {
@@ -94,6 +91,17 @@ public class TimeCalculator {
         }
 
         return hours;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   act  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static double getWorkingHoursForActivity(final ActivityDTO act) {
+        return getWorkingHoursForActivity(act, false);
     }
 
     /**
@@ -192,5 +200,22 @@ public class TimeCalculator {
             };
         ProjectTrackerEntryPoint.getProjectService(true)
                 .getActivityDataByWeek(ProjectTrackerEntryPoint.getInstance().getStaff(), year, week, callback);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   s  DOCUMENT ME!
+     * @param   d  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ContractDTO getContractForDay(final StaffDTO s, final Date d) {
+        for (final ContractDTO contract : s.getContracts()) {
+            if (contract.getFromdate().before(d) && ((contract.getTodate() == null) || contract.getTodate().after(d))) {
+                return contract;
+            }
+        }
+        return null;
     }
 }

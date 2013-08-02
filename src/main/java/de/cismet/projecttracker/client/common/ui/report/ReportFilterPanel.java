@@ -552,7 +552,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
         map.put(WORKPACKAGE_KEY, workpackages);
 
         final List<StaffDTO> searchStaff = new ArrayList<StaffDTO>();
-         final List<StaffDTO> selectedUsers = getSelectedUsers();
+        final List<StaffDTO> selectedUsers = getSelectedUsers();
         if (selectedUsers != null) {
             searchStaff.addAll(selectedUsers);
         }
