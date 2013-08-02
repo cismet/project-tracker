@@ -24,7 +24,7 @@
                     <div>Project:</div>
                     <g:ListBox ui:field="project" styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
                     <div>Workpackage:</div>
-                    <g:ListBox ui:field="workpackage"  styleName="report-filter-cb"/><!-- styleName="{style.input-component}" />-->
+                    <g:ListBox ui:field="workpackages"  styleName="report-filter-wp-list"/><!-- styleName="{style.input-component}" />-->
                     <b:Tooltip text="if selected you can specify a time period to search for">
                         <b:CollapseTrigger target="#toggle1">
                             <b:CheckBox ui:field="dateFilterCB">use date filter</b:CheckBox>
