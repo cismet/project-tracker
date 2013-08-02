@@ -41,6 +41,7 @@ import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
+import de.cismet.projecttracker.client.utilities.TimeCalculator;
 
 /**
  * DOCUMENT ME!
@@ -174,7 +175,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             final HashMap<YearMonthKey, Set<ActivityDTO>> monthMap = new HashMap<YearMonthKey, Set<ActivityDTO>>();
             if (!userSet.isEmpty()) {
                 for (final ActivityDTO act : userSet) {
-                    whPerstaff += act.getWorkinghours();
+                    whPerstaff += TimeCalculator.getWorkingHoursForActivity(act);
                     final YearMonthKey ym = new YearMonthKey(DateHelper.getYear(act.getDay()), act.getDay().getMonth());
                     Set<ActivityDTO> monthSet = monthMap.get(ym);
                     if (monthSet == null) {
@@ -205,7 +206,12 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                 if (!wpSet.isEmpty()) {
                     double summarizedWorkingTime = 0;
                     for (final ActivityDTO act : wpSet) {
-                        summarizedWorkingTime += act.getWorkinghours();
+                        /*
+                         * since we want to summarize the activites per workpackage we have to add also the pause times
+                         * to avoid that the hours column for the pause workpackage is empty. Therfore we call the
+                         * TimeCalculator.getWorkingHoursForActivity method with true
+                         * */
+                        summarizedWorkingTime += TimeCalculator.getWorkingHoursForActivity(act, true);
                     }
                     wpOverview.add(new StaffSummaryEntry(null, "", wp.getName(), summarizedWorkingTime));
                 }
@@ -220,7 +226,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                 final Set<ActivityDTO> monthSet = monthMap.get(ym);
                 double monthWH = 0;
                 for (final ActivityDTO act : monthSet) {
-                    monthWH += act.getWorkinghours();
+                    monthWH += TimeCalculator.getWorkingHoursForActivity(act);
                 }
                 monthOverview.add(new StaffSummaryEntry(
                         "",

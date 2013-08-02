@@ -30,6 +30,7 @@ import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+import de.cismet.projecttracker.client.utilities.TimeCalculator;
 
 /**
  * DOCUMENT ME!
@@ -177,7 +178,7 @@ public class ReportResultPanel extends Composite {
      */
     private void processActivites(final ArrayList<ActivityDTO> result) {
         for (final ActivityDTO tmp : result) {
-            hoursInTotal += tmp.getWorkinghours();
+            hoursInTotal += TimeCalculator.getWorkingHoursForActivity(tmp);
             activityCount++;
             // find the earliest activity...
             if (firstActivity == null) {
