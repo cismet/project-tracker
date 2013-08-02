@@ -21,16 +21,14 @@ import com.google.gwt.dom.builder.shared.SpanBuilder;
 import com.google.gwt.dom.builder.shared.TableCellBuilder;
 import com.google.gwt.dom.builder.shared.TableRowBuilder;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.AbstractCellTable.Style;
 import com.google.gwt.user.cellview.client.AbstractCellTableBuilder;
 import com.google.gwt.user.cellview.client.AbstractHeaderOrFooterBuilder;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.Image;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -356,7 +354,9 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             // workinghours column.
             td = row.startTD();
             td.className(cellStyles + " report-table-whCol");
-            td.text((rowValue.wh == 0) ? "" : DateHelper.doubleToHours(rowValue.wh));
+            final NumberFormat df = NumberFormat.getFormat("#.##");
+            td.text((rowValue.wh == 0) ? ""
+                                       : (DateHelper.doubleToHours(rowValue.wh) + " (" + df.format(rowValue.wh) + ")"));
             td.endTD();
             row.endTR();
         }
