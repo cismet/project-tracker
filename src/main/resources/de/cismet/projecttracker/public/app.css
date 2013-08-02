@@ -215,6 +215,11 @@ footer{
     width:320px;
     margin-top: 5px;
 }
+.report-filter-wp-list{
+    width:320px;
+    margin-top: 5px;
+    height: 95px !important;
+}
 
 .report-filter-cb-user{
     width: 150px;
@@ -2105,4 +2110,3 @@ footer{
     width: 16px;
     height: 16px;
 }
->>>>>>> 484ad02bb6317ac9574d3a99f4de5d211aa9e602

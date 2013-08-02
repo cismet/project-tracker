@@ -82,8 +82,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
     TextBox description;
     @UiField
     ListBox project;
-    @UiField
-    ListBox workpackage;
+    @UiField(provided = true)
+    com.github.gwtbootstrap.client.ui.ListBox workpackages = new com.github.gwtbootstrap.client.ui.ListBox(true);
     @UiField(provided = true)
     com.github.gwtbootstrap.client.ui.ListBox users = new com.github.gwtbootstrap.client.ui.ListBox(true);
     @UiField
@@ -121,7 +121,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
         initWidget(uiBinder.createAndBindUi(this));
         init();
         project.addChangeHandler(this);
-        workpackage.addChangeHandler(this);
+        workpackages.addChangeHandler(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -258,8 +258,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
      */
     private void initWorkpackage() {
         final ProjectDTO selectedProject = getSelectedProject();
-        workpackage.clear();
-        workpackage.addItem("* all WorkPackages", "-1");
+        workpackages.clear();
+        workpackages.addItem("* all WorkPackages", "-1");
         if (selectedProject != null) {
             if (selectedProject.getWorkPackages() != null) {
                 final WorkPackageDTO[] wps = selectedProject.getWorkPackages()
@@ -270,14 +270,14 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
                     if (tmp.getName() != null) {
-                        workpackage.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                        workpackages.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
                     }
                 }
 
-                for (int i = 0; i < workpackage.getItemCount(); i++) {
-                    final String itemText = workpackage.getItemText(i);
+                for (int i = 0; i < workpackages.getItemCount(); i++) {
+                    final String itemText = workpackages.getItemText(i);
                     if (itemText.toUpperCase().startsWith("WP")) {
-                        workpackage.getElement()
+                        workpackages.getElement()
                                 .getElementsByTagName("option")
                                 .getItem(i)
                                 .setAttribute("disabled", "disabled");
@@ -292,13 +292,13 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
                     if (wp.getName() != null) {
-                        workpackage.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
+                        workpackages.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
                     }
 
-                    for (int i = 0; i < workpackage.getItemCount(); i++) {
-                        final String itemText = workpackage.getItemText(i);
+                    for (int i = 0; i < workpackages.getItemCount(); i++) {
+                        final String itemText = workpackages.getItemText(i);
                         if (itemText.toUpperCase().startsWith("WP")) {
-                            workpackage.getElement()
+                            workpackages.getElement()
                                     .getElementsByTagName("option")
                                     .getItem(i)
                                     .setAttribute("disabled", "disabled");
@@ -306,7 +306,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                     }
                 }
             }
-//            workpackage.setSelectedIndex(-1);
+//            workpackages.setSelectedIndex(-1);
         }
     }
 
@@ -398,13 +398,25 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
      *
      * @return  DOCUMENT ME!
      */
-    private WorkPackageDTO getSelectedWorkpackage() {
-        final String value = workpackage.getValue(workpackage.getSelectedIndex());
-        if (value.equals("-1")) {
-            // the all option is selected so return null
-            return null;
+    private List<WorkPackageDTO> getSelectedWorkpackages() {
+        ArrayList<WorkPackageDTO> selectedItems = null;
+        for (int i = 0; i < workpackages.getItemCount(); i++) {
+            if (workpackages.isItemSelected(i)) {
+                final String value = workpackages.getValue(i);
+                if (value.equals("-1")) {
+                    // the all workpackage element is selected so return null
+                    return null;
+                } else {
+                    final long wpId = Long.parseLong(value);
+                    final WorkPackageDTO wp = getWorkpackageById(wpId);
+                    if (selectedItems == null) {
+                        selectedItems = new ArrayList<WorkPackageDTO>();
+                    }
+                    selectedItems.add(wp);
+                }
+            }
         }
-        return getWorkpackageById(Long.parseLong(value));
+        return selectedItems;
     }
 
     /**
@@ -521,11 +533,9 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
      */
     public HashMap<String, Object> getSearchParams() {
         final HashMap<String, Object> map = new HashMap<String, Object>();
-        final List<WorkPackageDTO> workpackages = new LinkedList<WorkPackageDTO>();
-        final WorkPackageDTO wp = getSelectedWorkpackage();
-        if (wp != null) {
-            workpackages.add(wp);
-        } else {
+        List<WorkPackageDTO> workpackages = getSelectedWorkpackages();
+//        final List<WorkPackageDTO wp = getSelectedWorkpackage();
+        if ((workpackages == null) || workpackages.isEmpty()) {
             // we have to check what project is selected...
             final ProjectDTO proj = getSelectedProject();
             /*
@@ -533,17 +543,16 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
              * means all project are relevant) we have to do nothing
              */
             if (proj != null) {
+                if (workpackages == null) {
+                    workpackages = new ArrayList<WorkPackageDTO>();
+                }
                 workpackages.addAll(proj.getWorkPackages());
             }
         }
         map.put(WORKPACKAGE_KEY, workpackages);
 
         final List<StaffDTO> searchStaff = new ArrayList<StaffDTO>();
-//        final StaffDTO staff = getSelectedUser();
-//        if (staff != null) {
-//            searchStaff.add(staff);
-//        }
-        final List<StaffDTO> selectedUsers = getSelectedUsers();
+         final List<StaffDTO> selectedUsers = getSelectedUsers();
         if (selectedUsers != null) {
             searchStaff.addAll(selectedUsers);
         }
