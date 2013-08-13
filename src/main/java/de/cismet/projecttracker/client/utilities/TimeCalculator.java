@@ -50,8 +50,21 @@ public class TimeCalculator {
         double hours = 0.0;
         double dhow = 0.0;
 
+        /*
+         * it is possible that the there is no staff for the activity ( e.g Holiday activites), in this case calculate
+         * the dhow with the currently logged in user
+         */
         ContractDTO contract = null;
-        contract = getContractForDay(act.getStaff(), act.getDay());
+        if (act.getStaff() == null) {
+            try {
+                contract = ProjectTrackerEntryPoint.getInstance().getContractForStaff(act.getDay());
+            } catch (InvalidInputValuesException ex) {
+                Logger.getLogger(TimeCalculator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            contract = getContractForDay(act.getStaff(), act.getDay());
+        }
+
         if (contract != null) {
             dhow = contract.getWhow() / 5;
         }
@@ -211,9 +224,12 @@ public class TimeCalculator {
      * @return  DOCUMENT ME!
      */
     public static ContractDTO getContractForDay(final StaffDTO s, final Date d) {
-        for (final ContractDTO contract : s.getContracts()) {
-            if (contract.getFromdate().before(d) && ((contract.getTodate() == null) || contract.getTodate().after(d))) {
-                return contract;
+        if ((s != null) && (s.getContracts() != null) && !s.getContracts().isEmpty()) {
+            for (final ContractDTO contract : s.getContracts()) {
+                if (contract.getFromdate().before(d)
+                            && ((contract.getTodate() == null) || contract.getTodate().after(d))) {
+                    return contract;
+                }
             }
         }
         return null;
