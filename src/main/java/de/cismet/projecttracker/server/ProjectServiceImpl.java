@@ -4437,7 +4437,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
 
         if (description != null) {
-            conjuction.add(Restrictions.ilike("description", description, MatchMode.ANYWHERE));
+            conjuction.add(Restrictions.ilike("description", description.trim(), MatchMode.ANYWHERE));
         }
 
         try {
