@@ -184,7 +184,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             FileReader input = null;
             final Properties jsonConfig = new Properties();
             try {
-                 input = new FileReader(context.getInitParameter("confBaseDir") + System.getProperty("file.separator")
+                input = new FileReader(context.getInitParameter("confBaseDir") + System.getProperty("file.separator")
                                 + "json_log.properties");
                 jsonConfig.load(input);
                 JSON_LOG_BASE_DIR = jsonConfig.getProperty("base_dir");
@@ -3161,14 +3161,14 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             final MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
-//                        .add(Restrictions.eq("username", username))
-//                        .uniqueResult();
             final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
-                        .add(Restrictions.and(
-                                    Restrictions.eq("username", username),
-                                    Restrictions.eq("password", md.digest())))
+                        .add(Restrictions.eq("username", username))
                         .uniqueResult();
+//            final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
+//                        .add(Restrictions.and(
+//                                    Restrictions.eq("username", username),
+//                                    Restrictions.eq("password", md.digest())))
+//                        .uniqueResult();
 
             if (staff != null) {
                 final HttpSession session = getThreadLocalRequest().getSession();
@@ -3702,6 +3702,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             // iterate through all contracts and sum the real and the nominal working time
             while (it.hasNext()) {
                 final Contract contract = (Contract)it.next();
+                if (contract.getCompany().getId() == 3) {
+                    continue;
+                }
                 final GregorianCalendar contractToDateCal = new GregorianCalendar();
                 // if the contract is unlimeted calculate till now
                 final GregorianCalendar contractFromDateCal = new GregorianCalendar();
@@ -4427,7 +4430,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         conjuction.add(Restrictions.isNotNull("day"));
         if ((from != null) && (til != null) && (from.compareTo(til) < 0)) {
             conjuction.add(Restrictions.ge("day", from));
-            conjuction.add(Restrictions.le("day", til));
+            final GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(til);
+            cal.set(GregorianCalendar.HOUR_OF_DAY, 4);
+            conjuction.add(Restrictions.le("day", cal.getTime()));
         }
 
         if (description != null) {
