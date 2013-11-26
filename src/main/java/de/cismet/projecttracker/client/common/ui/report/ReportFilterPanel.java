@@ -122,6 +122,17 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
         init();
         project.addChangeHandler(this);
         workpackages.addChangeHandler(this);
+
+        // set the default selection for project and wp...
+        workpackages.setItemSelected(0, true);
+        int index = 0;
+        for (int i = 0; i < project.getItemCount(); i++) {
+            if (project.getValue(i).equals("-1")) {
+                index = i;
+                break;
+            }
+        }
+        project.setItemSelected(index, true);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -196,6 +207,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                         }
                         ProjectTrackerEntryPoint.getInstance().setProjects(result);
                         projects = result;
+
                         initWorkpackage();
                     }
                 };
@@ -306,7 +318,6 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                     }
                 }
             }
-//            workpackages.setSelectedIndex(-1);
         }
     }
 
