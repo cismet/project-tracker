@@ -63,6 +63,8 @@ public class LockPanel extends Composite implements ClickHandler {
     private Story times;
     private SimpleCheckBox weekLockCB;
     private ArrayList<SimpleCheckBox> lockedDays = new ArrayList<SimpleCheckBox>();
+    private Button prevWeekBtn;
+    private Button nextWeekBtn;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -171,6 +173,16 @@ public class LockPanel extends Composite implements ClickHandler {
         weekLockCB.setEnabled(true);
         unlockDay(day);
         ProjectTrackerEntryPoint.outputBox("Pause Policy is not fulfilled! Can not lock this day.");
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  flag  DOCUMENT ME!
+     */
+    private void setWeekButtonsEnabled(final Boolean flag) {
+        prevWeekBtn.setEnabled(flag);
+        nextWeekBtn.setEnabled(flag);
     }
 
     /**
@@ -341,15 +353,21 @@ public class LockPanel extends Composite implements ClickHandler {
      * @param  story           DOCUMENT ME!
      * @param  times           DOCUMENT ME!
      * @param  weekLockCB      DOCUMENT ME!
+     * @param  prevWeek        DOCUMENT ME!
+     * @param  nextWeek        DOCUMENT ME!
      */
     public void initialise(final Date firstDayOfWeek,
             final TaskStory story,
             final Story times,
-            final SimpleCheckBox weekLockCB) {
+            final SimpleCheckBox weekLockCB,
+            final Button prevWeek,
+            final Button nextWeek) {
         this.taskStory = story;
         this.times = times;
         this.firstDayOfWeek = firstDayOfWeek;
         this.weekLockCB = weekLockCB;
+        this.prevWeekBtn = prevWeek;
+        this.nextWeekBtn = nextWeek;
     }
 
     /**
@@ -389,6 +407,7 @@ public class LockPanel extends Composite implements ClickHandler {
      */
     public void lockAllDaysInWeek() {
         // check for all Days, that there are no times left...
+        setWeekButtonsEnabled(false);
         final Date d = new Date(firstDayOfWeek.getTime());
         final Date sunday = new Date(d.getTime());
         final ArrayList<Date> faultyTimeSlotsDays = new ArrayList<Date>();
@@ -398,6 +417,7 @@ public class LockPanel extends Composite implements ClickHandler {
             if (!checkWorkpackagePeriods((i == 0) ? sunday : d)) {
                 weekLockCB.setValue(false);
                 weekLockCB.setEnabled(true);
+                setWeekButtonsEnabled(true);
                 return;
             }
 
@@ -427,6 +447,7 @@ public class LockPanel extends Composite implements ClickHandler {
                             + timeSlotNotCorrectDays));
             weekLockCB.setValue(false);
             weekLockCB.setEnabled(true);
+            setWeekButtonsEnabled(true);
             return;
         }
 
@@ -472,6 +493,7 @@ public class LockPanel extends Composite implements ClickHandler {
                         weekLockCB.setValue(false);
                         weekLockCB.setEnabled(true);
                     }
+                    setWeekButtonsEnabled(true);
                 }
             };
 
@@ -491,6 +513,7 @@ public class LockPanel extends Composite implements ClickHandler {
      * DOCUMENT ME!
      */
     public void unlockAllDaysInWeek() {
+        setWeekButtonsEnabled(false);
         final Date d = new Date(firstDayOfWeek.getTime());
         final Date sunday = new Date(d.getTime());
         DateHelper.addDays(sunday, 6);
@@ -506,6 +529,7 @@ public class LockPanel extends Composite implements ClickHandler {
                 DateHelper.addDays(d, 1);
             }
         }
+        setWeekButtonsEnabled(true);
         weekLockCB.setEnabled(true);
     }
 

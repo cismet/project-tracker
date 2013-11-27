@@ -309,7 +309,7 @@ public class SheetsPanel extends Composite implements ResizeHandler,
                     if (request == requestNumber) {
                         if (!operationFailed) {
                             DateHelper.addDays(lastDay, 6);
-                            lockPanel.initialise(firstDay, tasks, times, weekLockCB);
+                            lockPanel.initialise(firstDay, tasks, times, weekLockCB, prevWeek, nextWeek);
                             times.setTimes(firstDay, result.getActivities());
                             taskControlPanel.initialise(firstDay, tasks, times);
                             /*
