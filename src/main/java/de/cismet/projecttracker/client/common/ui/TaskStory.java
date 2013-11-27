@@ -31,7 +31,9 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskDeleteListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskNoticeListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProfileDTO;
+import de.cismet.projecttracker.client.dto.ProjectCategoryDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
@@ -170,6 +172,31 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     /**
      * DOCUMENT ME!
      *
+     * @param   companyName  DOCUMENT ME!
+     * @param   project      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean canUserBillToProject(final String companyName, final ProjectDTO project) {
+        // add only projects the currently logged in user can bill to
+        final ProjectCategoryDTO category = project.getProjectCategory();
+        if (category != null) {
+            final String name = category.getName();
+            // if the name contains a prefix this is the name of the company...
+            final String[] splittedName = name.split("_");
+            if (splittedName.length > 1) {
+                final String projectRestrictedCompany = splittedName[0];
+                if (!companyName.equalsIgnoreCase(projectRestrictedCompany)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param  controller  DOCUMENT ME!
      * @param  except      DOCUMENT ME!
      */
@@ -220,7 +247,23 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                                 final ProjectDTO project = activity.getWorkPackage().getProject();
                                                 if (project != null) {
                                                     final ProjectPeriodDTO period = project.determineMostRecentPeriod();
-
+                                                    ContractDTO contract = null;
+                                                    try {
+                                                        contract = ProjectTrackerEntryPoint.getInstance()
+                                                                    .getContractForStaff(newDate);
+                                                    } catch (InvalidInputValuesException ex) {
+                                                    }
+                                                    final String companyName = (contract == null)
+                                                        ? "" : contract.getCompany().getName();
+                                                    // check if the user is allowed to bill to the project of the
+                                                    // dropped activity.
+                                                    if (!canUserBillToProject(companyName, project)) // check that the wp of the dropped activity is not expired
+                                                    {
+                                                        ProjectTrackerEntryPoint.outputBox(
+                                                            "Can not drop this activity here. You are not allowd to bill to project "
+                                                                    + project.getName());
+                                                        return;
+                                                    }
                                                     if (!((period == null)
                                                                     || DateHelper.isDayInProjectPeriod(
                                                                         newDate,
