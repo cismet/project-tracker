@@ -24,6 +24,7 @@ import de.cismet.projecttracker.report.db.entities.WorkPackage;
 import de.cismet.projecttracker.report.helper.QueryHelper;
 
 import de.cismet.projecttracker.utilities.DBManagerWrapper;
+import de.cismet.projecttracker.utilities.DevProperties;
 import de.cismet.projecttracker.utilities.LanguageBundle;
 import de.cismet.projecttracker.utilities.Utilities;
 
@@ -183,45 +184,47 @@ public class WarningSystem {
      */
     private synchronized void sendWarning(final WorkPackage wp, final int level, final DBManagerWrapper dbManager)
             throws DataRetrievalException, PersistentLayerException {
-        final List<Warning> warns = dbManager.getObjectsByAttribute(Warning.class, "workPackage", wp);
-        boolean messageAlreadySent = false;
+        if (!DevProperties.getInstance().isDevMode()) {
+            final List<Warning> warns = dbManager.getObjectsByAttribute(Warning.class, "workPackage", wp);
+            boolean messageAlreadySent = false;
 
-        for (final Warning warn : warns) {
-            if (warn.getLevel() >= level) {
-                messageAlreadySent = true;
-            }
-        }
-
-        if (!messageAlreadySent) {
-            String email = null;
-            if (wp.getResponsiblestaff() != null) {
-                email = wp.getResponsiblestaff().getEmail();
-            } else if (wp.getProject().getResponsiblestaff() != null) {
-                email = wp.getProject().getResponsiblestaff().getEmail();
-            }
-
-            if (email == null) {
-                logger.warn("Cannot send a warn email, because there was no responsible person found.");
-            } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("send warning");
+            for (final Warning warn : warns) {
+                if (warn.getLevel() >= level) {
+                    messageAlreadySent = true;
                 }
-                String subject = null;
+            }
 
-                if (level == 1) {
-                    subject = String.format(LanguageBundle.WARN_EMAIL_SUBJECT, wp.getName());
-                } else if (level == 2) {
-                    subject = String.format(LanguageBundle.CRITICAL_WARN_EMAIL, wp.getName());
+            if (!messageAlreadySent) {
+                String email = null;
+                if (wp.getResponsiblestaff() != null) {
+                    email = wp.getResponsiblestaff().getEmail();
+                } else if (wp.getProject().getResponsiblestaff() != null) {
+                    email = wp.getProject().getResponsiblestaff().getEmail();
+                }
+
+                if (email == null) {
+                    logger.warn("Cannot send a warn email, because there was no responsible person found.");
                 } else {
-                    subject = String.format(LanguageBundle.FULL_STOP_EMAIL, wp.getName());
-                }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("send warning");
+                    }
+                    String subject = null;
 
-                final Warning warning = new Warning();
-                warning.setWorkPackage(wp);
-                warning.setLevel(level);
-                warning.setTime(new Date());
-                dbManager.createObject(warning);
-                Utilities.sendEmail(email, subject, LanguageBundle.EMAIL_BODY);
+                    if (level == 1) {
+                        subject = String.format(LanguageBundle.WARN_EMAIL_SUBJECT, wp.getName());
+                    } else if (level == 2) {
+                        subject = String.format(LanguageBundle.CRITICAL_WARN_EMAIL, wp.getName());
+                    } else {
+                        subject = String.format(LanguageBundle.FULL_STOP_EMAIL, wp.getName());
+                    }
+
+                    final Warning warning = new Warning();
+                    warning.setWorkPackage(wp);
+                    warning.setLevel(level);
+                    warning.setTime(new Date());
+                    dbManager.createObject(warning);
+                    Utilities.sendEmail(email, subject, LanguageBundle.EMAIL_BODY);
+                }
             }
         }
     }

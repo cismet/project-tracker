@@ -99,6 +99,7 @@ import de.cismet.projecttracker.report.timetracker.TimetrackerQuery;
 
 import de.cismet.projecttracker.utilities.DBManagerWrapper;
 import de.cismet.projecttracker.utilities.DTOManager;
+import de.cismet.projecttracker.utilities.DevProperties;
 import de.cismet.projecttracker.utilities.EmailTaskNotice;
 import de.cismet.projecttracker.utilities.LanguageBundle;
 import de.cismet.projecttracker.utilities.Utilities;
@@ -178,8 +179,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     ConfigurationManager.getInstance().getConfBaseDir());
 
             // start the timer that checks pause tasks
-
-//            PauseChecker pauseChecker = new PauseChecker(this, PAUSE_CHECKER_DAYS);
+// PauseChecker pauseChecker = new PauseChecker(this, PAUSE_CHECKER_DAYS);
             // load the base dir for json log files
             FileReader input = null;
             final Properties jsonConfig = new Properties();
@@ -190,6 +190,18 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 JSON_LOG_BASE_DIR = jsonConfig.getProperty("base_dir");
             } catch (IOException e) {
                 logger.error("Cannot open and load json_log properties file.", e);
+            }
+
+            final Properties developerConfig = new Properties();
+            try {
+                input = new FileReader(context.getInitParameter("confBaseDir") + System.getProperty("file.separator")
+                                + "dev.properties");
+                developerConfig.load(input);
+                final boolean devMode = Boolean.parseBoolean(developerConfig.getProperty("devMode"));
+                DevProperties.getInstance().setDevMode(devMode);
+            } catch (IOException e) {
+                logger.error("Cannot open and load dev.properties file. Setting developing mode to false", e);
+                DevProperties.getInstance().setDevMode(false);
             }
         }
     }
@@ -2383,7 +2395,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
      */
     private void sendChangedActivityEmail(final Activity activity, final Activity origActivity, final String email) {
         try {
-            if (email != null) {
+            if (!DevProperties.getInstance().isDevMode() && (email != null)) {
                 final Staff s = getStaffById(getUserId());
                 String text;
                 text = "<div class=\"container\">"
@@ -3161,14 +3173,17 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             final MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-            final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
-                        .add(Restrictions.eq("username", username))
-                        .uniqueResult();
-//            final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
-//                        .add(Restrictions.and(
-//                                    Restrictions.eq("username", username),
-//                                    Restrictions.eq("password", md.digest())))
-//                        .uniqueResult();
+            final Staff staff;
+            if (DevProperties.getInstance().isDevMode()) {
+                staff = (Staff)hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username))
+                            .uniqueResult();
+            } else {
+                staff = (Staff)hibernateSession.createCriteria(Staff.class)
+                            .add(Restrictions.and(
+                                        Restrictions.eq("username", username),
+                                        Restrictions.eq("password", md.digest())))
+                            .uniqueResult();
+            }
 
             if (staff != null) {
                 final HttpSession session = getThreadLocalRequest().getSession();
