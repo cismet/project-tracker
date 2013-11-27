@@ -10,6 +10,7 @@ package de.cismet.projecttracker.utilities;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,9 +19,10 @@ import java.util.*;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
+import de.cismet.projecttracker.server.ConfigurationManager;
 
 /**
  * This class privides some static methods with basic functionality.
@@ -107,7 +109,7 @@ public class Utilities {
             message.setSubject(subject);
 //            message.setText(body);
             message.setContent(body, "text/html");
-            Transport.send(message);
+//            Transport.send(message);
         } catch (MessagingException ex) {
             logger.error("Cannot send email.", ex);
         }
