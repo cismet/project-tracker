@@ -193,6 +193,20 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
             ProjectTrackerEntryPoint.outputBox("The duration is not valid");
         }
         final ActivityDTO newActivity = (modification ? tn.getActivity().createCopy() : new ActivityDTO());
+        if (newActivity.getWorkPackage() != null) {
+            final ProjectDTO project = newActivity.getWorkPackage().getProject();
+            if (project != null) {
+                final ProjectPeriodDTO period = project.determineMostRecentPeriod();
+                if (!((period == null) || DateHelper.isDayInProjectPeriod(day, period))) {
+                    ProjectTrackerEntryPoint.outputBox(
+                        "Can not drop this activity here since the workpackage is out of date ( "
+                                + DateHelper.formatDate(period.getFromdate())
+                                + " - "
+                                + DateHelper.formatDate(period.getTodate()));
+                    return;
+                }
+            }
+        }
         newActivity.setDay(day);
         newActivity.setWorkPackage(getSelectedWorkpackage());
         newActivity.setDescription(description.getText());

@@ -33,6 +33,7 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
+import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
@@ -215,7 +216,24 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                             final ActivityDTO activity = origNotice.getActivity().createCopy();
                                             final Date newDate = (Date)firstDayOfWeek.clone();
                                             DateHelper.addDays(newDate, days);
+                                            if (activity.getWorkPackage() != null) {
+                                                final ProjectDTO project = activity.getWorkPackage().getProject();
+                                                if (project != null) {
+                                                    final ProjectPeriodDTO period = project.determineMostRecentPeriod();
 
+                                                    if (!((period == null)
+                                                                    || DateHelper.isDayInProjectPeriod(
+                                                                        newDate,
+                                                                        period))) {
+                                                        ProjectTrackerEntryPoint.outputBox(
+                                                            "Can not drop this activity here since the workpackage is out of date ( "
+                                                                    + DateHelper.formatDate(period.getFromdate())
+                                                                    + " - "
+                                                                    + DateHelper.formatDate(period.getTodate()));
+                                                        return;
+                                                    }
+                                                }
+                                            }
                                             activity.setId(0);
                                             activity.setWorkinghours(0.0);
                                             activity.setDay(newDate);
