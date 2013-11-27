@@ -320,8 +320,10 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
                         }
                         ProjectTrackerEntryPoint.getProjectService(true)
                                 .getVacationDaysTaken(new Date(), staff, vacationDaysTakenCallback);
+                        final Date d = new Date();
+                        DateHelper.addDays(d, 1);
                         ProjectTrackerEntryPoint.getProjectService(true)
-                                .getVacationDaysPlanned(new Date(), staff, vacationDaysPlannedCallback);
+                                .getVacationDaysPlanned(d, staff, vacationDaysPlannedCallback);
                     }
                 }
             };
