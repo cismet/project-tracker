@@ -224,8 +224,11 @@ public class StatisticsPanel extends Composite {
                     }
                 }
             };
+
+        final Date d = new Date();
+        DateHelper.addDays(d, 1);
         ProjectTrackerEntryPoint.getProjectService(true)
-                .getVacationActivitiesPlanned(new Date(), ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
+                .getVacationActivitiesPlanned(d, ProjectTrackerEntryPoint.getInstance().getStaff(), callback);
     }
 
     /**
