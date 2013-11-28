@@ -1,6 +1,7 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
-             xmlns:g="urn:import:com.google.gwt.user.client.ui">
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui">
     <ui:style>
         .input-component {
         width: 100%;
@@ -33,13 +34,18 @@
                 <div>Description:</div>
                 <g:TextBox ui:field="description" styleName="{style.input-component}" />
                 <div>Duration (Example: 4:30):</div>
-                <g:TextBox ui:field="duration" styleName="{style.input-component-left}" />
+                <b:ControlGroup ui:field="durationCtrlGroup">
+                    <b:Controls>
+                        <b:TextBox ui:field="duration" styleName="{style.input-component-left}"></b:TextBox>
+                    </b:Controls>
+                </b:ControlGroup>
+                <!--<g:TextBox ui:field="duration" styleName="{style.input-component-left}" />-->
                 <span class="TravelLab">Travel:</span>
                 <g:CheckBox ui:field="travel" styleName="{style.input-component-margin}" />
             </div>
             <div class="modal-footer">
                 <g:Button styleName="" text="" ui:field="fillTaskBtn"/>
-                <g:Button styleName="btn btn-success" text="Create" ui:field="button" />
+                <g:Button styleName="btn btn-success" text="Create" ui:field="saveButton" />
                 <g:Button styleName="btn btn-danger" text="Cancel" ui:field="cancelButton" />
             </div>
         </div>
