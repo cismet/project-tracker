@@ -90,15 +90,18 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     private PickupDragController sundayDragController;
     private LockPanel lockPanel;
     private List<TaskStoryListener> listener = new ArrayList<TaskStoryListener>();
+    private Story story;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new TaskStory object.
+     *
+     * @param  s  DOCUMENT ME!
      */
-    public TaskStory() {
+    public TaskStory(final Story s) {
         initWidget(uiBinder.createAndBindUi(this));
-
+        this.story = s;
         boundaryPanel.addStyleName("verticalScroller");
         daysOfWeek[0] = sunday;
         daysOfWeek[1] = monday;
@@ -460,7 +463,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
      */
     public void modifyTask(final TaskNotice notice) {
         final DialogBox taskForm = new DialogBox();
-        final StoryForm form = new StoryForm(taskForm, this, notice);
+        final StoryForm form = new StoryForm(taskForm, this, story, notice);
         taskForm.setWidget(form);
         taskForm.center();
     }

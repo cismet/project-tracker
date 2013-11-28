@@ -72,7 +72,7 @@ public class FillButtonPreview extends Composite {
      * @param  real                 DOCUMENT ME!
      * @param  ts                   DOCUMENT ME!
      */
-    FillButtonPreview(final DialogBox form,
+    public FillButtonPreview(final DialogBox form,
             final ArrayList<TaskNotice> negativeFillPreview,
             final ArrayList<TaskNotice> real,
             final TaskStory ts) {

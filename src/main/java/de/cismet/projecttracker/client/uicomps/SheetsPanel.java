@@ -88,7 +88,7 @@ public class SheetsPanel extends Composite implements ResizeHandler,
     private Button nextWeek = new Button("next week", this);
     private Story times = new Story();
     private FavouriteTaskStory favs = new FavouriteTaskStory();
-    private TaskStory tasks = new TaskStory();
+    private TaskStory tasks;
     private RecentStory recent = new RecentStory();
     private ExtendedRecentTaskStory allRecent = new ExtendedRecentTaskStory();
     private DailyHoursOfWork dailyHours = new DailyHoursOfWork();
@@ -113,6 +113,7 @@ public class SheetsPanel extends Composite implements ResizeHandler,
      * Creates a new SheetsPanel object.
      */
     public SheetsPanel() {
+        tasks = new TaskStory(times);
         init();
         initWidget(mainPanel);
         setStyleName("content");
