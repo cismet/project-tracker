@@ -159,20 +159,68 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
     /**
      * DOCUMENT ME!
      */
+    private void fillTaskToCurrentTime() {
+        final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
+        final Date d = new Date();
+        final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
+
+                @Override
+                protected void afterExecution(final Boolean result, final boolean operationFailed) {
+                    if (!operationFailed) {
+                        if (!result) {
+                            doFillTasks(d);
+                        }
+                    }
+                }
+            };
+        ProjectTrackerEntryPoint.getProjectService(true).isDayLocked(day, staff, callback);
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
     private void doFillTasks() {
+        doFillTasks(null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  d  DOCUMENT ME!
+     */
+    private void doFillTasks(final Date d) {
         final List<TaskNotice> list = taskStory.getTasksForDay(day.getDay());
         final List<TaskNotice> zeroTasksToChange = new ArrayList<TaskNotice>();
         final List<TaskNotice> procentualTasks = new ArrayList<TaskNotice>();
         double bookedHours = 0.0;
-        final double timeForDay = story.getTimeForDay(day.getDay());
+        final double timeForDay;
+        if (d == null) {
+            timeForDay = story.getTimeForDay(day.getDay());
+        } else {
+            final double f = story.getTimeForDay(day.getDay());
+            final List<TimeNotice> tn = story.getTimeNoticesForDay(day.getDay());
+            double hours = story.getTimeForDay(day.getDay());
+            // get the last timeNotice
+            final TimeNotice tnn = tn.get(tn.size() - 1);
+
+            if (tnn.getEnd() == null) {
+                final Date end = new Date(tnn.getStart().getTime());
+                end.setHours(d.getHours());
+                end.setMinutes(d.getMinutes());
+                end.setSeconds(d.getSeconds());
+                if (tnn.getStart().before(end)) {
+                    hours += DateHelper.substract(tnn.getStart(), end);
+                }
+            }
+            timeForDay = hours;
+        }
+
         double fillableBookedHours = 0.0;
 
         if ((list != null) && (list.size() > 0)) {
             for (final TaskNotice tmp : list) {
                 if (tmp.getActivity().getKindofactivity() == ActivityDTO.ACTIVITY) {
-                    if (tmp.getActivity().getWorkinghours() == 0.0) {
-                        zeroTasksToChange.add(tmp);
-                    } else if ((tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)
+                    if ((tmp.getActivity().getWorkPackage().getId() == ActivityDTO.PAUSE_ID)
                                 || (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPARE_TIME_ID)) {
                         bookedHours += tmp.getActivity().getWorkinghours();
                     } else if (!((tmp.getActivity().getWorkPackage().getId() == ActivityDTO.HOLIDAY_ID)
@@ -180,6 +228,9 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
                                     || (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.ILLNESS_ID)
                                     || (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.SPECIAL_HOLIDAY_ID)
                                     || (tmp.getActivity().getWorkPackage().getId() == ActivityDTO.Travel_ID))) {
+                        if (tmp.getActivity().getWorkinghours() == 0.0) {
+                            zeroTasksToChange.add(tmp);
+                        }
                         fillableBookedHours += tmp.getActivity().getWorkinghours();
                         procentualTasks.add(tmp);
                         bookedHours += tmp.getActivity().getWorkinghours();
