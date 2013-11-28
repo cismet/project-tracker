@@ -108,7 +108,11 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
         if (event.getSource() == add) {
             addTask();
         } else if (event.getSource() == fill) {
-            fillTasks();
+            if (event.isControlKeyDown()) {
+                fillTaskToCurrentTime();
+            } else {
+                fillTasks();
+            }
         }
     }
 
