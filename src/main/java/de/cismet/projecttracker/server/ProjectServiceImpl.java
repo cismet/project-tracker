@@ -3304,7 +3304,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             checkAdminPermission();
         }
 
-        final TimetrackerQuery query = new TimetrackerQuery();
+        final TimetrackerQuery query = new TimetrackerQuery(ConfigurationManager.getInstance().getConfBaseDir());
         final GregorianCalendar cal = new GregorianCalendar();
         cal.setTimeInMillis(day.getTime());
 
@@ -3337,7 +3337,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             checkAdminPermission();
         }
 
-        final TimetrackerQuery query = new TimetrackerQuery();
+        final TimetrackerQuery query = new TimetrackerQuery(ConfigurationManager.getInstance().getConfBaseDir());
         final GregorianCalendar cal = new GregorianCalendar();
         cal.setTimeInMillis(day.getTime());
 
@@ -3372,7 +3372,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             checkAdminPermission();
         }
 
-        final TimetrackerQuery query = new TimetrackerQuery();
+        final TimetrackerQuery query = new TimetrackerQuery(ConfigurationManager.getInstance().getConfBaseDir());
         final GregorianCalendar cal = new GregorianCalendar();
         cal.setTimeInMillis(day.getTime());
 
