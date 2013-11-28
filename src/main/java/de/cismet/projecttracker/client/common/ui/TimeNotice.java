@@ -392,6 +392,9 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
      * @return  DOCUMENT ME!
      */
     public Date getEnd() {
+        if (end == null) {
+            return null;
+        }
         return end.getDay();
     }
 

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
@@ -40,6 +41,7 @@ import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
+import de.cismet.projecttracker.client.utilities.TaskFiller;
 
 /**
  * DOCUMENT ME!
@@ -62,6 +64,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     @UiField
     Button button;
     @UiField
+    Button fillTaskBtn;
+    @UiField
     Button cancelButton;
     @UiField
     ListBox project;
@@ -73,6 +77,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     SimpleCheckBox wpDateFilterCB;
     private DialogBox form;
     private TaskStory caller;
+    private Story story;
     private Date day = new Date();
     private List<ProjectDTO> projects;
     private boolean modification = false;
@@ -85,29 +90,15 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
      *
      * @param  form  DOCUMENT ME!
      * @param  tb    DOCUMENT ME!
-     * @param  day   DOCUMENT ME!
-     */
-    public StoryForm(final DialogBox form, final TaskStory tb, final Date day) {
-        this.form = form;
-        this.caller = tb;
-        this.day = day;
-        initWidget(uiBinder.createAndBindUi(this));
-        init();
-        project.addChangeHandler(this);
-        setDefaultButton();
-    }
-
-    /**
-     * Creates a new StoryForm object.
-     *
-     * @param  form  DOCUMENT ME!
-     * @param  tb    DOCUMENT ME!
+     * @param  s     DOCUMENT ME!
      * @param  tn    DOCUMENT ME!
      */
-    public StoryForm(final DialogBox form, final TaskStory tb, final TaskNotice tn) {
+    public StoryForm(final DialogBox form, final TaskStory tb, final Story s, final TaskNotice tn) {
         this.form = form;
         this.caller = tb;
         this.tn = tn;
+        tn.getActivity().getDay();
+        this.story = s;
         this.modification = true;
         this.day = tn.getActivity().getDay();
         initWidget(uiBinder.createAndBindUi(this));
@@ -127,6 +118,27 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         project.addChangeHandler(this);
         button.setText("Save");
         setDefaultButton();
+        configFillButton();
+    }
+
+    /**
+     * Creates a new StoryForm object.
+     *
+     * @param  form  DOCUMENT ME!
+     * @param  tb    DOCUMENT ME!
+     * @param  s     DOCUMENT ME!
+     * @param  day   DOCUMENT ME!
+     */
+    public StoryForm(final DialogBox form, final TaskStory tb, final Story s, final Date day) {
+        this.form = form;
+        this.caller = tb;
+        this.day = day;
+        this.story = s;
+        initWidget(uiBinder.createAndBindUi(this));
+        init();
+        project.addChangeHandler(this);
+        setDefaultButton();
+        configFillButton();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -159,6 +171,15 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
 
     /**
      * DOCUMENT ME!
+     */
+    private void configFillButton() {
+        fillTaskBtn.setHTML("<img src='" + ImageConstants.INSTANCE.magicFiller().getURL() + "' />");
+        fillTaskBtn.setStyleName("btn pull-left");
+        fillTaskBtn.getElement().getStyle().setProperty("padding", "8px 12px");
+    }
+
+    /**
+     * DOCUMENT ME!
      *
      * @param  event  DOCUMENT ME!
      */
@@ -182,6 +203,29 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
             return;
         }
         save();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  event  DOCUMENT ME!
+     */
+    @UiHandler("fillTaskBtn")
+    void onFillButtonClick(final ClickEvent event) {
+        double timeToFill = TaskFiller.getTimeToFill(day, null, caller, story);
+        try {
+            if ((duration.getText() != null) && !duration.getText().isEmpty()) {
+                timeToFill += DateHelper.hoursToDouble(duration.getText());
+            }
+        } catch (NumberFormatException e) {
+        } finally {
+            if (timeToFill < 0) {
+                ProjectTrackerEntryPoint.outputBox("The fill operation would set a negative time for this task.");
+                return;
+            } else {
+                duration.setText(DateHelper.doubleToHours(timeToFill));
+            }
+        }
     }
 
     /**
