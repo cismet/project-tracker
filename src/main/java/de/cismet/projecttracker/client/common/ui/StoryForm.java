@@ -7,8 +7,13 @@
 ****************************************************/
 package de.cismet.projecttracker.client.common.ui;
 
+import com.github.gwtbootstrap.client.ui.ControlGroup;
+import com.github.gwtbootstrap.client.ui.constants.ControlGroupType;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -52,7 +57,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static TaskFormUiBinder uiBinder = GWT.create(TaskFormUiBinder.class);
+    private static StoryFormUiBinder uiBinder = GWT.create(StoryFormUiBinder.class);
     private static WorkCategoryDTO travelCatagory = null;
 
     //~ Instance fields --------------------------------------------------------
@@ -60,9 +65,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     @UiField
     TextBox description;
     @UiField
-    TextBox duration;
+    com.github.gwtbootstrap.client.ui.TextBox duration;
     @UiField
-    Button button;
+    Button saveButton;
     @UiField
     Button fillTaskBtn;
     @UiField
@@ -75,6 +80,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     CheckBox travel;
     @UiField
     SimpleCheckBox wpDateFilterCB;
+    @UiField
+    ControlGroup durationCtrlGroup;
     private DialogBox form;
     private TaskStory caller;
     private Story story;
@@ -116,9 +123,10 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         setWPById(tn.getActivity().getWorkPackage().getId());
         // todo set project und workpackage
         project.addChangeHandler(this);
-        button.setText("Save");
+        saveButton.setText("Save");
         setDefaultButton();
         configFillButton();
+        configDurationBox();
     }
 
     /**
@@ -139,9 +147,49 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         project.addChangeHandler(this);
         setDefaultButton();
         configFillButton();
+        configDurationBox();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void configDurationBox() {
+        duration.addKeyUpHandler(new KeyUpHandler() {
+
+                @Override
+                public void onKeyUp(final KeyUpEvent event) {
+                    validateDuration();
+                }
+            });
+        duration.addValueChangeHandler(new ValueChangeHandler<String>() {
+
+                @Override
+                public void onValueChange(final ValueChangeEvent<String> event) {
+                    validateDuration();
+                }
+            });
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void validateDuration() {
+        final String durationText = duration.getText();
+        boolean isValid = false;
+        if (durationText != null) {
+            isValid = durationText.matches("[0-9:]*");
+        }
+
+        if (!isValid) {
+            durationCtrlGroup.setType(ControlGroupType.ERROR);
+            saveButton.setEnabled(false);
+        } else {
+            durationCtrlGroup.setType(ControlGroupType.NONE);
+            saveButton.setEnabled(true);
+        }
+    }
 
     @Override
     public void onClick(final ClickEvent event) {
@@ -162,7 +210,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
      * DOCUMENT ME!
      */
     private void setDefaultButton() {
-        button.setFocus(true);
+        saveButton.setFocus(true);
         description.addKeyUpHandler(this);
         duration.addKeyUpHandler(this);
         project.addKeyUpHandler(this);
@@ -183,7 +231,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
      *
      * @param  event  DOCUMENT ME!
      */
-    @UiHandler("button")
+    @UiHandler("saveButton")
     void onButtonClick(final ClickEvent event) {
         if (travel.getValue() && (travelCatagory == null)) {
             final BasicAsyncCallback<WorkCategoryDTO> callback = new BasicAsyncCallback<WorkCategoryDTO>() {
@@ -240,6 +288,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
             }
         } catch (NumberFormatException e) {
             ProjectTrackerEntryPoint.outputBox("The duration is not valid");
+            return;
         }
         final ActivityDTO newActivity = (modification ? tn.getActivity().createCopy() : new ActivityDTO());
         if (newActivity.getWorkPackage() != null) {
@@ -552,6 +601,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
      *
      * @version  $Revision$, $Date$
      */
-    interface TaskFormUiBinder extends UiBinder<Widget, StoryForm> {
+    interface StoryFormUiBinder extends UiBinder<Widget, StoryForm> {
     }
 }
