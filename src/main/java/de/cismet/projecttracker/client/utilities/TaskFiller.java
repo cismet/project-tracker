@@ -55,26 +55,25 @@ public class TaskFiller {
         final List<TaskNotice> zeroTasksToChange = new ArrayList<TaskNotice>();
         final List<TaskNotice> procentualTasks = new ArrayList<TaskNotice>();
         double bookedHours = 0.0;
-        final double timeForDay;
-        if (timeToFillTo == null) {
-            timeForDay = story.getTimeForDay(day.getDay());
-        } else {
-            final double f = story.getTimeForDay(day.getDay());
-            final List<TimeNotice> tn = story.getTimeNoticesForDay(day.getDay());
-            double hours = story.getTimeForDay(day.getDay());
-            // get the last timeNotice
-            final TimeNotice tnn = tn.get(tn.size() - 1);
+        double timeForDay = story.getTimeForDay(day.getDay());
+        final List<TimeNotice> tn = story.getTimeNoticesForDay(day.getDay());
+        // get the last timeNotice
+        final TimeNotice tnn = tn.get(tn.size() - 1);
 
-            if (tnn.getEnd() == null) {
+        if (tnn.getEnd() == null) {
+            if (timeToFillTo == null) {
+                ProjectTrackerEntryPoint.outputBox(
+                    "End time is missing. If you want to fill to the current time use the CTRL-key");
+                return;
+            } else {
                 final Date end = new Date(tnn.getStart().getTime());
                 end.setHours(timeToFillTo.getHours());
                 end.setMinutes(timeToFillTo.getMinutes());
                 end.setSeconds(timeToFillTo.getSeconds());
                 if (tnn.getStart().before(end)) {
-                    hours += DateHelper.substract(tnn.getStart(), end);
+                    timeForDay += DateHelper.substract(tnn.getStart(), end);
                 }
             }
-            timeForDay = hours;
         }
 
         double fillableBookedHours = 0.0;
@@ -110,6 +109,10 @@ public class TaskFiller {
                     final double fillFactor = tmp.getActivity().getWorkinghours() * 100 / fillableBookedHours;
                     final double newWorkingHours = tmp.getActivity().getWorkinghours()
                                 + ((fillFactor * (timeForDay - bookedHours)) / 100);
+                    if (newWorkingHours < 0) {
+                        ProjectTrackerEntryPoint.outputBox("Can not set a negative working time for activtiy");
+                        return;
+                    }
                     tmp.getActivity().setWorkinghours(newWorkingHours);
                     tmp.refresh();
                     tmp.save();
@@ -118,9 +121,13 @@ public class TaskFiller {
             } else {
                 if (zeroTasksToChange.size() > 0) {
                     for (final TaskNotice tmp : zeroTasksToChange) {
-                        tmp.getActivity()
-                                .setWorkinghours(tmp.getActivity().getWorkinghours()
-                                    + ((timeForDay - bookedHours) / zeroTasksToChange.size()));
+                        final double newWorkingHours = tmp.getActivity().getWorkinghours()
+                                    + ((timeForDay - bookedHours) / zeroTasksToChange.size());
+                        if (newWorkingHours < 0) {
+                            ProjectTrackerEntryPoint.outputBox("Can not set a negative working time for activtiy");
+                            return;
+                        }
+                        tmp.getActivity().setWorkinghours(newWorkingHours);
                         tmp.refresh();
                         tmp.save();
                         taskStory.taskChanged(tmp);
@@ -214,6 +221,10 @@ public class TaskFiller {
                 final double whow = tmp.getWorkinghours();
                 final double fillFactor = (whow * 100 / bookedHours);
                 final double newWorkingHours = whow + (fillFactor * balance / 100);
+                if (newWorkingHours < 0) {
+                    ProjectTrackerEntryPoint.outputBox("Can not set a negative working time for activtiy");
+                    return;
+                }
                 tmp.setWorkinghours(newWorkingHours);
                 negativeFillPreview.add(new TaskNotice(tmp));
             }
