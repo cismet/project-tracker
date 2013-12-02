@@ -16,6 +16,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import org.apache.log4j.Logger;
 
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -2138,6 +2139,17 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         if (logger.isDebugEnabled()) {
             logger.debug("create activity");
         }
+        // if the activiy is a begin of work / end of work activity check that it doesnt destroy the consistency
+        if ((activity.getKindofactivity() == 2) || (activity.getKindofactivity() == 1)) {
+            final boolean consistent = isBeginEndConsistent(activity.getStaff(),
+                    activity.getDay(),
+                    activity,
+                    false,
+                    true);
+            if (!consistent) {
+                throw new PersistentLayerException(LanguageBundle.TIME_SLOT_INVALID);
+            }
+        }
         final Activity act = (Activity)dtoManager.merge(activity);
 
         if (act.getStaff() == null) {
@@ -2338,7 +2350,14 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
 
         final Activity activityHib = (Activity)dtoManager.merge(activity);
-
+        // if the activiy is a begin of work / end of work activity check that it doesnt destroy the consistency
+        if ((activityHib.getKindofactivity() == 2) || (activityHib.getKindofactivity() == 1)) {
+            final ActivityDTO act = (ActivityDTO)dtoManager.clone(activityHib);
+            final boolean consistent = isBeginEndConsistent(act.getStaff(), act.getDay(), act, true, true);
+            if (!consistent) {
+                throw new PersistentLayerException(LanguageBundle.TIME_SLOT_INVALID);
+            }
+        }
         if (activityHib.getStaff() == null) {
             activityHib.setStaff(getStaffById(getUserId()));
         }
@@ -2460,6 +2479,17 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
         final DBManagerWrapper dbManager = new DBManagerWrapper();
         final Activity deletedActivity = (Activity)dtoManager.merge(activity.createCopy());
+        // if the activiy is a begin of work / end of work activity check that it doesnt destroy the consistency
+        if ((activity.getKindofactivity() == 2) || (activity.getKindofactivity() == 1)) {
+            final boolean consistent = isBeginEndConsistent(activity.getStaff(),
+                    activity.getDay(),
+                    activity,
+                    true,
+                    false);
+            if (!consistent) {
+                throw new PersistentLayerException(LanguageBundle.TIME_SLOT_INVALID);
+            }
+        }
         try {
             final Activity act = (Activity)dbManager.getObject(Activity.class, new Long(activity.getId()));
             checkUserOrAdminPermission(act.getStaff().getId());
@@ -4469,5 +4499,98 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             dbManager.closeSession();
         }
         return result;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   staff        activityHib DOCUMENT ME!
+     * @param   day          DOCUMENT ME!
+     * @param   newActivity  DOCUMENT ME!
+     * @param   delete       DOCUMENT ME!
+     * @param   create       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isBeginEndConsistent(final StaffDTO staff,
+            final Date day,
+            final ActivityDTO newActivity,
+            final boolean delete,
+            final boolean create) {
+        final DBManagerWrapper dbManager = new DBManagerWrapper();
+        final ArrayList<ActivityDTO> result = new ArrayList<ActivityDTO>();
+        Session hibernateSession = null;
+        Transaction tx = null;
+        final Conjunction conjuction = Restrictions.conjunction();
+        conjuction.add(Restrictions.eq("staff.id", staff.getId()));
+        final Integer[] kindofArr = { new Integer(1), new Integer(2) };
+        conjuction.add(Restrictions.in("kindofactivity", kindofArr));
+        final GregorianCalendar from = new GregorianCalendar();
+        from.setTime(day);
+        final GregorianCalendar to = new GregorianCalendar();
+        to.setTime(day);
+        from.set(GregorianCalendar.HOUR_OF_DAY, 4);
+        to.add(GregorianCalendar.DAY_OF_MONTH, 1);
+        to.set(GregorianCalendar.HOUR_OF_DAY, 4);
+        final Criterion dateRestriction = Restrictions.and(Restrictions.ge("day", from.getTime()),
+                Restrictions.lt("day", to.getTime()));
+        conjuction.add(dateRestriction);
+
+        try {
+            hibernateSession = dbManager.getSession();
+            tx = hibernateSession.beginTransaction();
+//            Criterion wpRestriction = Restrictions.in("workPackage.id", wpIds);
+            final Criteria crit = hibernateSession.createCriteria(Activity.class).add((conjuction));
+            crit.addOrder(Order.asc("day"));
+
+            result.addAll(dtoManager.clone(crit.list()));
+            tx.commit();
+            // if the intendet operation is a delete method, remove the activity from the result.
+            if (delete) {
+                ActivityDTO actToDelete = null;
+                for (final ActivityDTO act : result) {
+                    if (act.getId() == newActivity.getId()) {
+                        actToDelete = act;
+                        break;
+                    }
+                }
+                if (actToDelete != null) {
+                    result.remove(actToDelete);
+                }
+            }
+            // if the intended operation is create, add the activity to the result
+            if (create && (newActivity != null)) {
+                result.add(newActivity);
+            }
+
+            // sort after time
+            Collections.sort(result);
+            for (int i = 0; i < result.size(); i++) {
+                final ActivityDTO act = result.get(i);
+                if (i == (result.size() - 1)) {
+                    continue;
+                }
+                if ((i % 2) == 0) {
+                    if (act.getKindofactivity() != 1) {
+                        return false;
+                    }
+                } else {
+                    if (act.getKindofactivity() != 2) {
+                        return false;
+                    }
+                }
+            }
+        } catch (HibernateException ex) {
+            logger.error("Error durin checking begin and end times for user " + staff.getUsername() + " and day " + day,
+                ex);
+            tx.rollback();
+        } catch (InvalidInputValuesException ex) {
+            logger.error("Error durin checking begin and end times for user " + staff.getUsername() + " and day " + day,
+                ex);
+            tx.rollback();
+        } finally {
+            dbManager.closeSession();
+        }
+        return true;
     }
 }
