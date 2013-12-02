@@ -619,6 +619,12 @@ footer{
 .time-notice{
     border-color: #C6EDF9;
 }
+
+.time-notice-control{
+    margin: 0px;
+    display: inline;
+}
+
 .lockBoxPadding{
     padding-left:35px;
 }

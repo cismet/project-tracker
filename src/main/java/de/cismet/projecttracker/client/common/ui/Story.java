@@ -187,39 +187,35 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
      * @param  activities      DOCUMENT ME!
      */
     public void setTimes(final Date firstDayOfWeek, final List<ActivityDTO> activities) {
-        this.firstDayOfWeek = firstDayOfWeek;
+       this.firstDayOfWeek = firstDayOfWeek;
         setDates();
         removeAllTasks();
-        Collections.sort(activities);
-        Date day = null;
-        ActivityDTO begin = null;
-        ActivityDTO end = null;
-
-        for (final ActivityDTO tmp : activities) {
-            if (day == null) {
-                day = tmp.getDay();
-            } else if (!DateHelper.isSameDaySV(day, tmp.getDay())) {
-                if (begin != null) {
-                    addTask(day.getDay(), begin, end);
-                }
-                day = tmp.getDay();
-                begin = null;
-                end = null;
-            }
-
-            if (tmp.getKindofactivity() == ActivityDTO.BEGIN_OF_DAY) {
-                if ((begin != null) && (end != null)) {
-                    addTask(day.getDay(), begin, end);
-                    end = null;
-                }
-                begin = tmp;
-            } else if (tmp.getKindofactivity() == ActivityDTO.END_OF_DAY) {
-                end = tmp;
-            }
+        if (activities.isEmpty()) {
+            return;
         }
-//        if (begin != null && end != null) {
-        if (begin != null) {
-            addTask(day.getDay(), begin, end);
+        Collections.sort(activities);
+
+        Date d = activities.get(0).getDay();
+        ArrayList<ActivityDTO> beginEndActivities = new ArrayList<ActivityDTO>();
+        for (int i = 0; i < activities.size(); i++) {
+            // if the next activity is for the next day we add all activites to d
+            final ActivityDTO act = activities.get(i);
+            if ((act.getKindofactivity() == ActivityDTO.BEGIN_OF_DAY)
+                        || (act.getKindofactivity() == ActivityDTO.END_OF_DAY)) {
+                beginEndActivities.add(act);
+            }
+            // set the lookAhead Activity to null if the current activity is the last one.
+            final ActivityDTO lookAhead = (i != (activities.size() - 1)) ? activities.get(i + 1) : null;
+            // the next activity relates to the next day if the day is different and the hours of the lookahead
+            // are ge 4
+            if ((lookAhead == null)
+                        || (!DateHelper.isSameDay(lookAhead.getDay(), d) && (lookAhead.getDay().getHours() >= 4))) {
+                addAllTimes(d.getDay(), beginEndActivities);
+                beginEndActivities = new ArrayList<ActivityDTO>();
+                if (lookAhead != null) {
+                    d = lookAhead.getDay();
+                }
+            }
         }
     }
 
@@ -361,7 +357,6 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
 //                                        if (end == null) {
 //                                            end = new Date();
 //                                        }
-
                                                 addTimeStartEnd(day, start, end);
                                             }
                                         }
@@ -502,6 +497,25 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
      */
     public void removeTimeStoryListener(final TimeStoryListener l) {
         listener.remove(l);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  day                 DOCUMENT ME!
+     * @param  beginEndActivities  DOCUMENT ME!
+     */
+    private void addAllTimes(final int day, final ArrayList<ActivityDTO> beginEndActivities) {
+        // assumption beginEndActivities are sorted
+        for (int i = 0; i < beginEndActivities.size(); i += 2) {
+            final ActivityDTO begin = beginEndActivities.get(i);
+            final ActivityDTO end = (i != (beginEndActivities.size() - 1)) ? beginEndActivities.get(i + 1) : null;
+            if ((end != null) && (end.getKindofactivity() != ActivityDTO.END_OF_DAY)) {
+                addTask(day, begin, null);
+            } else {
+                addTask(day, begin, end);
+            }
+        }
     }
 
     //~ Inner Interfaces -------------------------------------------------------

@@ -11,12 +11,20 @@
  */
 package de.cismet.projecttracker.client.common.ui;
 
+import com.github.gwtbootstrap.client.ui.ControlGroup;
+import com.github.gwtbootstrap.client.ui.TextBox;
+import com.github.gwtbootstrap.client.ui.constants.ControlGroupType;
+
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Label;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,14 +48,16 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
 
     //~ Instance fields --------------------------------------------------------
 
-    private FlowPanel mainPanel = new FlowPanel();
-    private ActivityDTO start;
+    private final FlowPanel mainPanel = new FlowPanel();
+    private final ActivityDTO start;
     private ActivityDTO end;
-    private TextBox startTime = new TextBox();
-    private TextBox endTime = new TextBox();
-    private Label close = new Label("x");
-    private List<TaskDeleteListener> listener = new ArrayList<TaskDeleteListener>();
-    private List<TimeNoticeListener> timeListener = new ArrayList<TimeNoticeListener>();
+    private final ControlGroup startCtrlGroup = new ControlGroup();
+    private final ControlGroup endCtrlGroup = new ControlGroup();
+    private final TextBox startTime = new TextBox();
+    private final TextBox endTime = new TextBox();
+    private final Label close = new Label("x");
+    private final List<TaskDeleteListener> listener = new ArrayList<TaskDeleteListener>();
+    private final List<TimeNoticeListener> timeListener = new ArrayList<TimeNoticeListener>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,11 +85,40 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
         endTime.setMaxLength(5);
         startTime.setStyleName("inlineComponent time-input");
         endTime.setStyleName("inlineComponent time-input");
+        final KeyUpHandler timeValidator = new KeyUpHandler() {
+
+                @Override
+                public void onKeyUp(final KeyUpEvent event) {
+                    final String s;
+                    final ControlGroup ctrlGroup;
+                    if (event.getSource() == startTime) {
+                        s = startTime.getText();
+                        ctrlGroup = startCtrlGroup;
+                    } else {
+                        s = endTime.getText();
+                        ctrlGroup = endCtrlGroup;
+                    }
+
+                    if ((s != null) && !s.isEmpty() && !isTimeInputValid(s)) {
+                        ctrlGroup.setType(ControlGroupType.ERROR);
+                    } else {
+                        ctrlGroup.setType(ControlGroupType.NONE);
+                    }
+                }
+            };
+        startTime.addKeyUpHandler(timeValidator);
+        endTime.addKeyUpHandler(timeValidator);
+        startCtrlGroup.addStyleName("time-notice-control");
+        endCtrlGroup.addStyleName("time-notice-control");
+        startCtrlGroup.add(startTime);
+        endCtrlGroup.add(endTime);
         close.setStyleName("close pull-right closeButton");
         close.addClickHandler(this);
         mainPanel.add(close);
-        mainPanel.add(startTime);
-        mainPanel.add(endTime);
+        mainPanel.add(startCtrlGroup);
+        mainPanel.add(endCtrlGroup);
+//        mainPanel.add(startTime);
+//        mainPanel.add(endTime);
         startTime.setText(DateHelper.formatTime(start.getDay()));
         if (end != null) {
             endTime.setText(DateHelper.formatTime(end.getDay()));
@@ -121,7 +160,16 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
 
         if (eventSource == startTime) {
             activityToSave = start;
-            newDate = checkTimeFormat(startTime.getText());
+            if (!isTimeInputValid(startTime.getText())) {
+                if (start != null) {
+                    startTime.setText(DateHelper.formatTime(start.getDay()));
+                } else {
+                    startTime.setText("");
+                }
+                startCtrlGroup.setType(ControlGroupType.NONE);
+                return;
+            }
+            newDate = parseTimeInput(startTime.getText());
             startTime.setText(newDate);
             // check if the time lies in the interval 24:00 - 4 and set the date correctly
             if (!startTime.getText().equals("")) {
@@ -138,7 +186,16 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
             }
         } else if (eventSource == endTime) {
             activityToSave = end;
-            newDate = checkTimeFormat(endTime.getText());
+            if (!endTime.getText().isEmpty() && !isTimeInputValid(endTime.getText())) {
+                if (end != null) {
+                    endTime.setText(DateHelper.formatTime(end.getDay()));
+                } else {
+                    endTime.setText("");
+                }
+                endCtrlGroup.setType(ControlGroupType.NONE);
+                return;
+            }
+            newDate = parseTimeInput(endTime.getText());
             endTime.setText(newDate);
 
             if (!endTime.getText().equals("")) {
@@ -186,6 +243,9 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
                             protected void afterExecution(final Void result, final boolean operationFailed) {
                                 if (!operationFailed) {
                                     end = null;
+                                    fireTimeChanged();
+                                } else {
+                                    endTime.setText(DateHelper.formatTime(end.getDay()));
                                 }
                             }
                         };
@@ -198,7 +258,20 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
 
                         @Override
                         protected void afterExecution(final ActivityDTO result, final boolean operationFailed) {
-                            if (!operationFailed) {
+                            if (operationFailed) {
+                                if (eventSource == endTime) {
+                                    if (end != null) {
+                                        endTime.setText(DateHelper.formatTime(end.getDay()));
+                                    } else {
+                                        endTime.setText("");
+                                    }
+                                } else {
+                                    if (start != null) {
+                                        startTime.setText(DateHelper.formatTime(start.getDay()));
+                                    } else {
+                                        startTime.setText("");
+                                    }
+                                }
                             }
                         }
                     };
@@ -210,6 +283,8 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
                     protected void afterExecution(final Long result, final boolean operationFailed) {
                         if (!operationFailed) {
                             end.setId(result);
+                        } else {
+                            endTime.setText("");
                         }
                     }
                 };
@@ -248,7 +323,7 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
      *
      * @return  DOCUMENT ME!
      */
-    private String checkTimeFormat(String s) {
+    private String parseTimeInput(String s) {
         if (!s.matches("([01]?[0-9]|2[0-3]):[0-5][0-9]")) {
             if (s.matches("[01][0-9]|2[0-3]")) {
                 s += ":00";
@@ -257,6 +332,24 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
             }
         }
         return s;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   s  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isTimeInputValid(final String s) {
+        // check if the inserted text is a full time expression
+        boolean isValid = s.matches("([01]?[0-9]|2[0-3]):[0-5][0-9]");
+
+        // check if the inserted text can be interpreted as as hours
+        if (!isValid) {
+            isValid = s.matches("[01][0-9]|2[0-3]") || s.matches("[0-9]|2[0-3]");
+        }
+        return isValid;
     }
 
     @Override
