@@ -41,6 +41,7 @@ public class LanguageBundle {
     public static final String CRITICAL_WARN_EMAIL = BUNDLE.getString("criticalWarnEMail");
     public static final String FULL_STOP_EMAIL = BUNDLE.getString("fullStopEMail");
     public static final String EMAIL_BODY = BUNDLE.getString("emailBody");
+    public static final String TIME_SLOT_INVALID = BUNDLE.getString("timeSlotInvalid");
     public static final String ACTIVITY_MUST_HAVE_A_PROJECTCOMPONENT = BUNDLE.getString(
             "activityMustHaveAProjectComponent");
     public static final String THERE_ARE_STILL_CONTRACTS_ASSIGNED_TO_THE_COMPANY = BUNDLE.getString(
