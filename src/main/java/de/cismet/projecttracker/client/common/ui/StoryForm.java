@@ -40,6 +40,7 @@ import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProjectCategoryDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
@@ -419,6 +420,11 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     private boolean canUserBillToProject(final String companyName, final ProjectDTO project) {
         // add only projects the currently logged in user can bill to
         final ProjectCategoryDTO category = project.getProjectCategory();
+        // Problem: we can limit a project to one company by adding a prefix to the project description
+        // but inhouse consultants should bill to anything...
+        if (companyName.equals("0")) {
+            return true;
+        }
         if (category != null) {
             final String name = category.getName();
             // if the name contains a prefix this is the name of the company...
