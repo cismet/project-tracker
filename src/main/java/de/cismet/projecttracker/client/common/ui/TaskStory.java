@@ -39,6 +39,7 @@ import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
+import de.cismet.projecttracker.client.helper.GUIHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.utilities.IllnessChecker;
@@ -175,31 +176,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     /**
      * DOCUMENT ME!
      *
-     * @param   companyName  DOCUMENT ME!
-     * @param   project      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private boolean canUserBillToProject(final String companyName, final ProjectDTO project) {
-        // add only projects the currently logged in user can bill to
-        final ProjectCategoryDTO category = project.getProjectCategory();
-        if (category != null) {
-            final String name = category.getName();
-            // if the name contains a prefix this is the name of the company...
-            final String[] splittedName = name.split("_");
-            if (splittedName.length > 1) {
-                final String projectRestrictedCompany = splittedName[0];
-                if (!companyName.equalsIgnoreCase(projectRestrictedCompany)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param  controller  DOCUMENT ME!
      * @param  except      DOCUMENT ME!
      */
@@ -260,7 +236,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                                         ? "" : contract.getCompany().getName();
                                                     // check if the user is allowed to bill to the project of the
                                                     // dropped activity.
-                                                    if (!canUserBillToProject(companyName, project)) // check that the wp of the dropped activity is not expired
+                                                    if (!GUIHelper.canUserBillToProject(companyName, project)) // check that the wp of the dropped activity is not expired
                                                     {
                                                         ProjectTrackerEntryPoint.outputBox(
                                                             "Can not drop this activity here. You are not allowd to bill to project "
