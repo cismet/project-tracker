@@ -187,33 +187,43 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
      * @param  activities      DOCUMENT ME!
      */
     public void setTimes(final Date firstDayOfWeek, final List<ActivityDTO> activities) {
-       this.firstDayOfWeek = firstDayOfWeek;
+        this.firstDayOfWeek = firstDayOfWeek;
         setDates();
         removeAllTasks();
         if (activities.isEmpty()) {
             return;
         }
         Collections.sort(activities);
-
-        Date d = activities.get(0).getDay();
-        ArrayList<ActivityDTO> beginEndActivities = new ArrayList<ActivityDTO>();
-        for (int i = 0; i < activities.size(); i++) {
-            // if the next activity is for the next day we add all activites to d
-            final ActivityDTO act = activities.get(i);
+        final ArrayList<ActivityDTO> tmp = new ArrayList<ActivityDTO>();
+        for (final ActivityDTO act : activities) {
             if ((act.getKindofactivity() == ActivityDTO.BEGIN_OF_DAY)
                         || (act.getKindofactivity() == ActivityDTO.END_OF_DAY)) {
-                beginEndActivities.add(act);
+                tmp.add(act);
             }
+        }
+        Date d = new Date(tmp.get(0).getDay().getTime());
+        ArrayList<ActivityDTO> beginEndActivities = new ArrayList<ActivityDTO>();
+        for (int i = 0; i < tmp.size(); i++) {
+            // if the next activity is for the next day we add all activites to d
+            final ActivityDTO act = tmp.get(i);
+
+            beginEndActivities.add(act);
             // set the lookAhead Activity to null if the current activity is the last one.
-            final ActivityDTO lookAhead = (i != (activities.size() - 1)) ? activities.get(i + 1) : null;
+            final ActivityDTO lookAhead = (i != (tmp.size() - 1)) ? tmp.get(i + 1) : null;
             // the next activity relates to the next day if the day is different and the hours of the lookahead
             // are ge 4
             if ((lookAhead == null)
-                        || (!DateHelper.isSameDay(lookAhead.getDay(), d) && (lookAhead.getDay().getHours() >= 4))) {
-                addAllTimes(d.getDay(), beginEndActivities);
+                        || (!DateHelper.isSameDay(lookAhead.getDay(), d) && (lookAhead.getDay().getHours() >= 4))
+                        || ((lookAhead.getDay().getDay() - d.getDay()) > 1)) {
+                if (!beginEndActivities.isEmpty()) {
+                    addAllTimes(deterimineDay(beginEndActivities), beginEndActivities);
+                }
                 beginEndActivities = new ArrayList<ActivityDTO>();
                 if (lookAhead != null) {
-                    d = lookAhead.getDay();
+                    d = new Date(lookAhead.getDay().getTime());
+                    if (d.getHours() < 4) {
+                        DateHelper.addDays(d, -1);
+                    }
                 }
             }
         }
@@ -404,7 +414,12 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
                 end.setDay(DateHelper.createDateObject(day, endTime));
             }
         } else {
-            start.setDay(DateHelper.createDateObject(day, new Date(2010, 01, 01, 04, 01, 00)));
+            final Date d = new Date(day.getTime());
+            DateHelper.addDays(d, 1);
+            d.setHours(startTime.getHours());
+            d.setMinutes(startTime.getMinutes());
+
+            start.setDay(d);
             if (end != null) {
                 end.setDay(DateHelper.createDateObject(day, endTime));
 
@@ -516,6 +531,33 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
                 addTask(day, begin, end);
             }
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   beginEndActivities  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private int deterimineDay(final ArrayList<ActivityDTO> beginEndActivities) {
+        // we can take the day of the first activity with the exception that
+        // if there are only activites between 0:00 and 4:00 they relate to the day before...
+        if ((beginEndActivities == null) || beginEndActivities.isEmpty()) {
+            return -1;
+        }
+        final Date d = beginEndActivities.get(0).getDay();
+        boolean shiftOneDay = true;
+        for (final ActivityDTO act : beginEndActivities) {
+            if (act.getDay().getHours() >= 4) {
+                shiftOneDay = false;
+                break;
+            }
+        }
+        if (shiftOneDay) {
+            DateHelper.addDays(d, -1);
+        }
+        return d.getDay();
     }
 
     //~ Inner Interfaces -------------------------------------------------------
