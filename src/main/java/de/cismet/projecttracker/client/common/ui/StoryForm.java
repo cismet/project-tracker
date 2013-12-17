@@ -40,11 +40,13 @@ import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProjectCategoryDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
+import de.cismet.projecttracker.client.helper.GUIHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.utilities.TaskFiller;
 
@@ -382,7 +384,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
                         for (final ProjectDTO tmp : result) {
                             final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
 
-                            if (canUserBillToProject(companyName, tmp)
+                            if (GUIHelper.canUserBillToProject(companyName, tmp)
                                         && ((period == null) || DateHelper.isDayInProjectPeriod(day, period))) {
                                 project.addItem(tmp.getName(), "" + tmp.getId());
                             }
@@ -398,7 +400,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
             for (final ProjectDTO tmp : result) {
                 final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
 
-                if (canUserBillToProject(companyName, tmp)
+                if (GUIHelper.canUserBillToProject(companyName, tmp)
                             && ((period == null) || DateHelper.isDayInProjectPeriod(day, period))) {
                     project.addItem(tmp.getName(), "" + tmp.getId());
                 }
@@ -406,31 +408,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
             projects = result;
             initWorkpackage();
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   companyName  DOCUMENT ME!
-     * @param   project      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private boolean canUserBillToProject(final String companyName, final ProjectDTO project) {
-        // add only projects the currently logged in user can bill to
-        final ProjectCategoryDTO category = project.getProjectCategory();
-        if (category != null) {
-            final String name = category.getName();
-            // if the name contains a prefix this is the name of the company...
-            final String[] splittedName = name.split("_");
-            if (splittedName.length > 1) {
-                final String projectRestrictedCompany = splittedName[0];
-                if (!companyName.equalsIgnoreCase(projectRestrictedCompany)) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**
