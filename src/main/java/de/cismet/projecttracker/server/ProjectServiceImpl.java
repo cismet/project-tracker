@@ -2141,8 +2141,13 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
         // if the activiy is a begin of work / end of work activity check that it doesnt destroy the consistency
         if ((activity.getKindofactivity() == 2) || (activity.getKindofactivity() == 1)) {
+            final GregorianCalendar day = new GregorianCalendar();
+            day.setTime(activity.getDay());
+            if (day.get(GregorianCalendar.HOUR_OF_DAY) < 4) {
+                day.add(GregorianCalendar.DAY_OF_MONTH, -1);
+            }
             final boolean consistent = isBeginEndConsistent(activity.getStaff(),
-                    activity.getDay(),
+                    day.getTime(),
                     activity,
                     false,
                     true);
@@ -2353,7 +2358,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         // if the activiy is a begin of work / end of work activity check that it doesnt destroy the consistency
         if ((activityHib.getKindofactivity() == 2) || (activityHib.getKindofactivity() == 1)) {
             final ActivityDTO act = (ActivityDTO)dtoManager.clone(activityHib);
-            final boolean consistent = isBeginEndConsistent(act.getStaff(), act.getDay(), act, true, true);
+            final GregorianCalendar day = new GregorianCalendar();
+            day.setTime(activity.getDay());
+            if (day.get(GregorianCalendar.HOUR_OF_DAY) < 4) {
+                day.add(GregorianCalendar.DAY_OF_MONTH, -1);
+            }
+            final boolean consistent = isBeginEndConsistent(act.getStaff(), day.getTime(), act, true, true);
             if (!consistent) {
                 throw new PersistentLayerException(LanguageBundle.TIME_SLOT_INVALID);
             }
@@ -2481,8 +2491,13 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final Activity deletedActivity = (Activity)dtoManager.merge(activity.createCopy());
         // if the activiy is a begin of work / end of work activity check that it doesnt destroy the consistency
         if ((activity.getKindofactivity() == 2) || (activity.getKindofactivity() == 1)) {
+            final GregorianCalendar day = new GregorianCalendar();
+            day.setTime(activity.getDay());
+            if (day.get(GregorianCalendar.HOUR_OF_DAY) < 4) {
+                day.add(GregorianCalendar.DAY_OF_MONTH, -1);
+            }
             final boolean consistent = isBeginEndConsistent(activity.getStaff(),
-                    activity.getDay(),
+                    day.getTime(),
                     activity,
                     true,
                     false);
@@ -4530,8 +4545,12 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         final GregorianCalendar to = new GregorianCalendar();
         to.setTime(day);
         from.set(GregorianCalendar.HOUR_OF_DAY, 4);
+        from.set(GregorianCalendar.MINUTE, 0);
+        from.set(GregorianCalendar.SECOND, 0);
         to.add(GregorianCalendar.DAY_OF_MONTH, 1);
         to.set(GregorianCalendar.HOUR_OF_DAY, 4);
+        to.set(GregorianCalendar.MINUTE, 0);
+        to.set(GregorianCalendar.SECOND, 0);
         final Criterion dateRestriction = Restrictions.and(Restrictions.ge("day", from.getTime()),
                 Restrictions.lt("day", to.getTime()));
         conjuction.add(dateRestriction);
