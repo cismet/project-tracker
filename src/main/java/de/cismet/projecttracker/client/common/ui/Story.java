@@ -21,6 +21,7 @@ import com.google.gwt.user.client.ui.Widget;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -200,6 +201,9 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
                         || (act.getKindofactivity() == ActivityDTO.END_OF_DAY)) {
                 tmp.add(act);
             }
+        }
+        if (tmp.isEmpty()) {
+            return;
         }
         Date d = new Date(tmp.get(0).getDay().getTime());
         ArrayList<ActivityDTO> beginEndActivities = new ArrayList<ActivityDTO>();
