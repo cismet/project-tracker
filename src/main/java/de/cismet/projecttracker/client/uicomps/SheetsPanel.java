@@ -27,6 +27,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -253,7 +254,7 @@ public class SheetsPanel extends Composite implements ResizeHandler,
             DateHelper.addDays(d, -7);
             if (d.getDay() != 1) {
                 // this should never happen
-                datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
+                datePicker.setValue(DateHelper.getBeginOfWeek(d));
             }
             final Date lastDay = (Date)d.clone();
             DateHelper.addDays(lastDay, 6);
@@ -264,7 +265,7 @@ public class SheetsPanel extends Composite implements ResizeHandler,
             DateHelper.addDays(d, 7);
             if (d.getDay() != 1) {
                 // this should never happen
-                datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
+                datePicker.setValue(DateHelper.getBeginOfWeek(d));
             }
             final Date lastDay = (Date)d.clone();
             DateHelper.addDays(lastDay, 6);
@@ -540,7 +541,7 @@ public class SheetsPanel extends Composite implements ResizeHandler,
         isDatePickerVisible = false;
         final Date d = event.getValue();
         if (d.getDay() != 1) {
-            datePicker.setValue(DateHelper.getBeginOfWeek(getSelectedYear(), getSelectedWeek()));
+            datePicker.setValue(DateHelper.getBeginOfWeek(d));
         }
         final Date lastDay = new Date(datePicker.getValue().getTime());
         DateHelper.addDays(lastDay, 6);
