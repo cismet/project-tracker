@@ -391,8 +391,8 @@ public class DateHelper {
     public static int getWeekOfYear(final Date date) {
         final Date givenDate = new Date(date.getTime());
         final Date firstWeek = new Date(givenDate.getTime()); // this operation can change the timezone, so the
-                                                              // timezoneOffset must be considered in the following
-                                                              // calculations
+        // timezoneOffset must be considered in the following
+        // calculations
         firstWeek.setMonth(0);
         firstWeek.setDate(4);
         // givenDate should contain the same day of week as the firstWeek but
@@ -408,7 +408,7 @@ public class DateHelper {
         long week = (timeDistance / (DAY_IN_MILLIS * DAYS_PER_WEEK)) + 1;
 
         if (week == 0) {
-            week = getWeekCountForYear(givenDate.getYear() + 1899);
+            week = getWeekCountForYear(date.getYear() + 1899);
         } else if ((week == 53) && (getWeekCountForYear(date.getYear() + 1900) == 52)) {
             week = 1;
         } else if (week > 53) {
@@ -507,8 +507,31 @@ public class DateHelper {
 // if (getWeekOfYear(date) != origWeek) {
 // ProjectTrackerEntryPoint.outputBox("error in method getBeginOfWeek");
 // }
-
         return date;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   day  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Date getBeginOfWeek(final Date day) {
+        final int week = DateHelper.getWeekOfYear(day);
+        int year = DateHelper.getYear(day);
+        // ISO 8601 Der 29., 30. und 31. Dezember können schon zur ersten Kalenderwoche des Folgejahres gehören. Der 1.,
+        // 2. und 3. Januar können noch in der letzten Kalenderwoche des Vorjahres liegen. Der Donnerstag ist
+        // ausschlaggebend, zu welchem Jahr die Woche gezählt wird. Liegt er im neuen Jahr, ist es die Kalenderwoche 1.
+        if ((week >= 52) && (day.getDate() < 4)) {
+            year--;
+        }
+
+        if ((week == 1) && (day.getDate() > 28)) {
+            year++;
+        }
+
+        return DateHelper.getBeginOfWeek(year, week);
     }
 
     /**
