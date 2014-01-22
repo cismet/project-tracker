@@ -392,14 +392,16 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
                     @Override
                     protected void afterExecution(final Void result, final boolean operationFailed) {
                         if (!operationFailed) {
+                            ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(start, callback);
                         }
                     }
                 };
 
             if (end != null) {
                 ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(end, endCallback);
+            } else {
+                ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(start, callback);
             }
-            ProjectTrackerEntryPoint.getProjectService(true).deleteActivity(start, callback);
         }
     }
 
