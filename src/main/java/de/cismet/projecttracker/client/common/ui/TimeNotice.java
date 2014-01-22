@@ -298,8 +298,15 @@ public class TimeNotice extends Composite implements ChangeHandler, ClickHandler
                     DateHelper.addDays(dayOfActivity, 1);
                 }
             } else if (!endAtNextDay) {
-                if (!DateHelper.isSameDay(start.getDay(), dayOfActivity)) {
-                    DateHelper.addDays(dayOfActivity, -1);
+                if (eventSource == startTime) {
+                    if ((dayOfActivity.getHours() < 4) && (time.getHours() >= 4)) {
+                        DateHelper.addDays(dayOfActivity, -1);
+                    }
+                }
+                if (eventSource == endTime) {
+                    if (!DateHelper.isSameDay(start.getDay(), dayOfActivity)) {
+                        DateHelper.addDays(dayOfActivity, -1);
+                    }
                 }
             }
             time = DateHelper.createDateObject(dayOfActivity, time);
