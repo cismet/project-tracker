@@ -1,0 +1,21 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+             xmlns:b2="urn:import:com.github.gwtbootstrap.datepicker.client.ui">
+    <ui:style>
+
+    </ui:style>
+    <g:HTMLPanel >
+        <b:AlertBlock type="INFO" heading="Large Result Set!" animation="true" ui:field="alert">
+            <p>The result of your search contains a very large set of activities. 
+                Visualising all those activities can take an uncertain time. 
+                Are you sure you want to continue?
+            </p>
+            <p>
+                <b:Button type="PRIMARY" ui:field="okButton">Continue</b:Button>
+                <b:Button ui:field="cancelButton">Abort</b:Button>
+            </p>
+        </b:AlertBlock>
+    </g:HTMLPanel>
+</ui:UiBinder>

@@ -22,23 +22,12 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.common.ui.FlowPanelWithSpacer;
-import de.cismet.projecttracker.client.common.ui.TaskNotice;
+import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.common.ui.event.MenuEvent;
 import de.cismet.projecttracker.client.common.ui.listener.MenuListener;
 import de.cismet.projecttracker.client.common.ui.report.ReportFilterPanel;
 import de.cismet.projecttracker.client.common.ui.report.ReportResultPanel;
 import de.cismet.projecttracker.client.common.ui.report.ReportSearchParamListener;
-import de.cismet.projecttracker.client.dto.ActivityDTO;
-import de.cismet.projecttracker.client.dto.StaffDTO;
-import de.cismet.projecttracker.client.dto.WorkPackageDTO;
-import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 
 /**
  * DOCUMENT ME!

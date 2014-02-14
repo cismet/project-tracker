@@ -213,7 +213,9 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
                          * */
                         summarizedWorkingTime += TimeCalculator.getWorkingHoursForActivity(act, true);
                     }
-                    wpOverview.add(new StaffSummaryEntry(null, "", wp.getName(), summarizedWorkingTime));
+                    if (wp != null) {
+                        wpOverview.add(new StaffSummaryEntry(null, "", wp.getName(), summarizedWorkingTime));
+                    }
                 }
             }
             wpdetailSection.put(staffWPOverview, wpOverview);
