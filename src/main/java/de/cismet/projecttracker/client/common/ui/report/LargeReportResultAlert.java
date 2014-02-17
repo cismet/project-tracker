@@ -42,8 +42,6 @@ public class LargeReportResultAlert extends Composite {
     //~ Instance fields --------------------------------------------------------
 
     @UiField
-    Button okButton;
-    @UiField
     Button cancelButton;
     @UiField
     AlertBlock alert;
@@ -56,6 +54,8 @@ public class LargeReportResultAlert extends Composite {
      */
     public LargeReportResultAlert() {
         initWidget(uiBinder.createAndBindUi(this));
+        alert.setAnimation(true);
+        alert.setClose(false);
     }
 
     /**
@@ -77,25 +77,13 @@ public class LargeReportResultAlert extends Composite {
      */
     @UiHandler("cancelButton")
     void onCancelButtonClick(final ClickEvent event) {
-        alert.close();
+        resPan.abort();
     }
 
     /**
      * DOCUMENT ME!
-     *
-     * @param  event  DOCUMENT ME!
      */
-    @UiHandler("okButton")
-    void onOkButtonClick(final ClickEvent event) {
-        if (resPan != null) {
-            Scheduler.get().scheduleDeferred(new Command() {
-
-                    @Override
-                    public void execute() {
-                        resPan.proceedWithLastSearchResult();
-                    }
-                });
-        }
+    public void close() {
         alert.close();
     }
 

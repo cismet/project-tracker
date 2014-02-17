@@ -4,18 +4,22 @@
              xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
              xmlns:b2="urn:import:com.github.gwtbootstrap.datepicker.client.ui">
     <ui:style>
-
+        .top-layer{
+        z-index:50;
+        margin-top:-265px;
+        }
     </ui:style>
     <g:HTMLPanel >
-        <b:AlertBlock type="INFO" heading="Large Result Set!" animation="true" ui:field="alert">
-            <p>The result of your search contains a very large set of activities. 
-                Visualising all those activities can take an uncertain time. 
-                Are you sure you want to continue?
-            </p>
-            <p>
-                <b:Button type="PRIMARY" ui:field="okButton">Continue</b:Button>
-                <b:Button ui:field="cancelButton">Abort</b:Button>
-            </p>
-        </b:AlertBlock>
+        <div class="{style.top-layer}">
+            <b:AlertBlock type="INFO" heading="Long search operation detected!" animation="true" ui:field="alert">
+                <p>
+                    The search operation that is in progress may take some time.
+                    If you wish to cancel the search press the cancel button below.
+                </p>
+                <p>
+                    <b:Button type="PRIMARY" ui:field="cancelButton">Cancel</b:Button>
+                </p>
+            </b:AlertBlock>
+        </div>
     </g:HTMLPanel>
 </ui:UiBinder>
