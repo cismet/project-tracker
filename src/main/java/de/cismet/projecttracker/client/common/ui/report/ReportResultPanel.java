@@ -20,24 +20,22 @@ import com.github.gwtbootstrap.client.ui.event.ShowEvent;
 import com.github.gwtbootstrap.client.ui.event.ShowHandler;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Label;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.common.ui.FlowPanelWithSpacer;
 import de.cismet.projecttracker.client.common.ui.LoadingSpinner;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
@@ -72,11 +70,6 @@ public class ReportResultPanel extends Composite {
             }
         };
 
-    private Boolean clearVis = true;
-    private Boolean stat = true;
-    private Boolean table = true;
-    private Boolean singleAct = true;
-
     private FlowPanel activityList = new FlowPanel();
     private FlowPanel activityDetailPanel = new FlowPanel();
     private FlowPanel summaryPanel = new FlowPanel();
@@ -87,10 +80,25 @@ public class ReportResultPanel extends Composite {
     private int activityCount = 0;
     private Date firstActivity = null;
     private Date lastActivity = null;
-    private boolean abortFlag = false;
-    private int index = 0;
     private int detailActivityLoaded = 100;
     private ArrayList<ActivityDTO> lastSearchResult;
+    private ProcessActivitiesIncrementalCommand processCommand;
+    private boolean synchFlag = false;
+    private boolean addFlag = true;
+    private boolean timerStarted = false;
+    private Timer synchTimer = new Timer() {
+
+            @Override
+            public void run() {
+                if (synchFlag) {
+                    this.schedule(100);
+                } else {
+                    refresh();
+                    timerStarted = false;
+                    addFlag = true;
+                }
+            }
+        };
 
     //~ Constructors -----------------------------------------------------------
 
@@ -152,223 +160,99 @@ public class ReportResultPanel extends Composite {
     /**
      * DOCUMENT ME!
      */
-    public void refresh() {
-        clearVis = true;
-        stat = true;
-        this.singleAct = true;
-        this.table = true;
-        abortFlag = true;
-        hoursInTotal = 0;
-        activityCount = 0;
-        firstActivity = null;
-        lastActivity = null;
-        users = 0;
+    private void showLoadSpinner() {
         mainPanel.clear();
-        summaryPanel.clear();
-        activityList.clear();
-        detailActivityLoaded = 100;
-        lastSearchResult = null;
-
         mainPanel.add(loadSpinner);
+    }
 
-        final HashMap<String, Object> params = filterPanel.getSearchParams();
-        final List<WorkPackageDTO> workpackages = (List<WorkPackageDTO>)params.get(ReportFilterPanel.WORKPACKAGE_KEY);
-        final ArrayList<StaffDTO> staff = (ArrayList<StaffDTO>)params.get(ReportFilterPanel.STAFF_KEY);
-        Date from = null;
-        Date to = null;
-        if (params.containsKey(ReportFilterPanel.DATE_FROM_KEY)) {
-            from = (Date)params.get(ReportFilterPanel.DATE_FROM_KEY);
-        }
-        if (params.containsKey(ReportFilterPanel.DATE_TO_KEY)) {
-            to = (Date)params.get(ReportFilterPanel.DATE_TO_KEY);
-        }
-        final String descr = (String)params.get(ReportFilterPanel.DESC_KEY);
+    /**
+     * DOCUMENT ME!
+     */
+    public void refresh() {
+        if (synchFlag) {
+            if (!timerStarted) {
+                addFlag = false;
+                synchTimer.schedule(100);
+            }
+        } else {
+            synchFlag = true;
+            hoursInTotal = 0;
+            activityCount = 0;
+            firstActivity = null;
+            lastActivity = null;
+            users = 0;
+            activityList.clear();
+            detailActivityLoaded = 100;
+            lastSearchResult = null;
+            showLoadSpinner();
 
-        showLongResultalertTimer.schedule(5 * 1000);
-        final BasicAsyncCallback<ArrayList<ActivityDTO>> cb = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
+            final HashMap<String, Object> params = filterPanel.getSearchParams();
+            final List<WorkPackageDTO> workpackages = (List<WorkPackageDTO>)params.get(
+                    ReportFilterPanel.WORKPACKAGE_KEY);
+            final ArrayList<StaffDTO> staff = (ArrayList<StaffDTO>)params.get(
+                    ReportFilterPanel.STAFF_KEY);
+            Date from = null;
+            Date to = null;
+            if (params.containsKey(ReportFilterPanel.DATE_FROM_KEY)) {
+                from = (Date)params.get(ReportFilterPanel.DATE_FROM_KEY);
+            }
+            if (params.containsKey(ReportFilterPanel.DATE_TO_KEY)) {
+                to = (Date)params.get(ReportFilterPanel.DATE_TO_KEY);
+            }
+            final String descr = (String)params.get(ReportFilterPanel.DESC_KEY);
 
-                @Override
-                protected void afterExecution(final ArrayList<ActivityDTO> result, final boolean operationFailed) {
-                    lastSearchResult = result;
-                    abortFlag = false;
-                    final AlertBlock message = new AlertBlock(true);
-                    final AlertBase b = (AlertBase)message;
-                    b.setAnimation(true);
-                    final Timer closeAlertTimer = new Timer() {
+            showLongResultalertTimer.schedule(5 * 1000);
+            final BasicAsyncCallback<ArrayList<ActivityDTO>> cb = new BasicAsyncCallback<ArrayList<ActivityDTO>>() {
 
-                            @Override
-                            public void run() {
-                                b.close();
-                            }
-                        };
+                    @Override
+                    protected void afterExecution(final ArrayList<ActivityDTO> result,
+                            final boolean operationFailed) {
+                        lastSearchResult = result;
 
-                    if (operationFailed) {
-                        mainPanel.clear();
-                        b.setClose(false);
-                        b.setType(AlertType.ERROR);
-                        b.setText("Error during acticity search");
-                        mainPanel.add(message);
-                        closeAlertTimer.schedule(10 * 1000);
-                        return;
+                        if (operationFailed) {
+                            showAlert(false, AlertType.ERROR, "Error during acticity search");
+                            return;
+                        }
+                        if ((result == null) || result.isEmpty()) {
+                            showAlert(false, AlertType.INFO, "No corresponding activites can be found");
+                            return;
+                        }
+
+                        processCommand = new ProcessActivitiesIncrementalCommand(result);
+                        Scheduler.get().scheduleIncremental(processCommand);
                     }
-                    if ((result == null) || result.isEmpty()) {
-                        mainPanel.clear();
-                        b.setClose(false);
-                        b.setType(AlertType.WARNING);
-                        b.setText("No corresponding activites can be found");
-                        mainPanel.add(message);
-                        closeAlertTimer.schedule(3 * 1000);
-                        return;
-                    }
-                    processSearchResultIncremental(result);
-                }
-            };
-        // call the service..
-        ProjectTrackerEntryPoint.getProjectService(true).getActivites(workpackages, staff, from, to, descr, cb);
+                };
+            // call the service..
+            ProjectTrackerEntryPoint.getProjectService(true).getActivites(workpackages, staff, from, to, descr, cb);
+        }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  result  DOCUMENT ME!
+     * @param  close  DOCUMENT ME!
+     * @param  type   DOCUMENT ME!
+     * @param  text   DOCUMENT ME!
      */
-    private void processSearchResultIncremental(final ArrayList<ActivityDTO> result) {
-        final HashMap<StaffDTO, Double> stuffSummary = new HashMap<StaffDTO, Double>();
-        final HashMap<StaffDTO, HashMap<WorkPackageDTO, Double>> wpSummaries =
-            new HashMap<StaffDTO, HashMap<WorkPackageDTO, Double>>();
-        final HashMap<StaffDTO, HashMap<YearMonthKey, Double>> monthSummaries =
-            new HashMap<StaffDTO, HashMap<YearMonthKey, Double>>();
-        index = 0;
-
-        Scheduler.get().scheduleIncremental(new Scheduler.RepeatingCommand() {
+    private void showAlert(final boolean close, final AlertType type, final String text) {
+        final AlertBlock message = new AlertBlock(true);
+        final AlertBase b = (AlertBase)message;
+        final Timer closeAlertTimer = new Timer() {
 
                 @Override
-                public boolean execute() {
-                    while (index < (result.size())) {
-                        if (abortFlag) {
-                            clearUI();
-                            return false;
-                        }
-                        final ActivityDTO activity = result.get(index);
-                        index++;
-                        final StaffDTO staff = activity.getStaff();
-                        final WorkPackageDTO wp = activity.getWorkPackage();
-                        final double wh = TimeCalculator.getWorkingHoursForActivity(activity);
-                        if ((wp == null) || (staff == null)) {
-                            return true;
-                        }
-                        hoursInTotal += TimeCalculator.getWorkingHoursForActivity(activity);
-                        activityCount++;
-                        // find the earliest activity...
-                        if (firstActivity == null) {
-                            firstActivity = activity.getDay();
-                        } else {
-                            if (activity.getDay().before(firstActivity)) {
-                                firstActivity = activity.getDay();
-                            }
-                        }
-
-                        // fin the latest activity
-                        if (lastActivity == null) {
-                            lastActivity = activity.getDay();
-                        } else {
-                            if (activity.getDay().after(lastActivity)) {
-                                lastActivity = activity.getDay();
-                            }
-                        }
-                        // add the hours to the staff summary
-                        Double whPerStaff = 0d;
-                        if (stuffSummary.containsKey(staff)) {
-                            whPerStaff = stuffSummary.get(staff);
-                        }
-                        whPerStaff += wh;
-                        stuffSummary.put(staff, whPerStaff);
-
-                        // add the workingtime to the wp Summary
-                        final HashMap<WorkPackageDTO, Double> wpMap;
-                        if (!wpSummaries.containsKey(staff)) {
-                            wpMap = new HashMap<WorkPackageDTO, Double>();
-                        } else {
-                            wpMap = wpSummaries.get(staff);
-                        }
-                        Double wpSum;
-                        if (wpMap.containsKey(wp)) {
-                            wpSum = wpMap.get(wp);
-                            wpSum += wh;
-                        } else {
-                            wpSum = wh;
-                        }
-                        wpMap.put(wp, wpSum);
-                        wpSummaries.put(staff, wpMap);
-
-                        // add the workingTime to the month summary
-                        final HashMap<YearMonthKey, Double> monthMap;
-                        if (!monthSummaries.containsKey(staff)) {
-                            monthMap = new HashMap<YearMonthKey, Double>();
-                        } else {
-                            monthMap = monthSummaries.get(staff);
-                        }
-                        Double monthSum;
-                        final YearMonthKey yearMonthKey = new YearMonthKey(
-                                DateHelper.getYear(activity.getDay()),
-                                activity.getDay().getMonth());
-                        if (monthMap.containsKey(yearMonthKey)) {
-                            monthSum = monthMap.get(yearMonthKey);
-                            monthSum += wh;
-                        } else {
-                            monthSum = wh;
-                        }
-                        monthMap.put(yearMonthKey, monthSum);
-                        monthSummaries.put(staff, monthMap);
-
-                        // create a task notice for the show single activites section
-                        if (index <= 100) {
-                            activityList.add(new ReportTaskNotice(activity));
-                        }
-
-                        return true;
-                    }
-                    if (clearVis) {
-                        if (abortFlag) {
-                            clearUI();
-                            return false;
-                        }
-                        clearVis = false;
-                        showLongResultalertTimer.cancel();
-                        mainPanel.remove(ReportResultPanel.this.loadSpinner);
-                        sizeAlert.close();
-                        mainPanel.remove(sizeAlert);
-                        return true;
-                    }
-
-                    if (table) {
-                        if (abortFlag) {
-                            clearUI();
-                            return false;
-                        }
-                        table = false;
-                        fillSummaryPanel(stuffSummary, wpSummaries, monthSummaries);
-                        return true;
-                    }
-
-                    if (stat) {
-                        if (abortFlag) {
-                            clearUI();
-                            return false;
-                        }
-                        stat = false;
-                        users = stuffSummary.keySet().size();
-                        generateAndPropagateStatisticsPanel();
-                        return true;
-                    }
-                    if (abortFlag) {
-                        clearUI();
-                        return false;
-                    }
-                    mainPanel.add(activityAccordionPanel);
-                    return false;
+                public void run() {
+                    b.close();
                 }
-            });
+            };
+        b.setAnimation(true);
+        mainPanel.clear();
+        b.setClose(close);
+        b.setType(type);
+        b.setText(text);
+        mainPanel.add(message);
+        closeAlertTimer.schedule(3 * 1000);
+        synchFlag = false;
+        addFlag = true;
     }
 
     /**
@@ -384,14 +268,22 @@ public class ReportResultPanel extends Composite {
      */
     private void clearUI() {
         mainPanel.clear();
-        abortFlag = false;
     }
 
     /**
      * DOCUMENT ME!
      */
     public void abort() {
-        abortFlag = true;
+        if (processCommand != null) {
+            processCommand.cancel();
+            Scheduler.get().scheduleDeferred(new Command() {
+
+                    @Override
+                    public void execute() {
+                        clearUI();
+                    }
+                });
+        }
     }
 
     /**
@@ -460,11 +352,212 @@ public class ReportResultPanel extends Composite {
             }
             table.addStaffEntry(staffOverview, wpOverview, monthOverview);
         }
+        summaryPanel.clear();
         summaryPanel.add(table);
-        mainPanel.add(summaryPanel);
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private final class ProcessActivitiesIncrementalCommand implements RepeatingCommand {
+
+        //~ Instance fields ----------------------------------------------------
+
+        final HashMap<StaffDTO, Double> stuffSummary = new HashMap<StaffDTO, Double>();
+        final HashMap<StaffDTO, HashMap<WorkPackageDTO, Double>> wpSummaries =
+            new HashMap<StaffDTO, HashMap<WorkPackageDTO, Double>>();
+        final HashMap<StaffDTO, HashMap<YearMonthKey, Double>> monthSummaries =
+            new HashMap<StaffDTO, HashMap<YearMonthKey, Double>>();
+
+        private boolean cancelFlag;
+        private Boolean clearVis = true;
+        private Boolean stat = true;
+        private Boolean table = true;
+        private int index = 0;
+        private ArrayList<ActivityDTO> result;
+        private boolean isCancelled = false;
+        private boolean hasStarted = false;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new ProcessActivitiesIncrementalCommand object.
+         *
+         * @param  result  DOCUMENT ME!
+         */
+        public ProcessActivitiesIncrementalCommand(final ArrayList<ActivityDTO> result) {
+            this.result = result;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * Creates a new ProcessActivitiesIncrementalCommand object.
+         *
+         * @return  DOCUMENT ME!
+         */
+        @Override
+        public boolean execute() {
+            if (!hasStarted) {
+                hasStarted = true;
+            }
+            if ((result == null) || result.isEmpty()) {
+                isCancelled = true;
+                return false;
+            }
+
+            if (cancelFlag) {
+                isCancelled = true;
+                mainPanel.clear();
+                return false;
+            }
+
+            while (index < (result.size())) {
+                final ActivityDTO activity = result.get(index);
+                index++;
+                final StaffDTO staff = activity.getStaff();
+                final WorkPackageDTO wp = activity.getWorkPackage();
+                final double wh = TimeCalculator.getWorkingHoursForActivity(activity);
+                if ((wp == null) || (staff == null)) {
+                    return true;
+                }
+                hoursInTotal += TimeCalculator.getWorkingHoursForActivity(activity);
+                activityCount++;
+                // find the earliest activity...
+                if (firstActivity == null) {
+                    firstActivity = activity.getDay();
+                } else {
+                    if (activity.getDay().before(firstActivity)) {
+                        firstActivity = activity.getDay();
+                    }
+                }
+
+                // fin the latest activity
+                if (lastActivity == null) {
+                    lastActivity = activity.getDay();
+                } else {
+                    if (activity.getDay().after(lastActivity)) {
+                        lastActivity = activity.getDay();
+                    }
+                }
+                // add the hours to the staff summary
+                Double whPerStaff = 0d;
+                if (stuffSummary.containsKey(staff)) {
+                    whPerStaff = stuffSummary.get(staff);
+                }
+                whPerStaff += wh;
+                stuffSummary.put(staff, whPerStaff);
+
+                // add the workingtime to the wp Summary
+                final HashMap<WorkPackageDTO, Double> wpMap;
+                if (!wpSummaries.containsKey(staff)) {
+                    wpMap = new HashMap<WorkPackageDTO, Double>();
+                } else {
+                    wpMap = wpSummaries.get(staff);
+                }
+                Double wpSum;
+                if (wpMap.containsKey(wp)) {
+                    wpSum = wpMap.get(wp);
+                    wpSum += wh;
+                } else {
+                    wpSum = wh;
+                }
+                wpMap.put(wp, wpSum);
+                wpSummaries.put(staff, wpMap);
+
+                // add the workingTime to the month summary
+                final HashMap<YearMonthKey, Double> monthMap;
+                if (!monthSummaries.containsKey(staff)) {
+                    monthMap = new HashMap<YearMonthKey, Double>();
+                } else {
+                    monthMap = monthSummaries.get(staff);
+                }
+                Double monthSum;
+                final YearMonthKey yearMonthKey = new YearMonthKey(
+                        DateHelper.getYear(activity.getDay()),
+                        activity.getDay().getMonth());
+                if (monthMap.containsKey(yearMonthKey)) {
+                    monthSum = monthMap.get(yearMonthKey);
+                    monthSum += wh;
+                } else {
+                    monthSum = wh;
+                }
+                monthMap.put(yearMonthKey, monthSum);
+                monthSummaries.put(staff, monthMap);
+
+                // create a task notice for the show single activites section
+                if (index <= 100) {
+                    activityList.add(new ReportTaskNotice(activity));
+                }
+
+                return true;
+            }
+
+            if (stat) {
+                stat = false;
+                users = stuffSummary.keySet().size();
+                generateAndPropagateStatisticsPanel();
+                return true;
+            }
+
+            if (table) {
+                table = false;
+//                fillSummaryPanel(stuffSummary, wpSummaries, monthSummaries);
+                return true;
+            }
+
+            if (clearVis && addFlag) {
+                clearVis = false;
+                showLongResultalertTimer.cancel();
+                mainPanel.clear();
+//                mainPanel.remove(ReportResultPanel.this.loadSpinner);
+//                sizeAlert.close();
+//                mainPanel.remove(sizeAlert);
+                fillSummaryPanel(stuffSummary, wpSummaries, monthSummaries);
+                mainPanel.add(summaryPanel);
+                mainPanel.add(activityAccordionPanel);
+                return true;
+            }
+            synchFlag = false;
+            return false;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public boolean isAbortFlag() {
+            return cancelFlag;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public boolean isCancelled() {
+            return isCancelled;
+        }
+
+        /**
+         * DOCUMENT ME!
+         */
+        public void reset() {
+            this.cancelFlag = false;
+        }
+
+        /**
+         * DOCUMENT ME!
+         */
+        public void cancel() {
+            this.cancelFlag = true;
+        }
+    }
 
     /**
      * DOCUMENT ME!
