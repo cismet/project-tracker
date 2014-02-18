@@ -11,7 +11,7 @@
     </ui:style>
     <g:HTMLPanel >
         <div class="{style.top-layer}">
-            <b:AlertBlock type="INFO" heading="Long search operation detected!" animation="true" ui:field="alert">
+            <b:AlertBlock type="INFO" close="false" heading="Long search operation detected!" animation="true" ui:field="alert">
                 <p>
                     The search operation that is in progress may take some time.
                     If you wish to cancel the search press the cancel button below.

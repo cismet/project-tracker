@@ -54,8 +54,6 @@ public class LargeReportResultAlert extends Composite {
      */
     public LargeReportResultAlert() {
         initWidget(uiBinder.createAndBindUi(this));
-        alert.setAnimation(true);
-        alert.setClose(false);
     }
 
     /**

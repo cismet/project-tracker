@@ -133,6 +133,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
             }
         }
         project.setItemSelected(index, true);
+        DomEvent.fireNativeEvent(Document.get().createChangeEvent(), project);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -299,6 +300,9 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
         } else {
             // we have selected the all project...
             for (final ProjectDTO proj : ProjectTrackerEntryPoint.getInstance().getProjects()) {
+//                if ((proj.getWorkPackages() != null) && !proj.getWorkPackages().isEmpty()) {
+//                    workpackages.addItem("-- " + proj.getName() + " --", String.valueOf(-2));
+//                }
                 for (final WorkPackageDTO wp : proj.getWorkPackages()) {
                     final WorkPackagePeriodDTO period = wp.determineMostRecentPeriod();
 
@@ -306,18 +310,18 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                     if (wp.getName() != null) {
                         workpackages.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
                     }
-
-                    for (int i = 0; i < workpackages.getItemCount(); i++) {
-                        final String itemText = workpackages.getItemText(i);
-                        if (itemText.toUpperCase().startsWith("WP")) {
-                            workpackages.getElement()
-                                    .getElementsByTagName("option")
-                                    .getItem(i)
-                                    .setAttribute("disabled", "disabled");
-                        }
-                    }
                 }
             }
+            for (int i = 0; i < workpackages.getItemCount(); i++) {
+                final String itemText = workpackages.getItemText(i);
+                if (itemText.toUpperCase().startsWith("WP") || itemText.startsWith("--")) {
+                    workpackages.getElement()
+                            .getElementsByTagName("option")
+                            .getItem(i)
+                            .setAttribute("disabled", "disabled");
+                }
+            }
+            workpackages.setSelectedIndex(0);
         }
     }
 

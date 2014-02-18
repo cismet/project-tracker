@@ -164,6 +164,9 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         if (wpdetailSection.keySet().size() == 1) {
             expandedStaffMonthEntries.add(staffMonthOverview.id);
             expandedStaffWPEntries.add(staffWPOverview.id);
+        } else {
+            expandedStaffMonthEntries.clear();
+            expandedStaffWPEntries.clear();
         }
         refreshTable();
     }

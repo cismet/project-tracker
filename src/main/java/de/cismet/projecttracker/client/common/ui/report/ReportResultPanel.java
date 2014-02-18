@@ -13,16 +13,22 @@ package de.cismet.projecttracker.client.common.ui.report;
 
 import com.github.gwtbootstrap.client.ui.AccordionGroup;
 import com.github.gwtbootstrap.client.ui.AlertBlock;
+import com.github.gwtbootstrap.client.ui.NavLink;
 import com.github.gwtbootstrap.client.ui.base.AlertBase;
 import com.github.gwtbootstrap.client.ui.constants.AlertType;
+import com.github.gwtbootstrap.client.ui.event.ShowEvent;
+import com.github.gwtbootstrap.client.ui.event.ShowHandler;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,21 +72,25 @@ public class ReportResultPanel extends Composite {
             }
         };
 
+    private Boolean clearVis = true;
+    private Boolean stat = true;
+    private Boolean table = true;
+    private Boolean singleAct = true;
+
     private FlowPanel activityList = new FlowPanel();
+    private FlowPanel activityDetailPanel = new FlowPanel();
     private FlowPanel summaryPanel = new FlowPanel();
     private ReportFilterPanel filterPanel;
-//    private Label l = new Label("Jo, is jo gudd, ich sin noch am laden");
-//    private Image l = new Image(ImageConstants.INSTANCE.loadImage());
     private LoadingSpinner loadSpinner = new LoadingSpinner();
-
-    private HashMap<StaffDTO, Set<ActivityDTO>> userMap = new HashMap<StaffDTO, Set<ActivityDTO>>();
-    private HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap = new HashMap<WorkPackageDTO, Set<ActivityDTO>>();
+    private int users = 0;
     private double hoursInTotal = 0;
     private int activityCount = 0;
     private Date firstActivity = null;
     private Date lastActivity = null;
-    private ArrayList<ActivityDTO> searchResultCache;
     private boolean abortFlag = false;
+    private int index = 0;
+    private int detailActivityLoaded = 100;
+    private ArrayList<ActivityDTO> lastSearchResult;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -101,29 +111,65 @@ public class ReportResultPanel extends Composite {
      * DOCUMENT ME!
      */
     private void init() {
+        activityAccordionPanel.addShowHandler(new ShowHandler() {
+
+                @Override
+                public void onShow(final ShowEvent showEvent) {
+                    activityDetailPanel.add(activityList);
+                }
+            });
         loadSpinner.setStyleName("report-result-lbl");
         mainPanel.setStyleName("report-results-area verticalScroller");
         mainPanel.add(summaryPanel);
         activityAccordionPanel.setHeading("Show single activites");
         activityAccordionPanel.setDefaultOpen(false);
+        activityAccordionPanel.add(activityDetailPanel);
+        final NavLink loadMoreLink = new NavLink("load next 100 activities");
+        loadMoreLink.addClickHandler(new ClickHandler() {
+
+                @Override
+                public void onClick(final ClickEvent event) {
+                    final int newMax = detailActivityLoaded + 100;
+                    Scheduler.get().scheduleIncremental(new Scheduler.RepeatingCommand() {
+
+                            @Override
+                            public boolean execute() {
+                                while ((detailActivityLoaded <= newMax) && (lastSearchResult != null)
+                                            && (lastSearchResult.size() >= detailActivityLoaded)) {
+                                    final ActivityDTO activity = lastSearchResult.get(detailActivityLoaded);
+                                    detailActivityLoaded++;
+                                    activityList.add(new ReportTaskNotice(activity));
+                                    return true;
+                                }
+                                return false;
+                            }
+                        });
+                }
+            });
+        activityAccordionPanel.add(loadMoreLink);
     }
 
     /**
      * DOCUMENT ME!
      */
     public void refresh() {
+        clearVis = true;
+        stat = true;
+        this.singleAct = true;
+        this.table = true;
         abortFlag = true;
         hoursInTotal = 0;
         activityCount = 0;
         firstActivity = null;
         lastActivity = null;
-        wpMap.clear();
-        userMap.clear();
+        users = 0;
         mainPanel.clear();
-        mainPanel.add(loadSpinner);
         summaryPanel.clear();
-        activityAccordionPanel.clear();
         activityList.clear();
+        detailActivityLoaded = 100;
+        lastSearchResult = null;
+
+        mainPanel.add(loadSpinner);
 
         final HashMap<String, Object> params = filterPanel.getSearchParams();
         final List<WorkPackageDTO> workpackages = (List<WorkPackageDTO>)params.get(ReportFilterPanel.WORKPACKAGE_KEY);
@@ -143,6 +189,7 @@ public class ReportResultPanel extends Composite {
 
                 @Override
                 protected void afterExecution(final ArrayList<ActivityDTO> result, final boolean operationFailed) {
+                    lastSearchResult = result;
                     abortFlag = false;
                     final AlertBlock message = new AlertBlock(true);
                     final AlertBase b = (AlertBase)message;
@@ -173,7 +220,6 @@ public class ReportResultPanel extends Composite {
                         closeAlertTimer.schedule(3 * 1000);
                         return;
                     }
-                    searchResultCache = result;
                     processSearchResultIncremental(result);
                 }
             };
@@ -192,18 +238,19 @@ public class ReportResultPanel extends Composite {
             new HashMap<StaffDTO, HashMap<WorkPackageDTO, Double>>();
         final HashMap<StaffDTO, HashMap<YearMonthKey, Double>> monthSummaries =
             new HashMap<StaffDTO, HashMap<YearMonthKey, Double>>();
+        index = 0;
 
         Scheduler.get().scheduleIncremental(new Scheduler.RepeatingCommand() {
 
                 @Override
                 public boolean execute() {
-                    while (!result.isEmpty()) {
+                    while (index < (result.size())) {
                         if (abortFlag) {
                             clearUI();
                             return false;
                         }
-                        final ActivityDTO activity = result.get(result.size() - 1);
-                        result.remove(activity);
+                        final ActivityDTO activity = result.get(index);
+                        index++;
                         final StaffDTO staff = activity.getStaff();
                         final WorkPackageDTO wp = activity.getWorkPackage();
                         final double wh = TimeCalculator.getWorkingHoursForActivity(activity);
@@ -274,14 +321,51 @@ public class ReportResultPanel extends Composite {
                         monthMap.put(yearMonthKey, monthSum);
                         monthSummaries.put(staff, monthMap);
 
+                        // create a task notice for the show single activites section
+                        if (index <= 100) {
+                            activityList.add(new ReportTaskNotice(activity));
+                        }
+
                         return true;
                     }
-                    showLongResultalertTimer.cancel();
-                    mainPanel.remove(ReportResultPanel.this.loadSpinner);
-                    sizeAlert.close();
-                    fillSummaryPanel(stuffSummary, wpSummaries, monthSummaries);
-                    generateAndPropagateStatisticsPanel();
-                    addActivitesToResultsPanel(searchResultCache);
+                    if (clearVis) {
+                        if (abortFlag) {
+                            clearUI();
+                            return false;
+                        }
+                        clearVis = false;
+                        showLongResultalertTimer.cancel();
+                        mainPanel.remove(ReportResultPanel.this.loadSpinner);
+                        sizeAlert.close();
+                        mainPanel.remove(sizeAlert);
+                        return true;
+                    }
+
+                    if (table) {
+                        if (abortFlag) {
+                            clearUI();
+                            return false;
+                        }
+                        table = false;
+                        fillSummaryPanel(stuffSummary, wpSummaries, monthSummaries);
+                        return true;
+                    }
+
+                    if (stat) {
+                        if (abortFlag) {
+                            clearUI();
+                            return false;
+                        }
+                        stat = false;
+                        users = stuffSummary.keySet().size();
+                        generateAndPropagateStatisticsPanel();
+                        return true;
+                    }
+                    if (abortFlag) {
+                        clearUI();
+                        return false;
+                    }
+                    mainPanel.add(activityAccordionPanel);
                     return false;
                 }
             });
@@ -316,25 +400,11 @@ public class ReportResultPanel extends Composite {
     private void generateAndPropagateStatisticsPanel() {
         final StatisticsPanel statPan = new StatisticsPanel(
                 hoursInTotal,
-                userMap.keySet().size(),
+                users,
                 activityCount,
                 firstActivity,
                 lastActivity);
         filterPanel.setStatisticsPanel(statPan);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  result  DOCUMENT ME!
-     */
-    private void addActivitesToResultsPanel(final ArrayList<ActivityDTO> result) {
-        final FlowPanelWithSpacer activityPanel = new FlowPanelWithSpacer();
-        for (final ActivityDTO act : result) {
-            activityPanel.add(new ReportTaskNotice(act));
-        }
-        activityAccordionPanel.add(activityPanel);
-        mainPanel.add(activityAccordionPanel);
     }
 
     /**
