@@ -109,6 +109,7 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
                 protected void afterExecution(final StaffDTO result, final boolean operationFailed) {
                     if (!operationFailed) {
                         ProjectTrackerEntryPoint.getInstance().login(result, (result.getPermissions() & 0x1) == 0x1);
+                        ProjectTrackerEntryPoint.getInstance().checkBeginOfDayBooking();
                         username.setText("");
                         password.setText("");
                     }

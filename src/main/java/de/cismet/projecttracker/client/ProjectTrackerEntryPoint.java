@@ -220,13 +220,13 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
         }
         topPanel.fillUser();
         ChangeChecker.getInstance().addListener(this);
-        checkBeginOfDayBooking();
+//        checkBeginOfDayBooking();
     }
 
     /**
      * DOCUMENT ME!
      */
-    private void checkBeginOfDayBooking() {
+    public void checkBeginOfDayBooking() {
         final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
 
                 @Override
