@@ -26,22 +26,15 @@ import com.google.gwt.user.cellview.client.AbstractCellTable.Style;
 import com.google.gwt.user.cellview.client.AbstractCellTableBuilder;
 import com.google.gwt.user.cellview.client.AbstractHeaderOrFooterBuilder;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.dto.ActivityDTO;
-import de.cismet.projecttracker.client.dto.StaffDTO;
-import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
-import de.cismet.projecttracker.client.utilities.TimeCalculator;
 
 /**
  * DOCUMENT ME!
@@ -60,8 +53,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
     //~ Instance fields --------------------------------------------------------
 
     CellTable<StaffSummaryEntry> grid = new CellTable<StaffSummaryEntry>();
-    private HashMap<StaffDTO, Set<ActivityDTO>> userMap = new HashMap<StaffDTO, Set<ActivityDTO>>();
-    private HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap = new HashMap<WorkPackageDTO, Set<ActivityDTO>>();
+    final ArrayList<StaffSummaryEntry> tableEntries = new ArrayList<StaffSummaryEntry>();
     private HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>> wpdetailSection =
         new HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>>();
     private HashMap<StaffSummaryEntry, Set<StaffSummaryEntry>> monthDetailSection =
@@ -78,14 +70,10 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
 
     /**
      * Creates a new ReportResultsSummaryDataGrid object.
-     *
-     * @param  userMap  DOCUMENT ME!
-     * @param  wpMap    DOCUMENT ME!
      */
-    public ReportResultsSummaryDataGrid(final HashMap<StaffDTO, Set<ActivityDTO>> userMap,
-            final HashMap<WorkPackageDTO, Set<ActivityDTO>> wpMap) {
-        this.userMap = userMap;
-        this.wpMap = wpMap;
+    public ReportResultsSummaryDataGrid() {
+//        this.userMap = userMap;
+//        this.wpMap = wpMap;
         initializeColumns();
         grid.setWidth("100%", true);
         grid.setColumnWidth(staffIconColumn, 20.0, Unit.PX);
@@ -95,7 +83,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
         grid.setHeaderBuilder(new CustomHeaderBuilder());
         grid.setTableBuilder(new ReportsResultSummaryTableBuilder());
 
-        fill();
+//        fill();
         this.add(grid);
     }
 
@@ -157,93 +145,36 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
 
     /**
      * DOCUMENT ME!
+     *
+     * @param  staffOverview  DOCUMENT ME!
+     * @param  wpOverview     DOCUMENT ME!
+     * @param  monthOverview  DOCUMENT ME!
      */
-    private void fill() {
-        final ArrayList<StaffSummaryEntry> tableEntries = new ArrayList<StaffSummaryEntry>();
-
-        for (final StaffDTO s : userMap.keySet()) {
-            // retrieve the user icon
-            String iconUrl = "";
-            if (s.getEmail() != null) {
-                iconUrl = GRAVATAR_URL_PREFIX
-                            + ProjectTrackerEntryPoint.getInstance().md5(s.getEmail())
-                            + "?s=32";
-            }
-            double whPerstaff = 0;
-            final Set<ActivityDTO> userSet = userMap.get(s);
-            // calculate the first row, genreate the month map
-            final HashMap<YearMonthKey, Set<ActivityDTO>> monthMap = new HashMap<YearMonthKey, Set<ActivityDTO>>();
-            if (!userSet.isEmpty()) {
-                for (final ActivityDTO act : userSet) {
-                    whPerstaff += TimeCalculator.getWorkingHoursForActivity(act);
-                    final YearMonthKey ym = new YearMonthKey(DateHelper.getYear(act.getDay()), act.getDay().getMonth());
-                    Set<ActivityDTO> monthSet = monthMap.get(ym);
-                    if (monthSet == null) {
-                        monthSet = new HashSet<ActivityDTO>();
-                    }
-                    monthSet.add(act);
-                    monthMap.put(ym, monthSet);
-                }
-            }
-            final StaffSummaryEntry staffOverview = new StaffSummaryEntry(
-                    iconUrl,
-                    s.getFirstname()
-                            + s.getName(),
-                    "",
-                    whPerstaff);
-            tableEntries.add(staffOverview);
-            final StaffSummaryEntry staffWPOverview = new StaffSummaryEntry(null, WP_SUMMARY_HEADER, "", 0);
-            tableEntries.add(staffWPOverview);
-            final StaffSummaryEntry staffMonthOverview = new StaffSummaryEntry(null, MONTH_SUMMARY_HEADER, "", 0);
-            tableEntries.add(staffMonthOverview);
-            final HashSet<StaffSummaryEntry> wpOverview = new HashSet<StaffSummaryEntry>();
-            final HashSet<StaffSummaryEntry> monthOverview = new HashSet<StaffSummaryEntry>();
-            // calculate the wp detail section
-            for (final WorkPackageDTO wp : wpMap.keySet()) {
-                final Set<ActivityDTO> wpSet = new HashSet<ActivityDTO>(wpMap.get(wp));
-                // intersect with the user set
-                wpSet.retainAll(userSet);
-                if (!wpSet.isEmpty()) {
-                    double summarizedWorkingTime = 0;
-                    for (final ActivityDTO act : wpSet) {
-                        /*
-                         * since we want to summarize the activites per workpackage we have to add also the pause times
-                         * to avoid that the hours column for the pause workpackage is empty. Therfore we call the
-                         * TimeCalculator.getWorkingHoursForActivity method with true
-                         * */
-                        summarizedWorkingTime += TimeCalculator.getWorkingHoursForActivity(act, true);
-                    }
-                    wpOverview.add(new StaffSummaryEntry(null, "", wp.getName(), summarizedWorkingTime));
-                }
-            }
-            wpdetailSection.put(staffWPOverview, wpOverview);
-
-            // create the monthly detail section
-            final ArrayList<YearMonthKey> list = new ArrayList<YearMonthKey>();
-            list.addAll(monthMap.keySet());
-            Collections.sort(list);
-            for (final YearMonthKey ym : list) {
-                final Set<ActivityDTO> monthSet = monthMap.get(ym);
-                double monthWH = 0;
-                for (final ActivityDTO act : monthSet) {
-                    monthWH += TimeCalculator.getWorkingHoursForActivity(act);
-                }
-                monthOverview.add(new StaffSummaryEntry(
-                        "",
-                        "",
-                        ym.getYear()
-                                + " - "
-                                + DateHelper.NAME_OF_MONTH[ym.getMonth()],
-                        monthWH));
-            }
-            monthDetailSection.put(staffMonthOverview, monthOverview);
-            // if there is just one user show the wp details directly
-            if (userMap.keySet().size() == 1) {
-//                expandedStaffEntries.add(staffOverview.id);
-                expandedStaffMonthEntries.add(staffMonthOverview.id);
-                expandedStaffWPEntries.add(staffWPOverview.id);
-            }
+    void addStaffEntry(final StaffSummaryEntry staffOverview,
+            final HashSet<StaffSummaryEntry> wpOverview,
+            final HashSet<StaffSummaryEntry> monthOverview) {
+        tableEntries.add(staffOverview);
+        final StaffSummaryEntry staffWPOverview;
+        staffWPOverview = new StaffSummaryEntry(null, WP_SUMMARY_HEADER, "", 0);
+        tableEntries.add(staffWPOverview);
+        wpdetailSection.put(staffWPOverview, wpOverview);
+        final StaffSummaryEntry staffMonthOverview = new StaffSummaryEntry(null, MONTH_SUMMARY_HEADER, "", 0);
+        tableEntries.add(staffMonthOverview);
+        monthDetailSection.put(staffMonthOverview, monthOverview);
+        if (wpdetailSection.keySet().size() == 1) {
+            expandedStaffMonthEntries.add(staffMonthOverview.id);
+            expandedStaffWPEntries.add(staffWPOverview.id);
+        } else {
+            expandedStaffMonthEntries.clear();
+            expandedStaffWPEntries.clear();
         }
+        refreshTable();
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void refreshTable() {
         grid.setPageSize(tableEntries.size());
         grid.setRowCount(tableEntries.size(), true);
         grid.setColumnWidth(staffNameColumn, 100, com.google.gwt.dom.client.Style.Unit.PX);
@@ -412,143 +343,6 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             th.text("Hours").endTH();
 
             return true;
-        }
-    }
-
-    /**
-     * YearMonthKey is used as key value to generate the montly summary detail section of the grid.
-     *
-     * @version  $Revision$, $Date$
-     */
-    private final class YearMonthKey implements Comparable<YearMonthKey> {
-
-        //~ Instance fields ----------------------------------------------------
-
-        private int month;
-        private int year;
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new YearMonth object.
-         *
-         * @param  year   DOCUMENT ME!
-         * @param  month  DOCUMENT ME!
-         */
-        public YearMonthKey(final int year, final int month) {
-            this.year = year;
-            this.month = month;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @return  DOCUMENT ME!
-         */
-        public int getMonth() {
-            return month;
-        }
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param  month  DOCUMENT ME!
-         */
-        public void setMonth(final int month) {
-            this.month = month;
-        }
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @return  DOCUMENT ME!
-         */
-        public int getYear() {
-            return year;
-        }
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param  year  DOCUMENT ME!
-         */
-        public void setYear(final int year) {
-            this.year = year;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (o == this) {
-                return true;
-            }
-            if (o instanceof YearMonthKey) {
-                final YearMonthKey ym = (YearMonthKey)o;
-                if ((ym.getMonth() == this.month) && (ym.getYear() == this.year)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = (31 * hash) + this.month;
-            hash = (31 * hash) + this.year;
-            return hash;
-        }
-
-        @Override
-        public int compareTo(final YearMonthKey t) {
-            if (t.getYear() < this.getYear()) {
-                return 1;
-            } else if (t.getYear() > this.getYear()) {
-                return -1;
-            } else {
-                if (t.getMonth() < this.getMonth()) {
-                    return 1;
-                } else if (t.getMonth() > this.getMonth()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        }
-    }
-
-    /**
-     * A StaffSummaryEntry containts the data that represents a row of the data grid.
-     *
-     * @version  $Revision$, $Date$
-     */
-    private final class StaffSummaryEntry {
-
-        //~ Instance fields ----------------------------------------------------
-
-        public String iconUrl;
-        public final String staffName;
-        public final String wpName;
-        public final double wh;
-        public final Integer id;
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new StaffSummaryEntry object.
-         *
-         * @param  url        DOCUMENT ME!
-         * @param  staffName  DOCUMENT ME!
-         * @param  wpName     DOCUMENT ME!
-         * @param  wh         DOCUMENT ME!
-         */
-        public StaffSummaryEntry(final String url, final String staffName, final String wpName, final double wh) {
-            this.iconUrl = url;
-            this.staffName = staffName;
-            this.wpName = wpName;
-            this.wh = wh;
-            this.id = Random.nextInt(Integer.MAX_VALUE);
         }
     }
 }
