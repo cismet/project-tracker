@@ -20,6 +20,8 @@ import java.util.List;
 
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.FillButtonPreview;
+import de.cismet.projecttracker.client.common.ui.OkCancelCallback;
+import de.cismet.projecttracker.client.common.ui.OkCancelModal;
 import de.cismet.projecttracker.client.common.ui.Story;
 import de.cismet.projecttracker.client.common.ui.TaskNotice;
 import de.cismet.projecttracker.client.common.ui.TaskStory;
@@ -62,8 +64,28 @@ public class TaskFiller {
 
         if (tnn.getEnd() == null) {
             if (timeToFillTo == null) {
-                ProjectTrackerEntryPoint.outputBox(
-                    "End time is missing. If you want to fill to the current time use the CTRL-key");
+                final OkCancelCallback cb = new OkCancelCallback() {
+
+                        @Override
+                        public void onOkClicked() {
+                            fillToTime(new Date(), day, taskStory, story);
+                        }
+
+                        @Override
+                        public void onCancelClicked() {
+                            // nope
+                        }
+                    };
+
+                final DialogBox form = new DialogBox();
+                final OkCancelModal modal = new OkCancelModal(
+                        form,
+                        cb,
+                        "Warning!",
+                        "No End time! Shall I assume the current time for the fill operation?");
+                form.setWidget(modal);
+                form.setModal(true);
+                form.center();
                 return;
             } else {
                 final Date end = new Date(tnn.getStart().getTime());

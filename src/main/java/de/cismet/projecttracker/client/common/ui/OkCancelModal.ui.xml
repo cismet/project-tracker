@@ -1,0 +1,31 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:my='urn:import:de.cismet.projecttracker.client.common.ui'>
+    <ui:style>
+        .taskboard {
+        width: 100%;
+        line-height:14px;
+        min-height: 1px;
+        }
+        
+    </ui:style>
+    <g:HTMLPanel>
+        <div
+            style="position: relative; top: auto; left: auto; margin: 0 auto; z-index: 1;"
+            class="modal">
+            <div class="modal-header">
+                <h3><g:Label ui:field="lblTitle"></g:Label></h3>
+            </div>
+            <div class="modal-body" style="padding-bottom: 0px;">
+                <p>
+                    <g:Label ui:field="lblMessage"></g:Label>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <g:Button styleName="btn btn-primary" text="OK" ui:field="okButton" />
+                <g:Button styleName="btn btn-primary" text="Cancel" ui:field="closeButton" />
+            </div>
+        </div>
+    </g:HTMLPanel>
+</ui:UiBinder>
