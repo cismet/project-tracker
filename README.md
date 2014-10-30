@@ -1,4 +1,4 @@
-project-tracker
+project-tracker [![Build Status](http://ci.cismet.de/buildStatus/icon?job=project-tracker)](https://ci.cismet.de/job/project-tracker/)
 ===============
 
 License
