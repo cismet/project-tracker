@@ -22,8 +22,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.event.TaskStoryEvent;
@@ -33,10 +31,10 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProfileDTO;
-import de.cismet.projecttracker.client.dto.ProjectCategoryDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
+import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.helper.GUIHelper;
@@ -223,6 +221,21 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                             final Date newDate = (Date)firstDayOfWeek.clone();
                                             DateHelper.addDays(newDate, days);
                                             if (activity.getWorkPackage() != null) {
+                                                final WorkPackageDTO wp = activity.getWorkPackage();
+                                                final WorkPackagePeriodDTO wpPeriod = wp.determineMostRecentPeriod();
+                                                if (!((wpPeriod == null)
+                                                                || DateHelper.isDayInWorkPackagePeriod(
+                                                                    newDate,
+                                                                    wpPeriod))) {
+                                                    ProjectTrackerEntryPoint.outputBox(
+                                                        "Can not drop this activity here since the workpackage is out of date ( "
+                                                                + DateHelper.formatDate(wpPeriod.getFromdate())
+                                                                + " - "
+                                                                + DateHelper.formatDate(wpPeriod.getTodate())
+                                                                + " Your administrators advice is: "
+                                                                + wp.getExpirationDescription());
+                                                    return;
+                                                }
                                                 final ProjectDTO project = activity.getWorkPackage().getProject();
                                                 if (project != null) {
                                                     final ProjectPeriodDTO period = project.determineMostRecentPeriod();
@@ -241,17 +254,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                                         ProjectTrackerEntryPoint.outputBox(
                                                             "Can not drop this activity here. You are not allowd to bill to project "
                                                                     + project.getName());
-                                                        return;
-                                                    }
-                                                    if (!((period == null)
-                                                                    || DateHelper.isDayInProjectPeriod(
-                                                                        newDate,
-                                                                        period))) {
-                                                        ProjectTrackerEntryPoint.outputBox(
-                                                            "Can not drop this activity here since the workpackage is out of date ( "
-                                                                    + DateHelper.formatDate(period.getFromdate())
-                                                                    + " - "
-                                                                    + DateHelper.formatDate(period.getTodate()));
                                                         return;
                                                     }
                                                 }
