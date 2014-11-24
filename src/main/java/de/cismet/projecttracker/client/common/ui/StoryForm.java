@@ -293,26 +293,28 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
             return;
         }
         final ActivityDTO newActivity = (modification ? tn.getActivity().createCopy() : new ActivityDTO());
-        if (newActivity.getWorkPackage() != null) {
-            final ProjectDTO project = newActivity.getWorkPackage().getProject();
-            if (project != null) {
-                final ProjectPeriodDTO period = project.determineMostRecentPeriod();
-                if (!((period == null) || DateHelper.isDayInProjectPeriod(day, period))) {
-                    ProjectTrackerEntryPoint.outputBox(
-                        "Can not drop this activity here since the workpackage is out of date ( "
-                                + DateHelper.formatDate(period.getFromdate())
-                                + " - "
-                                + DateHelper.formatDate(period.getTodate()));
-                    return;
-                }
-            }
-        }
+
         newActivity.setDay(day);
         newActivity.setWorkPackage(getSelectedWorkpackage());
         newActivity.setDescription(description.getText());
         newActivity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
         newActivity.setKindofactivity(ActivityDTO.ACTIVITY);
         newActivity.setWorkinghours(workinghours);
+        if (newActivity.getWorkPackage() != null) {
+            final WorkPackageDTO wp = newActivity.getWorkPackage();
+
+            final WorkPackagePeriodDTO period = wp.determineMostRecentPeriod();
+            if (!((period == null) || DateHelper.isDayInWorkPackagePeriod(day, period))) {
+                ProjectTrackerEntryPoint.outputBox(
+                    "Can not drop this activity here since the workpackage is out of date ( "
+                            + DateHelper.formatDate(period.getFromdate())
+                            + " - "
+                            + DateHelper.formatDate(period.getTodate())
+                            + " Your administrators advice is: "
+                            + wp.getExpirationDescription());
+                return;
+            }
+        }
         if (travel.getValue()) {
             newActivity.setWorkCategory(travelCatagory);
         } else {
