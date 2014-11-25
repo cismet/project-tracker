@@ -37,6 +37,11 @@
             <groupId>de.cismet.projecttracker</groupId>
             <artifactId>report-api</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>de.cismet.web</groupId>
@@ -44,7 +49,7 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         
-      <!--  GWT dependencies (from central repo) -->
+        <!--  GWT dependencies (from central repo) -->
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-servlet</artifactId>
@@ -60,7 +65,7 @@
         <dependency>
             <groupId>com.allen-sauer.gwt.dnd</groupId>
             <artifactId>gwt-dnd</artifactId>
-            <version>3.1.2</version>
+            <version>3.3.2</version>
         </dependency>
         <dependency>
             <groupId>com.github.gwtbootstrap</groupId>
@@ -70,12 +75,17 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.12</version>
+            <version>1.2.17</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.4.2</version>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
