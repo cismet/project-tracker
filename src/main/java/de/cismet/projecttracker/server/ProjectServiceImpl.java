@@ -4339,7 +4339,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                 totalVacationDays += profile.getResidualVacation();
             }
         } else {
-            totalVacationDays += getVacationCarryOver(new Date(year.getYear() - 1, year.getMonth(), year.getDay()),
+            totalVacationDays += getVacationCarryOver(new Date(year.getYear() - 1, year.getMonth(), year.getDate()),
                     staff);
         }
         return totalVacationDays
