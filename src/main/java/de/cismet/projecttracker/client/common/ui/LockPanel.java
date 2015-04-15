@@ -222,20 +222,21 @@ public class LockPanel extends Composite implements ClickHandler {
                 lockCB.setEnabled(true);
                 lockCB.setValue(false);
             } else {
-                final BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
-
-                        @Override
-                        protected void afterExecution(final Boolean result, final boolean operationFailed)
-                                throws IllegalStateException {
-                            if (result) {
-                                performLock(day);
-                            } else {
-                                refuseLock(day);
-                            }
-                        }
-                    };
-                ProjectTrackerEntryPoint.getProjectService(true)
-                        .isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), day, cb);
+//                final BasicAsyncCallback<Boolean> cb = new BasicAsyncCallback<Boolean>() {
+//
+//                        @Override
+//                        protected void afterExecution(final Boolean result, final boolean operationFailed)
+//                                throws IllegalStateException {
+//                            if (result) {
+//                                performLock(day);
+//                            } else {
+//                                refuseLock(day);
+//                            }
+//                        }
+//                    };
+//                ProjectTrackerEntryPoint.getProjectService(true)
+//                        .isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), day, cb);
+                performLock(day);
             }
         }
     }
@@ -500,13 +501,34 @@ public class LockPanel extends Composite implements ClickHandler {
         final Date lastDayOfWeek = new Date(firstDayOfWeek.getTime());
         DateHelper.addDays(lastDayOfWeek, 7);
 //        ProjectTrackerEntryPoint.getProjectService(
-//                true).isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(), DateHelper.getYear(firstDayOfWeek), DateHelper.getWeekOfYear(firstDayOfWeek), callback);
-        ProjectTrackerEntryPoint.getProjectService(
-                true)
-                .isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(),
-                    firstDayOfWeek,
-                    lastDayOfWeek,
-                    callback);
+//                true)
+//                .isPausePolicyFullfilled(ProjectTrackerEntryPoint.getInstance().getStaff(),
+//                    firstDayOfWeek,
+//                    lastDayOfWeek,
+//                    callback);
+
+        final Date day = new Date(firstDayOfWeek.getTime());
+        final Date startSunday = new Date(day.getTime());
+        DateHelper.addDays(startSunday, 6);
+        for (int i = 0; i < days.length; i++) {
+            final SimpleCheckBox cb = days[i];
+            if (i == 0) {
+                if (!cb.getValue()) {
+                    performLock(startSunday);
+                }
+            } else {
+                if (!cb.getValue()) {
+                    performLock(day);
+                }
+                DateHelper.addDays(day, 1);
+            }
+        }
+        if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+            weekLockCB.setEnabled(false);
+        } else {
+            weekLockCB.setEnabled(true);
+        }
+        setWeekButtonsEnabled(true);
     }
 
     /**

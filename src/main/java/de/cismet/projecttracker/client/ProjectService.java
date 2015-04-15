@@ -1135,37 +1135,37 @@ public interface ProjectService extends RemoteService {
      */
     Boolean isDayLocked(Date day, StaffDTO s);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   staff  DOCUMENT ME!
-     * @param   day    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    Boolean isPausePolicyFullfilled(StaffDTO staff, Date day);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   staff  DOCUMENT ME!
-     * @param   year   DOCUMENT ME!
-     * @param   week   DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff, int year, int week);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   staff  DOCUMENT ME!
-     * @param   from   DOCUMENT ME!
-     * @param   till   DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff, Date from, Date till);
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param   staff  DOCUMENT ME!
+//     * @param   day    DOCUMENT ME!
+//     *
+//     * @return  DOCUMENT ME!
+//     */
+//    Boolean isPausePolicyFullfilled(StaffDTO staff, Date day);
+//
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param   staff  DOCUMENT ME!
+//     * @param   year   DOCUMENT ME!
+//     * @param   week   DOCUMENT ME!
+//     *
+//     * @return  DOCUMENT ME!
+//     */
+//    ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff, int year, int week);
+//
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param   staff  DOCUMENT ME!
+//     * @param   from   DOCUMENT ME!
+//     * @param   till   DOCUMENT ME!
+//     *
+//     * @return  DOCUMENT ME!
+//     */
+//    ArrayList<Date> isPausePolicyFullfilled(StaffDTO staff, Date from, Date till);
 
     /**
      * Creates a new project costs.
