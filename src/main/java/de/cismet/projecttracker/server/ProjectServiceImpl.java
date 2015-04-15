@@ -4042,118 +4042,118 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         return resultList;
     }
 
-    @Override
-    public Boolean isPausePolicyFullfilled(final StaffDTO staff, final Date day) {
-        try {
-            final ArrayList<ActivityDTO> activities = getActivityByDay(staff, day);
-            Date lastBeginActivityTime = null;
-            Date lastEndActivityTime = null;
-            boolean pauseActivityNeeded = false;
-            double pauseTimesFromActivity = 0;
-            double activityWorkingHours = 0;
-            // the time beetween two time slots
-            double slotPauseTime = 0;
-            boolean justAbsenceTasks = true;
-            for (final ActivityDTO act : activities) {
-                if (act.getKindofactivity() == ActivityDTO.BEGIN_OF_DAY) {
-                    lastBeginActivityTime = act.getDay();
-                    if (lastEndActivityTime != null) {
-                        slotPauseTime += (act.getDay().getTime() - lastEndActivityTime.getTime())
-                                    / 1000
-                                    / 60
-                                    / 60d;
-                    }
-                } else if (act.getKindofactivity() == ActivityDTO.END_OF_DAY) {
-                    lastEndActivityTime = act.getDay();
-                    if (lastBeginActivityTime != null) {
-                        final long workingTimeSlot = act.getDay().getTime()
-                                    - lastBeginActivityTime.getTime();
-                        if (workingTimeSlot > (6 * 60 * 60 * 1000)) {
-                            pauseActivityNeeded = true;
-                        }
-                    }
-                } else if (act.getKindofactivity() == ActivityDTO.ACTIVITY) {
-                    final long wpId = act.getWorkPackage().getId();
-                    if (wpId == ActivityDTO.PAUSE_ID) {
-                        pauseTimesFromActivity += act.getWorkinghours();
-                    } else if (!((wpId == ActivityDTO.ILLNESS_ID) || (wpId == ActivityDTO.SPARE_TIME_ID)
-                                    || (wpId == ActivityDTO.HOLIDAY_ID)
-                                    || (wpId == ActivityDTO.LECTURE_ID)
-                                    || (wpId == ActivityDTO.SPECIAL_HOLIDAY_ID))) {
-                        activityWorkingHours += act.getWorkinghours();
-                        justAbsenceTasks = false;
-                    }
-                }
-            }
-
-            // if there are only absence tasks like spare time and holiday the pause policy is always fulfilled
-            if (justAbsenceTasks) {
-                return true;
-            } else {
-//                //there is a time slot greate than 6 hours so check if a there is a pause activity of at least 45 min
-//                if (pauseActivityNeeded) {
-//                    if (pauseTimesFromActivity >= 0.75d) {
+//    @Override
+//    public Boolean isPausePolicyFullfilled(final StaffDTO staff, final Date day) {
+//        try {
+//            final ArrayList<ActivityDTO> activities = getActivityByDay(staff, day);
+//            Date lastBeginActivityTime = null;
+//            Date lastEndActivityTime = null;
+//            boolean pauseActivityNeeded = false;
+//            double pauseTimesFromActivity = 0;
+//            double activityWorkingHours = 0;
+//            // the time beetween two time slots
+//            double slotPauseTime = 0;
+//            boolean justAbsenceTasks = true;
+//            for (final ActivityDTO act : activities) {
+//                if (act.getKindofactivity() == ActivityDTO.BEGIN_OF_DAY) {
+//                    lastBeginActivityTime = act.getDay();
+//                    if (lastEndActivityTime != null) {
+//                        slotPauseTime += (act.getDay().getTime() - lastEndActivityTime.getTime())
+//                                    / 1000
+//                                    / 60
+//                                    / 60d;
+//                    }
+//                } else if (act.getKindofactivity() == ActivityDTO.END_OF_DAY) {
+//                    lastEndActivityTime = act.getDay();
+//                    if (lastBeginActivityTime != null) {
+//                        final long workingTimeSlot = act.getDay().getTime()
+//                                    - lastBeginActivityTime.getTime();
+//                        if (workingTimeSlot > (6 * 60 * 60 * 1000)) {
+//                            pauseActivityNeeded = true;
+//                        }
+//                    }
+//                } else if (act.getKindofactivity() == ActivityDTO.ACTIVITY) {
+//                    final long wpId = act.getWorkPackage().getId();
+//                    if (wpId == ActivityDTO.PAUSE_ID) {
+//                        pauseTimesFromActivity += act.getWorkinghours();
+//                    } else if (!((wpId == ActivityDTO.ILLNESS_ID) || (wpId == ActivityDTO.SPARE_TIME_ID)
+//                                    || (wpId == ActivityDTO.HOLIDAY_ID)
+//                                    || (wpId == ActivityDTO.LECTURE_ID)
+//                                    || (wpId == ActivityDTO.SPECIAL_HOLIDAY_ID))) {
+//                        activityWorkingHours += act.getWorkinghours();
+//                        justAbsenceTasks = false;
+//                    }
+//                }
+//            }
+//
+//            // if there are only absence tasks like spare time and holiday the pause policy is always fulfilled
+//            if (justAbsenceTasks) {
+//                return true;
+//            } else {
+////                //there is a time slot greate than 6 hours so check if a there is a pause activity of at least 45 min
+////                if (pauseActivityNeeded) {
+////                    if (pauseTimesFromActivity >= 0.75d) {
+////                        return true;
+////                    } else {
+////                        return false;
+////                    }
+////                } else {
+//                if (activityWorkingHours > 6d) {
+//                    if ((pauseTimesFromActivity + slotPauseTime) >= 0.75d) {
 //                        return true;
 //                    } else {
 //                        return false;
 //                    }
 //                } else {
-                if (activityWorkingHours > 6d) {
-                    if ((pauseTimesFromActivity + slotPauseTime) >= 0.75d) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return true;
-                }
+//                    return true;
 //                }
-            }
-        } catch (InvalidInputValuesException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (DataRetrievalException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (PermissionDenyException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSessionException ex) {
-            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return false;
-    }
-
-    @Override
-    public ArrayList<Date> isPausePolicyFullfilled(final StaffDTO staff, final int year, final int week) {
-        final GregorianCalendar from = getFirstDayOfWeek(year, week);
-        final GregorianCalendar till = getLastDayOfWeek(year, week);
-//        till.add(GregorianCalendar.DAY_OF_MONTH, 1);
-        final ArrayList<Date> faultyDays = new ArrayList<Date>();
-        for (int i = 0; i < 7; i++) {
-            final boolean dayFullfilled = isPausePolicyFullfilled(staff, from.getTime());
-            if (!dayFullfilled) {
-//                return false;
-                faultyDays.add(from.getTime());
-            }
-            from.add(GregorianCalendar.DAY_OF_MONTH, 1);
-        }
-
-        return faultyDays;
-    }
-
-    @Override
-    public ArrayList<Date> isPausePolicyFullfilled(final StaffDTO staff, final Date from, final Date till) {
-        final ArrayList<Date> faultyDays = new ArrayList<Date>();
-        final GregorianCalendar fromCal = new GregorianCalendar();
-        fromCal.setTime(from);
-        while (fromCal.getTime().compareTo(till) < 0) {
-            final boolean check = isPausePolicyFullfilled(staff, fromCal.getTime());
-            if (!check) {
-                faultyDays.add(fromCal.getTime());
-            }
-            fromCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
-        }
-        return faultyDays;
-    }
+////                }
+//            }
+//        } catch (InvalidInputValuesException ex) {
+//            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (DataRetrievalException ex) {
+//            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (PermissionDenyException ex) {
+//            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (NoSessionException ex) {
+//            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//
+//        return false;
+//    }
+//
+//    @Override
+//    public ArrayList<Date> isPausePolicyFullfilled(final StaffDTO staff, final int year, final int week) {
+//        final GregorianCalendar from = getFirstDayOfWeek(year, week);
+//        final GregorianCalendar till = getLastDayOfWeek(year, week);
+////        till.add(GregorianCalendar.DAY_OF_MONTH, 1);
+//        final ArrayList<Date> faultyDays = new ArrayList<Date>();
+//        for (int i = 0; i < 7; i++) {
+//            final boolean dayFullfilled = isPausePolicyFullfilled(staff, from.getTime());
+//            if (!dayFullfilled) {
+////                return false;
+//                faultyDays.add(from.getTime());
+//            }
+//            from.add(GregorianCalendar.DAY_OF_MONTH, 1);
+//        }
+//
+//        return faultyDays;
+//    }
+//
+//    @Override
+//    public ArrayList<Date> isPausePolicyFullfilled(final StaffDTO staff, final Date from, final Date till) {
+//        final ArrayList<Date> faultyDays = new ArrayList<Date>();
+//        final GregorianCalendar fromCal = new GregorianCalendar();
+//        fromCal.setTime(from);
+//        while (fromCal.getTime().compareTo(till) < 0) {
+//            final boolean check = isPausePolicyFullfilled(staff, fromCal.getTime());
+//            if (!check) {
+//                faultyDays.add(fromCal.getTime());
+//            }
+//            fromCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+//        }
+//        return faultyDays;
+//    }
 
     @Override
     public Double getVacationDaysTaken(final Date d, final StaffDTO staff) {
