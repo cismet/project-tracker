@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context antiJARLocking="true" path="/ProjectTracker">
-    <Parameter name="confBaseDir" value="/home/daniel/git_repo/project-tracker/ProjectTracker/conf"
+    <Parameter name="confBaseDir" value="/var/lib/projecttracker/conf"
          override="false"/>
 </Context>
