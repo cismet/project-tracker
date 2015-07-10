@@ -10,17 +10,22 @@ package de.cismet.projecttracker.utilities;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.*;
 
+import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
+import de.cismet.projecttracker.server.ConfigurationManager;
 
 /**
  * This class privides some static methods with basic functionality.
@@ -94,12 +99,25 @@ public class Utilities {
      */
     public static void sendEmail(final String address, final String subject, final String body) {
         fetchConfig();
-        final Session session = Session.getDefaultInstance(fMailServerConfig, null);
+        final Session session;
+
+        if ((fMailServerConfig.get("mail.user") != null) && (fMailServerConfig.get("mail.password") != null)) {
+            session = Session.getDefaultInstance(fMailServerConfig, new Authenticator() {
+
+                        @Override
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(
+                                    fMailServerConfig.getProperty("mail.user"),
+                                    fMailServerConfig.getProperty("mail.password"));
+                        }
+                    });
+        } else {
+            session = Session.getDefaultInstance(fMailServerConfig, null);
+        }
+
         final MimeMessage message = new MimeMessage(session);
         try {
-            // the "from" address may be set in code, or set in the
-            // config file under "mail.from" ; here, the latter style is used
-            // message.setFrom( new InternetAddress(aFromEmailAddr) );
+            message.addFrom(new InternetAddress[] { new InternetAddress(fMailServerConfig.getProperty("mail.from")) });
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
             if (!address.equals(ADMIN_MAIL_ADDRESS)) {
                 message.addRecipient(Message.RecipientType.BCC, new InternetAddress(ADMIN_MAIL_ADDRESS));
@@ -146,10 +164,50 @@ public class Utilities {
         InputStream input = null;
 
         try {
-            input = Utilities.class.getResourceAsStream("/de/cismet/projecttracker/utilities/EMail.properties");
+            input = new FileInputStream(ConfigurationManager.getInstance().getConfBaseDir()
+                            + System.getProperty("file.separator") + "EMail.properties");
             fMailServerConfig.load(input);
         } catch (IOException e) {
             logger.error("Cannot open and load mail server properties file.", e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  args  DOCUMENT ME!
+     */
+    public static void main(final String[] args) {
+        fetchConfig();
+        final Session session;
+
+        if ((fMailServerConfig.get("mail.user") != null) && (fMailServerConfig.get("mail.password") != null)) {
+            session = Session.getDefaultInstance(fMailServerConfig, new Authenticator() {
+
+                        @Override
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(
+                                    fMailServerConfig.getProperty("mail.user"),
+                                    fMailServerConfig.getProperty("mail.password"));
+                        }
+                    });
+        } else {
+            session = Session.getDefaultInstance(fMailServerConfig, null);
+        }
+
+        final MimeMessage message = new MimeMessage(session);
+        try {
+            // the "from" address may be set in code, or set in the
+            // config file under "mail.from" ; here, the latter style is used
+            // message.setFrom( new InternetAddress(aFromEmailAddr) );
+            message.addFrom(new InternetAddress[] { new InternetAddress(fMailServerConfig.getProperty("mail.from")) });
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(""));
+            message.setSubject("test mail");
+            message.setText("Ein Test");
+            message.setContent("Ein Test", "text/html");
+            Transport.send(message);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
