@@ -390,6 +390,11 @@ public class Story extends Composite implements ClickHandler, TaskDeleteListener
                                 }
 
                                 max = new Date(max.getTime() + 60000);
+
+                                if ((new Date()).after(max) && DateHelper.isSameDay(new Date(), max)) {
+                                    max = new Date();
+                                }
+
                                 timeList.get(timeList.size() - 1).getStart();
                                 addTimeStartEnd(day, max, null);
                             }
