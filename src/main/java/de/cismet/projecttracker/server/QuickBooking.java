@@ -13,13 +13,17 @@ package de.cismet.projecttracker.server;
 
 import org.apache.log4j.Logger;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import java.security.MessageDigest;
+
+import java.text.SimpleDateFormat;
 
 import java.util.Date;
 import java.util.logging.Level;
@@ -130,6 +134,28 @@ public class QuickBooking extends BasicServlet {
                     } else {
                         out.print(ABSENT_RESPONSE);
                     }
+                } else if (operation.toLowerCase().equals("addslot")) {
+                    final String von = request.getParameter("von");
+                    final String bis = request.getParameter("bis");
+
+                    if ((von != null) && (bis != null)) {
+                        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                        final Date from = formatter.parse(von);
+                        final Date until = formatter.parse(bis);
+
+                        if (!((from.getYear() == until.getYear())
+                                        && (from.getMonth() == until.getMonth())
+                                        && (from.getDate() == until.getDate()))) {
+                            response.setStatus(400);
+                            out.print("The 2 dates are on different days");
+                            return;
+                        }
+
+                        addSlot(staff, from, until, dbManager, response);
+                    } else {
+                        response.setStatus(400);
+                        out.print("von or bis parameter not found");
+                    }
                 } else {
                     response.setStatus(400);
                     out.print("No valid operation found.");
@@ -216,6 +242,91 @@ public class QuickBooking extends BasicServlet {
         }
 
         return null;
+    }
+
+    /**
+     * Adds a complete time slot.
+     *
+     * @param   staff      DOCUMENT ME!
+     * @param   from       DOCUMENT ME!
+     * @param   until      DOCUMENT ME!
+     * @param   dbManager  DOCUMENT ME!
+     * @param   response   DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private void addSlot(final Staff staff,
+            final Date from,
+            final Date until,
+            final DBManager dbManager,
+            final HttpServletResponse response) throws Exception {
+        final Activity actStart = new Activity();
+        final Activity actEnd = new Activity();
+        Serializable idFrom = null;
+        Serializable idUntil = null;
+
+        try {
+            actStart.setKindofactivity(ActivityDTO.BEGIN_OF_DAY);
+            actStart.setStaff(staff);
+            actStart.setDay(from);
+            actStart.setDescription("quickBooking");
+
+            idFrom = dbManager.createObject(actStart);
+
+            actEnd.setKindofactivity(ActivityDTO.END_OF_DAY);
+            actEnd.setStaff(staff);
+            actEnd.setDay(until);
+
+            idUntil = dbManager.createObject(actEnd);
+        } catch (Exception e) {
+            if (idFrom != null) {
+                dbManager.deleteObject(actStart);
+            }
+            if (idUntil != null) {
+                dbManager.deleteObject(actEnd);
+            }
+
+            throw new Exception("the time slot has a conflict with an existing slot.");
+        }
+
+        refreshModification(staff, dbManager);
+        return;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   dbManager  DOCUMENT ME!
+     * @param   day        DOCUMENT ME!
+     * @param   staff      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Boolean isDayLocked(final DBManager dbManager, final Date day, final Staff staff) {
+        if (day == null) {
+            // favourite tasks have null as day
+            return false;
+        }
+        // TODO: change Time Restriction to same day and not same time...
+        final Date d = new Date(day.getTime());
+        d.setHours(5);
+        d.setMinutes(0);
+        d.setSeconds(0);
+
+        final Criteria crit = dbManager.getSession()
+                    .createCriteria(Activity.class)
+                    .add(Restrictions.and(
+                                Restrictions.eq("staff", staff),
+                                Restrictions.and(
+                                    Restrictions.eq("kindofactivity", ActivityDTO.LOCKED_DAY),
+                                    Restrictions.eq("day", d))))
+                    .setMaxResults(1);
+        final Activity lockedDayActivity = (Activity)crit.uniqueResult();
+
+        if (lockedDayActivity != null) {
+            return true;
+        }
+        return false;
     }
 
     /**
