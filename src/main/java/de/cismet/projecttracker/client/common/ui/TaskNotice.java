@@ -43,25 +43,7 @@ public class TaskNotice extends Composite implements ClickHandler {
 
 // private static final String MAIN_STYLES = "alert-message block-message timebox";
     private static final String MAIN_STYLES = "alert alert-block timebox";
-    private static final String[] ADDITIONAL_PROJECT_STYLES = {
-            "proj1",
-            "proj2",
-            "proj3",
-            "proj4",
-            "proj5",
-            "proj6",
-            "proj7"
-        };
-    private static final HashMap<Long, Integer> projectStyle = new HashMap<Long, Integer>();
-
-    static {
-        projectStyle.put((long)1, 0);
-        projectStyle.put((long)2, 1);
-        projectStyle.put((long)18, 2);
-        projectStyle.put((long)21, 3);
-        projectStyle.put((long)20, 4);
-        projectStyle.put((long)10, 5);
-    }
+    private static final String PROJECT_STYLES_PREFIX = "proj";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -126,21 +108,12 @@ public class TaskNotice extends Composite implements ClickHandler {
             final List<ProjectDTO> proj = ProjectTrackerEntryPoint.getInstance().getProjects();
             if (proj != null) {
                 final long projectId = activity.getWorkPackage().getProject().getId();
-                Integer index = projectStyle.get(projectId);
-
-                if (index == null) {
-                    index = 6;
-                }
-
-                if ((index < 0) || (index >= ADDITIONAL_PROJECT_STYLES.length)) {
-                    index = ADDITIONAL_PROJECT_STYLES.length - 1;
-                }
                 final String a = mainPanel.getStyleName();
 
                 if ((activity.getWorkinghours() == 0.0) && redBorder) {
-                    mainPanel.setStyleName(MAIN_STYLES + " red-border " + ADDITIONAL_PROJECT_STYLES[index]);
+                    mainPanel.setStyleName(MAIN_STYLES + " red-border " + PROJECT_STYLES_PREFIX + projectId);
                 } else {
-                    mainPanel.setStyleName(MAIN_STYLES + " " + ADDITIONAL_PROJECT_STYLES[index]);
+                    mainPanel.setStyleName(MAIN_STYLES + " " + PROJECT_STYLES_PREFIX + projectId);
                 }
             } else {
                 final Timer t = new Timer() {
