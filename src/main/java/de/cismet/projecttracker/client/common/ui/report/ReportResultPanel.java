@@ -52,10 +52,6 @@ import de.cismet.projecttracker.client.utilities.TimeCalculator;
  */
 public class ReportResultPanel extends Composite {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
-
     //~ Instance fields --------------------------------------------------------
 
     AccordionGroup activityAccordionPanel = new AccordionGroup();
@@ -318,7 +314,7 @@ public class ReportResultPanel extends Composite {
             // create SummaryEntry for Staff
             String iconUrl = "";
             if (staff.getEmail() != null) {
-                iconUrl = GRAVATAR_URL_PREFIX
+                iconUrl = ProjectTrackerEntryPoint.GRAVATAR_URL_PREFIX
                             + ProjectTrackerEntryPoint.getInstance().md5(staff.getEmail())
                             + "?s=32";
             }

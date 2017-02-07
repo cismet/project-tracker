@@ -43,10 +43,6 @@ import de.cismet.projecttracker.client.utilities.TimeCalculator;
  */
 public class ProfilePanel extends Composite implements MenuListener, ChangeHandler, ResizeHandler {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
-
     //~ Instance fields --------------------------------------------------------
 
     double remainingVacation = 0;
@@ -378,7 +374,7 @@ public class ProfilePanel extends Composite implements MenuListener, ChangeHandl
         pageHeaderPanel.remove(nameLabel);
         final String email = ProjectTrackerEntryPoint.getInstance().getStaff().getEmail();
         if (email != null) {
-            gravatar.setUrl(GRAVATAR_URL_PREFIX
+            gravatar.setUrl(ProjectTrackerEntryPoint.GRAVATAR_URL_PREFIX
                         + ProjectTrackerEntryPoint.getInstance().md5(email)
                         + "?s=110");
         }

@@ -32,6 +32,14 @@
         <servlet-name>QuickBooking</servlet-name>
         <servlet-class>de.cismet.projecttracker.server.QuickBooking</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Search</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.Search</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Lookup</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.Lookup</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>DocumentDownload</servlet-name>
         <url-pattern>/ProjectTracker/DocumentDownload/*</url-pattern>
@@ -55,6 +63,14 @@
     <servlet-mapping>
         <servlet-name>QuickBooking</servlet-name>
         <url-pattern>/ProjectTracker/QuickBooking</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Search</servlet-name>
+        <url-pattern>/ProjectTracker/Search</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Lookup</servlet-name>
+        <url-pattern>/ProjectTracker/Lookup</url-pattern>
     </servlet-mapping>
     <filter>
         <filter-name>gwtCacheControlFilter</filter-name>

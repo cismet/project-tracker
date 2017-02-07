@@ -93,6 +93,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
     StaffDTO loggedInUser;
     @UiField
     CheckBox dateFilterCB;
+    @UiField
+    CheckBox oldProjectFilterCB;
     private List<ProjectDTO> projects;
     private List<ReportSearchParamListener> listeners = new LinkedList<ReportSearchParamListener>();
     Timer t = new Timer() {
@@ -166,6 +168,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
             }
         } else if (event.getSource() == dateFilterCB) {
             fireSearchParamsChanged();
+        } else if (event.getSource() == oldProjectFilterCB) {
+            initProjects();
         }
     }
 
@@ -192,44 +196,18 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
      */
     private void init() {
         loggedInUser = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
-        final List<ProjectDTO> result = ProjectTrackerEntryPoint.getInstance().getProjects();
-//        travel.setText("Travel: ");
-        if (result == null) {
-            final BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
-
-                    @Override
-                    protected void afterExecution(final ArrayList<ProjectDTO> result, final boolean operationFailed) {
-                        for (final ProjectDTO tmp : result) {
-                            final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
-                            // TODO do not use the current day..
-                            if ((period == null) || DateHelper.isDayInProjectPeriod(new Date(), period)) {
-                                project.addItem(tmp.getName(), "" + tmp.getId());
-                            }
-                        }
-                        ProjectTrackerEntryPoint.getInstance().setProjects(result);
-                        projects = result;
-
-                        initWorkpackage();
-                    }
-                };
-
-            ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
-        } else {
-            for (final ProjectDTO tmp : result) {
-                final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
-                // TODO do not use the current day..
-                if ((period == null) || DateHelper.isDayInProjectPeriod(new Date(), period)) {
-                    project.addItem(tmp.getName(), "" + tmp.getId());
-                }
-            }
-            projects = result;
-            initWorkpackage();
+        projects = ProjectTrackerEntryPoint.getInstance().getProjects();
+        if ((projects != null) && projects.isEmpty()) {
+            projects = null;
         }
+//        travel.setText("Travel: ");
+        initProjects();
         project.addItem("* all Elements", "" + -1);
         initUsers();
         users.setStyleName("report-filter-user-list");
         users.addChangeHandler(this);
         dateFilterCB.addClickHandler(this);
+        oldProjectFilterCB.addClickHandler(this);
         periodFrom.setFormat("dd.mm.yyyy");
         periodFrom.setAutoClose(true);
         periodFrom.setStyleName("report-datePicker");
@@ -264,6 +242,46 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
         description.setStyleName("report-filter-textfield");
         description.addKeyUpHandler(this);
 //        description.addChangeHandler(this);
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void initProjects() {
+        if (projects == null) {
+            final BasicAsyncCallback<ArrayList<ProjectDTO>> callback = new BasicAsyncCallback<ArrayList<ProjectDTO>>() {
+
+                    @Override
+                    protected void afterExecution(final ArrayList<ProjectDTO> result, final boolean operationFailed) {
+                        project.clear();
+                        for (final ProjectDTO tmp : result) {
+                            final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+                            // TODO do not use the current day..
+                            if ((period == null) || oldProjectFilterCB.getValue()
+                                        || DateHelper.isDayInProjectPeriod(new Date(), period)) {
+                                project.addItem(tmp.getName(), "" + tmp.getId());
+                            }
+                        }
+                        ProjectTrackerEntryPoint.getInstance().setProjects(result);
+                        projects = result;
+
+                        initWorkpackage();
+                    }
+                };
+
+            ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
+        } else {
+            project.clear();
+            for (final ProjectDTO tmp : projects) {
+                final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
+                // TODO do not use the current day..
+                if ((period == null) || oldProjectFilterCB.getValue()
+                            || DateHelper.isDayInProjectPeriod(new Date(), period)) {
+                    project.addItem(tmp.getName(), "" + tmp.getId());
+                }
+            }
+            initWorkpackage();
+        }
     }
 
     /**

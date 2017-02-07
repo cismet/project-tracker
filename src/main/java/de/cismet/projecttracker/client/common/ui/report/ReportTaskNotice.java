@@ -44,7 +44,6 @@ public class ReportTaskNotice extends Composite {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final ReportTaskNoticeUiBinder uiBinder = GWT.create(ReportTaskNoticeUiBinder.class);
-    private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
     private static final String MAIN_STYLES = "alert alert-block timebox";
     private static final String[] ADDITIONAL_PROJECT_STYLES = {
             "proj1",
@@ -92,7 +91,7 @@ public class ReportTaskNotice extends Composite {
         initWidget(uiBinder.createAndBindUi(this));
         this.activity = activity;
         if ((activity != null) && (activity.getStaff() != null) && (activity.getStaff().getEmail() != null)) {
-            this.gravatar.setUrl(GRAVATAR_URL_PREFIX
+            this.gravatar.setUrl(ProjectTrackerEntryPoint.GRAVATAR_URL_PREFIX
                         + ProjectTrackerEntryPoint.getInstance().md5(activity.getStaff().getEmail())
                         + "?s=32");
             imagePanel.add(gravatar);
