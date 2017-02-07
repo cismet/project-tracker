@@ -21,6 +21,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.*;
 
+import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
@@ -47,6 +48,7 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
     private Button logout = new Button("Sign out");
     private Label userDataLab = new Label("");
     private Image gravatar = new Image();
+    private Image slackLink = new Image(ImageConstants.INSTANCE.slackLogo());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -97,6 +99,14 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
         login.addClickHandler(this);
         userDataLab.setStyleName("user-data");
         gravatar.setStyleName("pull-left gravatar-image");
+        slackLink.setStyleName("image-link pull-left gravatar-image");
+        slackLink.addClickHandler(new ClickHandler() {
+
+                @Override
+                public void onClick(final ClickEvent event) {
+                    ProjectTrackerEntryPoint.openSlackDiaryLink("https://www.cismet.de/slackdiary.html");
+                }
+            });
     }
 
     /**
@@ -128,6 +138,7 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
         if (loggedIn) {
             userDataLab.setText(user);
             loginPanel.clear();
+            loginPanel.add(slackLink);
             loginPanel.add(gravatar);
             loginPanel.add(userDataLab);
             loginPanel.add(logout);
@@ -146,6 +157,15 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
      */
     public void setGravatar(final String url) {
         gravatar.setUrl(url);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  url  DOCUMENT ME!
+     */
+    public void setSlack(final String url) {
+        slackLink.setUrl(url);
     }
 
     //~ Inner Interfaces -------------------------------------------------------

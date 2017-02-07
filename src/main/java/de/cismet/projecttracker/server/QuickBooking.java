@@ -26,6 +26,8 @@ import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Level;
 
 import javax.servlet.ServletException;
@@ -98,6 +100,16 @@ public class QuickBooking extends BasicServlet {
     } // </editor-fold>
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
+        IOException {
+        resp.addHeader("Access-Control-Allow-Origin", "*");                                // NOI18N
+        resp.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS"); // NOI18N
+        resp.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");     // NOI18N
+
+        super.service(req, resp); // To change body of generated methods, choose Tools | Templates.
+    }
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.

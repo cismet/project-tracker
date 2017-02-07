@@ -46,7 +46,6 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
     private static String WP_SUMMARY_HEADER = "Workpackage Summary";
     private static String MONTH_SUMMARY_HEADER = "Month Summary";
 

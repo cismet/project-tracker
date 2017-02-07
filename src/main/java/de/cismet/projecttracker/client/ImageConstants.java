@@ -221,4 +221,12 @@ public interface ImageConstants extends ClientBundle {
      */
     @Source("circle_plus.png")
     ImageResource plus();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Source("slack_24.png")
+    ImageResource slackLogo();
 }

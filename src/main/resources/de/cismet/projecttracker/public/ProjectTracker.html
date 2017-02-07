@@ -46,6 +46,11 @@
                     return "";
                 }
             }
+            function open_new_window(URL)
+            {
+                NewWindow = window.open(URL,"_blank","toolbar=no,menubar=0,status=0,copyhistory=0,scrollbars=yes,location=0,Width=400,Height=560") ;
+                NewWindow.location = URL;
+            }            
         </script>
         <!-- OPTIONAL: include this if you want history support -->
         <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>

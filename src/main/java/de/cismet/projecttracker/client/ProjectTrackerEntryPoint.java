@@ -59,7 +59,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
     //~ Static fields/initializers ---------------------------------------------
 
     private static ProjectTrackerEntryPoint currentInstance;
-    private static String GRAVATAR_URL_PREFIX = "http://www.gravatar.com/avatar/";
+    public static String GRAVATAR_URL_PREFIX = "https://www.gravatar.com/avatar/";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -227,20 +227,20 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
      * DOCUMENT ME!
      */
     public void checkBeginOfDayBooking() {
-        final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
+//        final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
+//
+//                @Override
+//                protected void afterExecution(final Boolean result, final boolean operationFailed) {
+//                    if (!operationFailed && !result) {
+//                        // popup
+//                        final DialogBox form = new DialogBox();
+//                        form.setWidget(new BeginOfWorkDialog(form, sheets));
+//                        form.center();
+//                    }
+//                }
+//            };
 
-                @Override
-                protected void afterExecution(final Boolean result, final boolean operationFailed) {
-                    if (!operationFailed && !result) {
-                        // popup
-                        final DialogBox form = new DialogBox();
-                        form.setWidget(new BeginOfWorkDialog(form, sheets));
-                        form.center();
-                    }
-                }
-            };
-
-        ProjectTrackerEntryPoint.getProjectService(true).checkBeginOfDayActivityExists(getStaff(), callback);
+//        ProjectTrackerEntryPoint.getProjectService(true).checkBeginOfDayActivityExists(getStaff(), callback);
     }
 
     /**
@@ -423,6 +423,17 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
      */
     public static native String md5(String msg) /*-{
         return $wnd.MD5(msg); // $wnd is a JSNI synonym for 'window'
+    }-*/;
+
+    /**
+     * opens a popup and prints the given message.
+     *
+     * @param   url  msg the message, that should be printed
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static native String openSlackDiaryLink(String url) /*-{
+        return $wnd.open_new_window(url); // $wnd is a JSNI synonym for 'window'
     }-*/;
 
     /**
