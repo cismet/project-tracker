@@ -14,7 +14,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import java.util.*;
+import java.util.logging.Level;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -178,36 +182,50 @@ public class Utilities {
      * @param  args  DOCUMENT ME!
      */
     public static void main(final String[] args) {
-        fetchConfig();
-        final Session session;
-
-        if ((fMailServerConfig.get("mail.user") != null) && (fMailServerConfig.get("mail.password") != null)) {
-            session = Session.getDefaultInstance(fMailServerConfig, new Authenticator() {
-
-                        @Override
-                        protected PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(
-                                    fMailServerConfig.getProperty("mail.user"),
-                                    fMailServerConfig.getProperty("mail.password"));
-                        }
-                    });
-        } else {
-            session = Session.getDefaultInstance(fMailServerConfig, null);
-        }
-
-        final MimeMessage message = new MimeMessage(session);
         try {
-            // the "from" address may be set in code, or set in the
-            // config file under "mail.from" ; here, the latter style is used
-            // message.setFrom( new InternetAddress(aFromEmailAddr) );
-            message.addFrom(new InternetAddress[] { new InternetAddress(fMailServerConfig.getProperty("mail.from")) });
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(""));
-            message.setSubject("test mail");
-            message.setText("Ein Test");
-            message.setContent("Ein Test", "text/html");
-            Transport.send(message);
-        } catch (Exception e) {
-            e.printStackTrace();
+            final MessageDigest md = MessageDigest.getInstance("SHA1");
+            md.update("passwd".getBytes());
+            final StringBuffer hexString = new StringBuffer();
+
+            for (final byte b : md.digest()) {
+                hexString.append(String.format("%02x", b));
+            }
+
+            System.out.println(hexString);
+        } catch (NoSuchAlgorithmException ex) {
+            java.util.logging.Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+//        fetchConfig();
+//        final Session session;
+//
+//        if ((fMailServerConfig.get("mail.user") != null) && (fMailServerConfig.get("mail.password") != null)) {
+//            session = Session.getDefaultInstance(fMailServerConfig, new Authenticator() {
+//
+//                        @Override
+//                        protected PasswordAuthentication getPasswordAuthentication() {
+//                            return new PasswordAuthentication(
+//                                    fMailServerConfig.getProperty("mail.user"),
+//                                    fMailServerConfig.getProperty("mail.password"));
+//                        }
+//                    });
+//        } else {
+//            session = Session.getDefaultInstance(fMailServerConfig, null);
+//        }
+//
+//        final MimeMessage message = new MimeMessage(session);
+//        try {
+//            // the "from" address may be set in code, or set in the
+//            // config file under "mail.from" ; here, the latter style is used
+//            // message.setFrom( new InternetAddress(aFromEmailAddr) );
+//            message.addFrom(new InternetAddress[] { new InternetAddress(fMailServerConfig.getProperty("mail.from")) });
+//            message.addRecipient(Message.RecipientType.TO, new InternetAddress(""));
+//            message.setSubject("test mail");
+//            message.setText("Ein Test");
+//            message.setContent("Ein Test", "text/html");
+//            Transport.send(message);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 }
