@@ -575,7 +575,7 @@ footer{
 }
 
 .howPrevWeek{
-    margin-left: -180px !important;
+    margin-left: -230px !important;
     margin-top: 18px !important;
     margin-right: 10px !important;
     overflow-y: hidden;
@@ -592,7 +592,7 @@ footer{
 .accountBalance{
     margin-top: 18px !important;
     margin-left: 10px !important;
-    margin-right: -155px !important;
+    margin-right: -165px !important;
     margin-bottom: 30px;
 }
 

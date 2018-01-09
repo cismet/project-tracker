@@ -109,6 +109,22 @@ public class TimeCalculator {
     /**
      * DOCUMENT ME!
      *
+     * @param   act             DOCUMENT ME!
+     * @param   calculatePause  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static double getBillableWorkingHoursForActivity(final ActivityDTO act) {
+        if ((act.getWorkPackage() != null) && (act.getWorkPackage().getCostCategory() != null) && act.getWorkPackage().getCostCategory().getName().equalsIgnoreCase("fakturierbar")) {
+                return act.getWorkinghours();
+        }
+        
+        return 0.0;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   act  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -137,19 +153,24 @@ public class TimeCalculator {
                 protected void afterExecution(final ActivityResponseType result, final boolean operationFailed) {
                     if (!operationFailed) {
                         double hours = 0;
+                        double hoursBillable = 0.0;
+                        double hoursWorked = 0.0;
                         for (final ActivityDTO act : result.getActivities()) {
                             if ((act.getKindofactivity() == ActivityDTO.ACTIVITY)
                                         && (act.getWorkPackage() != null)
                                         && (act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID)
                                         && (act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID)) {
                                 hours += TimeCalculator.getWorkingHoursForActivity(act);
+                                hoursWorked += TimeCalculator.getWorkingHoursForActivity(act, false);
+                                hoursBillable += TimeCalculator.getBillableWorkingHoursForActivity(act);
                             }
                         }
                         for (final HolidayType holiday : result.getHolidays()) {
                             hours += holiday.getHours();
                         }
 
-                        l.setText(prefix + DateHelper.doubleToHours(hours) + " h");
+                        double billableFactor = Math.round(hoursBillable  / hoursWorked * 100) / 100.0;
+                        l.setText(prefix + DateHelper.doubleToHours(hours) + " h (" + billableFactor + ")");
                     }
                 }
             };
@@ -176,6 +197,8 @@ public class TimeCalculator {
                 @Override
                 protected void afterExecution(final ActivityResponseType result, final boolean operationFailed) {
                     double hours = 0.0;
+                    double hoursBillable = 0.0;
+                    double hoursWorked = 0.0;
                     if (!operationFailed) {
                         for (final ActivityDTO act : result.getActivities()) {
                             if ((act.getKindofactivity() == ActivityDTO.ACTIVITY)
@@ -183,6 +206,8 @@ public class TimeCalculator {
                                         && (act.getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID)
                                         && (act.getWorkPackage().getId() != ActivityDTO.PAUSE_ID)) {
                                 hours += getWorkingHoursForActivity(act);
+                                hoursWorked += TimeCalculator.getWorkingHoursForActivity(act, false);
+                                hoursBillable += TimeCalculator.getBillableWorkingHoursForActivity(act);
                             }
                         }
                         for (final HolidayType holiday : result.getHolidays()) {
@@ -207,7 +232,8 @@ public class TimeCalculator {
                                         + year,
                                         ex);
                         }
-                        l.setText(prefix + DateHelper.doubleToHours(weekDebit) + " h");
+                        double billableFactor = Math.round(hoursBillable  / hoursWorked * 100) / 100.0;
+                        l.setText(prefix + DateHelper.doubleToHours(weekDebit) + " h (" + billableFactor + ")");
                     }
                 }
             };
