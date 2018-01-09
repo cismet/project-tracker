@@ -58,6 +58,8 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
 
     //~ Static fields/initializers ---------------------------------------------
 
+    public static final int ADMIN_PERMISSION = 0x1;
+    public static final int ORDER_PERMISSION = 0x2;
     private static ProjectTrackerEntryPoint currentInstance;
     public static String GRAVATAR_URL_PREFIX = "https://www.gravatar.com/avatar/";
 
@@ -162,7 +164,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
                 protected void afterExecution(final StaffDTO result, final boolean operationFailed) {
                     if (!operationFailed) {
                         if (result != null) {
-                            login(result, (result.getPermissions() & 0x1) == 0x1);
+                            login(result, (result.getPermissions() & ADMIN_PERMISSION) == ADMIN_PERMISSION);
                         }
                     } else {
 //                    RootPanel.get("contentId").add(getBasicScreen());
@@ -244,7 +246,8 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
     }
 
     /**
-     * DOCUMENT ME!
+     * the currently seelcted user. This candiffer from getLoggedInStaff(), if the logged in user has admin permission
+     * and an other user choosed from the combo box in the top panel.
      *
      * @return  DOCUMENT ME!
      */
@@ -262,7 +265,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
     }
 
     /**
-     * DOCUMENT ME!
+     * the currently logged in user.
      *
      * @return  DOCUMENT ME!
      */
@@ -423,6 +426,15 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
      */
     public static native String md5(String msg) /*-{
         return $wnd.MD5(msg); // $wnd is a JSNI synonym for 'window'
+    }-*/;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static native String toggle() /*-{
+        return $wnd.toggle();
     }-*/;
 
     /**

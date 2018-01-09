@@ -4190,7 +4190,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
                     result.add(c);
                     break;
                 }
-            } else if ((c.getTodate() != null) && c.getTodate().after(from) && c.getTodate().before(to)) {
+            } else if ((c.getTodate() != null) && c.getTodate().after(from) && c.getTodate().compareTo(to) <= 0) {
                 result.add(c);
             }
         }
@@ -4496,7 +4496,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             conjuction.add(Restrictions.le("day", cal.getTime()));
         }
 
-        if (description != null) {
+        if ((description != null) && !description.isEmpty()) {
             conjuction.add(Restrictions.ilike("description", description.trim(), MatchMode.ANYWHERE));
         }
 

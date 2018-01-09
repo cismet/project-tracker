@@ -104,7 +104,7 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
 
                 @Override
                 public void onClick(final ClickEvent event) {
-                    ProjectTrackerEntryPoint.openSlackDiaryLink("https://www.cismet.de/slackdiary.html");
+                    ProjectTrackerEntryPoint.openSlackDiaryLink("https://cismet.github.io/slackdiary/slackdiary.html");
                 }
             });
     }
@@ -118,7 +118,11 @@ public class LoginPanel extends Composite implements ClickHandler, KeyUpHandler 
                 @Override
                 protected void afterExecution(final StaffDTO result, final boolean operationFailed) {
                     if (!operationFailed) {
-                        ProjectTrackerEntryPoint.getInstance().login(result, (result.getPermissions() & 0x1) == 0x1);
+                        ProjectTrackerEntryPoint.getInstance()
+                                .login(
+                                    result,
+                                    (result.getPermissions() & ProjectTrackerEntryPoint.ADMIN_PERMISSION)
+                                    == ProjectTrackerEntryPoint.ADMIN_PERMISSION);
                         ProjectTrackerEntryPoint.getInstance().checkBeginOfDayBooking();
                         username.setText("");
                         password.setText("");

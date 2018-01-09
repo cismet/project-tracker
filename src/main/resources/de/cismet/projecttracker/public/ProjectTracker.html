@@ -37,7 +37,11 @@
             function output(msg) {
                 alert(msg);
             }
-
+            function toggle(){
+                if (document.getElementById("toggle1") != null) {
+                    document.getElementById("toggle1").style = "height: auto";
+                }
+            }
             function input(text, value) {
                 var result = prompt(text, value);
                 if (result != null) {

@@ -73,7 +73,7 @@ public class DTOManager {
      */
     public ArrayList clone(final List original) throws InvalidInputValuesException {
         final long startTime = System.currentTimeMillis();
-        final ArrayList<BasicDTO> clonedList = new ArrayList<BasicDTO>();
+        final ArrayList<BasicDTO> clonedList = new ArrayList<BasicDTO>(original.size());
         final HashMap<Object, Object> convertedClasses = new HashMap<Object, Object>(INITIAL_CAPACITY);
 
         for (final Object o : original) {
