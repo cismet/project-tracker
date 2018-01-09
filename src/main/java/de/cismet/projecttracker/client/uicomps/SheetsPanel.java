@@ -163,7 +163,7 @@ public class SheetsPanel extends Composite implements ResizeHandler,
         ResourceInjector.configure();
 //        ResourceInjector.configureWithCssFile();
         DatepickerResourceInjector.configure();
-        DatepickerResourceInjector.configureWithCssFile();
+//        DatepickerResourceInjector.configureWithCssFile();
         datePicker = new WeekDatePicker();
         datePicker.setFormat("dd.mm.yyyy");
         datePicker.setAutoClose(true);
@@ -380,6 +380,8 @@ public class SheetsPanel extends Composite implements ResizeHandler,
     public void refreshWeeklyHoursOfWork() {
         double hours = 0.0;
         double weekDebit = 0.0;
+        double hoursBillable = 0.0;
+        double hoursWorked = 0.0;
         for (int i = 0; i < 7; ++i) {
 //            hours += times.getTimeForDay(i);
             final List<TaskNotice> taskList = tasks.getTasksForDay(i);
@@ -388,6 +390,9 @@ public class SheetsPanel extends Composite implements ResizeHandler,
                 if ((tmp.getActivity().getKindofactivity() == ActivityDTO.ACTIVITY)
                             && (tmp.getActivity().getWorkPackage().getId() != ActivityDTO.SPARE_TIME_ID)) {
                     hours += TimeCalculator.getWorkingHoursForActivity(tmp.getActivity());
+                    
+                    hoursWorked += TimeCalculator.getWorkingHoursForActivity(tmp.getActivity());
+                    hoursBillable += TimeCalculator.getBillableWorkingHoursForActivity(tmp.getActivity());
                 } else if ((tmp.getActivity().getKindofactivity() == ActivityDTO.HOLIDAY)
                             || (tmp.getActivity().getKindofactivity() == ActivityDTO.HALF_HOLIDAY)) {
                     hours += TimeCalculator.getWorkingHoursForActivity(tmp.getActivity());
@@ -395,7 +400,8 @@ public class SheetsPanel extends Composite implements ResizeHandler,
             }
         }
 
-        weekHoursLab.setText(WEEKLY_HOURS_OF_WORK + " " + DateHelper.doubleToHours(hours) + " h");
+        double billableFactor = Math.round(hoursBillable  / hoursWorked * 100) / 100.0;
+        weekHoursLab.setText(WEEKLY_HOURS_OF_WORK + " " + DateHelper.doubleToHours(hours) + " h (" + billableFactor + ")");
         try {
             final Date d = datePicker.getValue();
             double whow = 0.0d;

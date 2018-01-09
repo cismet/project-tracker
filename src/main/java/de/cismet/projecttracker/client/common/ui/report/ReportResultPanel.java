@@ -11,6 +11,8 @@
  */
 package de.cismet.projecttracker.client.common.ui.report;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.github.gwtbootstrap.client.ui.AccordionGroup;
 import com.github.gwtbootstrap.client.ui.AlertBlock;
 import com.github.gwtbootstrap.client.ui.NavLink;
@@ -23,10 +25,15 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.web.bindery.autobean.shared.AutoBean;
+import com.google.web.bindery.autobean.shared.AutoBeanFactory;
+
+import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +45,8 @@ import java.util.List;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.LoadingSpinner;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.BasicDTO;
+import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
@@ -195,6 +204,12 @@ public class ReportResultPanel extends Composite {
             if (params.containsKey(ReportFilterPanel.DATE_TO_KEY)) {
                 to = (Date)params.get(ReportFilterPanel.DATE_TO_KEY);
             }
+            final ProjectDTO project = (ProjectDTO)params.get(
+                    ReportFilterPanel.PROJECT_KEY);
+            final Boolean dateCheck = (Boolean)params.get(
+                    ReportFilterPanel.DATE_CHECKBOX_KEY);
+            final Boolean oldProjectsCheck = (Boolean)params.get(
+                    ReportFilterPanel.OLD_PROJECTS_KEY);
             final String descr = (String)params.get(ReportFilterPanel.DESC_KEY);
 
             showLongResultalertTimer.schedule(5 * 1000);
@@ -218,9 +233,47 @@ public class ReportResultPanel extends Composite {
                         Scheduler.get().scheduleIncremental(processCommand);
                     }
                 };
+
             // call the service..
+            final Storage localStorage = Storage.getLocalStorageIfSupported();
+
+            if (localStorage != null) {
+                localStorage.setItem("searchWp", arrayToIdString(workpackages));
+                localStorage.setItem("searchStaff", arrayToIdString(staff));
+                localStorage.setItem("searchFrom", DateHelper.formatDate(from));
+                localStorage.setItem("searchTo", DateHelper.formatDate(to));
+                localStorage.setItem("searchDesc", descr);
+                localStorage.setItem("searchProject", ((project != null) ? String.valueOf(project.getId()) : null));
+                localStorage.setItem("searchDateCheck", ((dateCheck != null) ? String.valueOf(dateCheck) : null));
+                localStorage.setItem(
+                    "searchOldProjects",
+                    ((oldProjectsCheck != null) ? String.valueOf(oldProjectsCheck) : null));
+            }
             ProjectTrackerEntryPoint.getProjectService(true).getActivites(workpackages, staff, from, to, descr, cb);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   list  close list DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String arrayToIdString(final List<? extends BasicDTO> list) {
+        String idString = null;
+
+        if (list != null) {
+            for (final BasicDTO tmp : list) {
+                if (idString != null) {
+                    idString += ",";
+                } else {
+                    idString = "";
+                }
+                idString += tmp.getId();
+            }
+        }
+        return idString;
     }
 
     /**

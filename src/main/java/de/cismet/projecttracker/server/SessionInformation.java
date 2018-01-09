@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.projecttracker.server;
 
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+
 import de.cismet.projecttracker.report.db.entities.Staff;
 
 /**
@@ -41,7 +43,8 @@ public class SessionInformation {
      */
     public void setCurrentUser(final Staff currentUser) {
         this.currentUser = currentUser;
-        admin = ((currentUser.getPermissions() & 0x1) == 0x1);
+        admin = ((currentUser.getPermissions() & ProjectTrackerEntryPoint.ADMIN_PERMISSION)
+                        == ProjectTrackerEntryPoint.ADMIN_PERMISSION);
     }
 
     /**

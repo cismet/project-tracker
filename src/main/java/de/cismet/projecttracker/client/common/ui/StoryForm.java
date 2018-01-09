@@ -180,8 +180,14 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     private void validateDuration() {
         final String durationText = duration.getText();
         boolean isValid = false;
+
         if (durationText != null) {
-            isValid = durationText.matches("[0-9:]*");
+            if ((ProjectTrackerEntryPoint.getInstance().getStaff().getPermissions()
+                            & ProjectTrackerEntryPoint.ORDER_PERMISSION) == ProjectTrackerEntryPoint.ORDER_PERMISSION) {
+                isValid = durationText.matches("-?[0-9:]*");
+            } else {
+                isValid = durationText.matches("[0-9:]*");
+            }
         }
 
         if (!isValid) {
@@ -285,8 +291,25 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         double workinghours = 0.0;
 
         try {
-            if ((duration.getText() != null) && !duration.getText().equals("")) {
-                workinghours = DateHelper.hoursToDouble(duration.getText());
+            String durationAsText = duration.getText();
+
+            if ((durationAsText != null) && !durationAsText.equals("")) {
+                if ((ProjectTrackerEntryPoint.getInstance().getStaff().getPermissions()
+                                & ProjectTrackerEntryPoint.ORDER_PERMISSION)
+                            == ProjectTrackerEntryPoint.ORDER_PERMISSION) {
+                    final boolean startWithMinus = durationAsText.startsWith("-");
+
+                    if (startWithMinus) {
+                        durationAsText = durationAsText.substring(1);
+                    }
+                    workinghours = DateHelper.hoursToDouble(durationAsText);
+
+                    if (startWithMinus) {
+                        workinghours *= -1;
+                    }
+                } else {
+                    workinghours = DateHelper.hoursToDouble(durationAsText);
+                }
             }
         } catch (NumberFormatException e) {
             ProjectTrackerEntryPoint.outputBox("The duration is not valid");

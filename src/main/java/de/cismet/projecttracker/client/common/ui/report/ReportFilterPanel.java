@@ -25,6 +25,7 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Command;
@@ -38,6 +39,9 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,9 +49,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.common.ui.*;
+import de.cismet.projecttracker.client.dto.BasicDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
@@ -71,6 +79,9 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
 
     private static ReportFilterPanelUiBinder uiBinder = GWT.create(ReportFilterPanelUiBinder.class);
     public static final String WORKPACKAGE_KEY = "WP";
+    public static final String PROJECT_KEY = "PROJECT";
+    public static final String DATE_CHECKBOX_KEY = "DATE_CHECK";
+    public static final String OLD_PROJECTS_KEY = "OLD_PROJECTS_CHECK";
     public static final String STAFF_KEY = "STAFF";
     public static final String DATE_FROM_KEY = "FROM";
     public static final String DATE_TO_KEY = "TO";
@@ -104,6 +115,19 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                 fireSearchParamsChanged();
             }
         };
+
+    private String wp = null;
+    private String staff = null;
+    private String from = null;
+    private String to = null;
+    private String desc = null;
+    private String lastProject = null;
+    private String dateCheck = null;
+    private String oldProjectsCheck = null;
+    private boolean userInitialised = false;
+    private boolean projectsInitialised = false;
+    private boolean localConfigLoaded = false;
+    private final Storage storage = Storage.getLocalStorageIfSupported();
 
     private List<StaffDTO> userList = new ArrayList<StaffDTO>();
     private WeekDatePicker periodFrom = new WeekDatePicker();
@@ -195,6 +219,16 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
      * DOCUMENT ME!
      */
     private void init() {
+        if (storage != null) {
+            wp = storage.getItem("searchWp");
+            staff = storage.getItem("searchStaff");
+            from = storage.getItem("searchFrom");
+            to = storage.getItem("searchTo");
+            desc = storage.getItem("searchDesc");
+            lastProject = storage.getItem("searchProject");
+            dateCheck = storage.getItem("searchDateCheck");
+            oldProjectsCheck = storage.getItem("searchOldProjects");
+        }
         loggedInUser = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff();
         projects = ProjectTrackerEntryPoint.getInstance().getProjects();
         if ((projects != null) && projects.isEmpty()) {
@@ -212,8 +246,10 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
         periodFrom.setAutoClose(true);
         periodFrom.setStyleName("report-datePicker");
         periodFrom.setWeekStart(1);
-        // StartDate 01.01.2012
-        periodFrom.setValue(new Date(112, 0, 1));
+        // StartDate yesterday
+        final Date startDate = new Date();
+        DateHelper.addDays(startDate, -1);
+        periodFrom.setValue(startDate);
         periodFrom.addValueChangeHandler(this);
         periodFromButton.setWidth("10px;");
         periodFromButton.addStyleName("btn");
@@ -242,6 +278,106 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
         description.setStyleName("report-filter-textfield");
         description.addKeyUpHandler(this);
 //        description.addChangeHandler(this);
+
+        loadConfigurationfromStorage();
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void loadConfigurationfromStorage() {
+        if ((storage != null) && projectsInitialised && userInitialised && !localConfigLoaded) {
+            localConfigLoaded = true;
+
+            if ((oldProjectsCheck != null) && oldProjectsCheck.equalsIgnoreCase("true")) {
+                oldProjectFilterCB.setValue(true);
+                initProjects();
+            }
+
+            if (lastProject != null) {
+                for (int i = 0; i < this.project.getItemCount(); ++i) {
+                    if (this.project.getValue(i).equals(lastProject)) {
+                        this.project.setSelectedIndex(i);
+                        initWorkpackage();
+                    }
+                }
+            }
+
+            if ((desc != null) && !desc.isEmpty()) {
+                description.setText(desc);
+            }
+
+            if ((dateCheck != null) && dateCheck.equalsIgnoreCase("true")) {
+                if (!dateFilterCB.getValue()) {
+//                    datepickerPanel.setVisible(true);
+//                    Document.get().createClickEvent(0, 0, 0, 0, 0, isToPickerVisible, isToPickerVisible, isToPickerVisible, isToPickerVisible)
+//                    dateFilterCB.fireEvent(ClickEvent.getType());
+//                    ProjectTrackerEntryPoint.outputBox("click");
+                    dateFilterCB.setValue(true, true);
+                    ProjectTrackerEntryPoint.toggle();
+//                    dateFilterCB.fireEvent(new CheckBoxClickEvent());
+                }
+
+                if (to != null) {
+                    try {
+                        final Date toDate = DateHelper.parseString(to, null);
+                        periodTo.setValue(toDate);
+                    } catch (IllegalArgumentException ex) {
+                        // nothing to do
+                    }
+                }
+
+                if (from != null) {
+                    try {
+                        final Date fromDate = DateHelper.parseString(from, null);
+                        periodFrom.setValue(fromDate);
+                    } catch (IllegalArgumentException ex) {
+                        // nothing to do
+                    }
+                }
+            }
+            if (wp != null) {
+                final String[] wps = IdStringToArray(wp);
+                Arrays.sort(wps);
+
+                for (int i = 0; i < workpackages.getItemCount(); ++i) {
+                    final String value = workpackages.getValue(i);
+                    final boolean isSelected = Arrays.binarySearch(wps, value) >= 0;
+
+                    workpackages.setItemSelected(i, isSelected);
+                }
+            }
+
+            if (staff != null) {
+                final String[] staffArray = IdStringToArray(staff);
+                Arrays.sort(staffArray);
+
+                for (int i = 0; i < users.getItemCount(); ++i) {
+                    final String value = users.getValue(i);
+                    final boolean isSelected = Arrays.binarySearch(staffArray, value) >= 0;
+
+                    users.setItemSelected(i, isSelected);
+                }
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   idString  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String[] IdStringToArray(final String idString) {
+        final List<String> list = new ArrayList<String>();
+        final String[] splitted = idString.split(",");
+
+        for (final String token : splitted) {
+            list.add(token);
+        }
+
+        return list.toArray(new String[list.size()]);
     }
 
     /**
@@ -266,6 +402,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                         projects = result;
 
                         initWorkpackage();
+                        projectsInitialised = true;
+                        loadConfigurationfromStorage();
                     }
                 };
 
@@ -281,6 +419,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                 }
             }
             initWorkpackage();
+            projectsInitialised = true;
+            loadConfigurationfromStorage();
         }
     }
 
@@ -300,8 +440,14 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                     final WorkPackagePeriodDTO period = tmp.determineMostRecentPeriod();
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
-                    if (tmp.getName() != null) {
-                        workpackages.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                    if (tmp.getName() != null ) {
+                        if (period != null && period.getTodate() != null) {
+                            if ( oldProjectFilterCB.getValue() || DateHelper.isDateGreaterOrEqual(period.getTodate(), new Date()) ) {
+                                workpackages.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                            }
+                        } else {
+                            workpackages.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                        }
                     }
                 }
 
@@ -325,8 +471,14 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                     final WorkPackagePeriodDTO period = wp.determineMostRecentPeriod();
 
 //                    if (period == null || DateHelper.isDayInWorkPackagePeriod(day, period)) {
-                    if (wp.getName() != null) {
-                        workpackages.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
+                    if (wp.getName() != null ) {
+                        if (period != null && period.getTodate() != null) {
+                            if ( oldProjectFilterCB.getValue() || DateHelper.isDateGreaterOrEqual(period.getTodate(), new Date()) ) {
+                                workpackages.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
+                            }
+                        } else {
+                            workpackages.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
+                        }
                     }
                 }
             }
@@ -347,7 +499,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
      * DOCUMENT ME!
      */
     private void initUsers() {
-        if (!ProjectTrackerEntryPoint.getInstance().isAdmin()) {
+        if (false) { // every one should be able to make searches over all users
             final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
             users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
             users.setSelectedIndex(0);
@@ -361,6 +513,7 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                 });
             users.setEnabled(false);
             userList.add(staff);
+            userInitialised = true;
         } else {
             final BasicAsyncCallback<ArrayList<StaffDTO>> callback = new BasicAsyncCallback<ArrayList<StaffDTO>>() {
 
@@ -368,18 +521,11 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                     protected void afterExecution(final ArrayList<StaffDTO> result, final boolean operationFailed) {
                         users.addItem("* all Users", "-1");
                         users.setSelectedIndex(-1);
-                        int i = 0;
-                        int index = 0;
                         Collections.sort(result);
-                        final StaffDTO loggedInStaff = ProjectTrackerEntryPoint.getInstance().getStaff();
                         for (final StaffDTO staff : result) {
                             users.addItem(staff.getFirstname() + " " + staff.getName(), staff.getId() + "");
-                            if (staff.getId() == loggedInStaff.getId()) {
-                                index = i;
-                            }
-                            ++i;
                         }
-                        users.setSelectedIndex(index);
+                        users.setSelectedIndex(0);
                         // fire the change event since setSelected item does not
                         Scheduler.get().scheduleDeferred(new Command() {
 
@@ -389,6 +535,8 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                                 }
                             });
                         userList = result;
+                        userInitialised = true;
+                        loadConfigurationfromStorage();
                     }
                 };
 
@@ -583,6 +731,9 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
             }
         }
         map.put(WORKPACKAGE_KEY, workpackages);
+        map.put(PROJECT_KEY, getSelectedProject());
+        map.put(OLD_PROJECTS_KEY, oldProjectFilterCB.getValue());
+        map.put(DATE_CHECKBOX_KEY, dateFilterCB.getValue());
 
         final List<StaffDTO> searchStaff = new ArrayList<StaffDTO>();
         final List<StaffDTO> selectedUsers = getSelectedUsers();
@@ -646,5 +797,15 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
      * @version  $Revision$, $Date$
      */
     interface ReportFilterPanelUiBinder extends UiBinder<Widget, ReportFilterPanel> {
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class CheckBoxClickEvent extends ClickEvent {
     }
 }
