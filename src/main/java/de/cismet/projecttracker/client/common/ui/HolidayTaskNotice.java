@@ -33,6 +33,15 @@ public class HolidayTaskNotice extends TaskNotice {
         super(activity, true);
     }
 
+    /**
+     * Creates a new HolidayTaskNotice object.
+     *
+     * @param  activity  DOCUMENT ME!
+     */
+    public HolidayTaskNotice(final ActivityDTO activity, boolean favorite) {
+        super(activity, true, favorite);
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     @Override

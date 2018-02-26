@@ -4517,6 +4517,86 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     }
 
     /**
+     * if one of the parameters is null this parameter doesnt gets taken into account for filtering.
+     *
+     * @param   workpackages  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    @Override
+    public Double getHoursSumForActivites(final List<WorkPackageDTO> workpackages,
+            final List<StaffDTO> staff,
+            final Date from,
+            final Date til,
+            final String description) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException {
+        final ArrayList<ActivityDTO> result = new ArrayList<ActivityDTO>();
+        final DBManagerWrapper dbManager = new DBManagerWrapper();
+        Session hibernateSession = null;
+        Transaction tx = null;
+        double sum = 0;
+        final Conjunction conjuction = Restrictions.conjunction();
+        if ((workpackages != null) && !workpackages.isEmpty()) {
+            final ArrayList<Long> wpIds = new ArrayList<Long>();
+            for (final WorkPackageDTO wp : workpackages) {
+                wpIds.add(wp.getId());
+            }
+            conjuction.add(Restrictions.in("workPackage.id", wpIds));
+        }
+
+        if ((staff != null) && !staff.isEmpty()) {
+            final ArrayList<Long> staffIds = new ArrayList<Long>();
+            for (final StaffDTO s : staff) {
+                staffIds.add(s.getId());
+            }
+            conjuction.add(Restrictions.in("staff.id", staffIds));
+        }
+        conjuction.add(Restrictions.isNotNull("day"));
+        if ((from != null) && (til != null) && (from.compareTo(til) < 0)) {
+            conjuction.add(Restrictions.ge("day", from));
+            final GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(til);
+            cal.set(GregorianCalendar.HOUR_OF_DAY, 4);
+            conjuction.add(Restrictions.le("day", cal.getTime()));
+        }
+
+        if ((description != null) && !description.isEmpty()) {
+            conjuction.add(Restrictions.ilike("description", description.trim(), MatchMode.ANYWHERE));
+        }
+
+        try {
+            hibernateSession = dbManager.getSession();
+            tx = hibernateSession.beginTransaction();
+//            Criterion wpRestriction = Restrictions.in("workPackage.id", wpIds);
+            final Criteria crit = hibernateSession.createCriteria(Activity.class).add((conjuction));
+            result.addAll(dtoManager.clone(crit.list()));
+            tx.commit();
+
+            for (ActivityDTO a : result) {
+                sum += a.getWorkinghours();
+            }
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            tx.rollback();
+        } finally {
+            dbManager.closeSession();
+        }
+        
+        return sum;
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @param   staff        activityHib DOCUMENT ME!

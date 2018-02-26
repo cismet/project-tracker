@@ -809,6 +809,31 @@ public interface ProjectService extends RemoteService {
         DataRetrievalException,
         PermissionDenyException,
         NoSessionException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   workpackages  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    Double getHoursSumForActivites(List<WorkPackageDTO> workpackages,
+            List<StaffDTO> staff,
+            Date from,
+            Date til,
+            String description) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException;
     /**
      * DOCUMENT ME!
      *

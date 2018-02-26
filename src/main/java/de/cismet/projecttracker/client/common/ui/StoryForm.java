@@ -8,9 +8,12 @@
 package de.cismet.projecttracker.client.common.ui;
 
 import com.github.gwtbootstrap.client.ui.ControlGroup;
+import com.github.gwtbootstrap.client.ui.constants.AlertType;
 import com.github.gwtbootstrap.client.ui.constants.ControlGroupType;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -35,6 +38,7 @@ import java.util.logging.Logger;
 
 import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
+import de.cismet.projecttracker.client.common.ui.report.ReportResultPanel;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProjectCategoryDTO;
@@ -49,6 +53,7 @@ import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.helper.GUIHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.utilities.TaskFiller;
+import java.util.Collections;
 
 /**
  * DOCUMENT ME!
@@ -84,6 +89,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     SimpleCheckBox wpDateFilterCB;
     @UiField
     ControlGroup durationCtrlGroup;
+    @UiField
+    SpanElement hoursLeft;
     private DialogBox form;
     private TaskStory caller;
     private Story story;
@@ -125,10 +132,12 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         setWPById(tn.getActivity().getWorkPackage().getId());
         // todo set project und workpackage
         project.addChangeHandler(this);
+        workpackage.addChangeHandler(this);
         saveButton.setText("Save");
         setDefaultButton();
         configFillButton();
         configDurationBox();
+        setProjectHoursLeft();
     }
 
     /**
@@ -147,9 +156,11 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         initWidget(uiBinder.createAndBindUi(this));
         init();
         project.addChangeHandler(this);
+        workpackage.addChangeHandler(this);
         setDefaultButton();
         configFillButton();
         configDurationBox();
+        setProjectHoursLeft();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -172,6 +183,28 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
                     validateDuration();
                 }
             });
+    }
+    
+    private void setProjectHoursLeft() {
+        final BasicAsyncCallback<Double> cb = new BasicAsyncCallback<Double>() {
+
+                @Override
+                protected void afterExecution(final Double result,
+                        final boolean operationFailed) {
+                    hoursLeft.setInnerText("");
+                    if (operationFailed) {
+                        return;
+                    }
+                    if ((result == null)) {
+                        return;
+                    }
+
+                    hoursLeft.setInnerText("(Total Hours: " + DateHelper.doubleToHours(result) + ")");
+                }
+            };
+        List<WorkPackageDTO> wpList = new ArrayList<WorkPackageDTO>();
+        wpList.add(getSelectedWorkpackage());
+        ProjectTrackerEntryPoint.getProjectService(false).getHoursSumForActivites(wpList, null, null, null, null, cb);
     }
 
     /**
@@ -203,7 +236,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     public void onClick(final ClickEvent event) {
         if (event.getSource() == wpDateFilterCB) {
             initWorkpackage();
-            ;
         }
     }
 
@@ -211,6 +243,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     public void onChange(final ChangeEvent event) {
         if (event.getSource() == project) {
             initWorkpackage();
+            setProjectHoursLeft();
+        } else if (event.getSource() == workpackage) {
+            setProjectHoursLeft();
         }
     }
 

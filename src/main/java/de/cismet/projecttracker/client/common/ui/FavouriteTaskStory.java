@@ -136,9 +136,9 @@ public class FavouriteTaskStory extends RecentStory implements TaskDeleteListene
         TaskNotice widget = null;
 
         if (activity.getKindofactivity() == ActivityDTO.ACTIVITY) {
-            widget = new TaskNotice(activity);
+            widget = new TaskNotice(activity, false, true);
         } else {
-            widget = new HolidayTaskNotice(activity);
+            widget = new HolidayTaskNotice(activity, true);
         }
         widget.setRedBorderEnabled(false);
         widget.addListener(this);

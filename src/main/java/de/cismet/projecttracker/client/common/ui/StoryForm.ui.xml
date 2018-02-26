@@ -45,6 +45,7 @@
             </div>
             <div class="modal-footer">
                 <g:Button styleName="" text="" ui:field="fillTaskBtn"/>
+                <span class="hoursInWorkpackage" ui:field="hoursLeft"> </span>
                 <g:Button styleName="btn btn-success" text="Create" ui:field="saveButton" />
                 <g:Button styleName="btn btn-danger" text="Cancel" ui:field="cancelButton" />
             </div>
