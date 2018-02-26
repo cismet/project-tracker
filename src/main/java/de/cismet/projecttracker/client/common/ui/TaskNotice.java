@@ -11,6 +11,7 @@
  */
 package de.cismet.projecttracker.client.common.ui;
 
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
@@ -27,6 +28,7 @@ import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
 import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
+import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.listener.BasicRollbackCallback;
@@ -48,12 +50,15 @@ public class TaskNotice extends Composite implements ClickHandler {
     //~ Instance fields --------------------------------------------------------
 
     protected HTML lab;
+//    protected SpanElement hoursLeft;
+    protected Label hoursLeft = new Label();
     protected ActivityDTO activity;
     private FlowPanel mainPanel = new FlowPanel();
     private Label close = new Label("x");
     private List<TaskDeleteListener> listener = new ArrayList<TaskDeleteListener>();
     private List<TaskNoticeListener> taskListener = new ArrayList<TaskNoticeListener>();
     private boolean deleteButtonDisabled;
+    private boolean status;
     private boolean redBorder;
 
     //~ Constructors -----------------------------------------------------------
@@ -74,7 +79,18 @@ public class TaskNotice extends Composite implements ClickHandler {
      * @param  deleteButtonDisabled  DOCUMENT ME!
      */
     public TaskNotice(final ActivityDTO activity, final boolean deleteButtonDisabled) {
+        this(activity, deleteButtonDisabled, false);
+    }
+
+    /**
+     * Creates a new TaskNotice object.
+     *
+     * @param  activity              DOCUMENT ME!
+     * @param  deleteButtonDisabled  DOCUMENT ME!
+     */
+    public TaskNotice(final ActivityDTO activity, final boolean deleteButtonDisabled, final boolean status) {
         this.deleteButtonDisabled = deleteButtonDisabled;
+        this.status = status;
         this.activity = activity;
         init();
         initWidget(mainPanel);
@@ -87,7 +103,7 @@ public class TaskNotice extends Composite implements ClickHandler {
      */
     private void init() {
         lab = new HTML();
-
+        hoursLeft.setStyleName("statusCircle pull-right");
         if (!deleteButtonDisabled) {
             close.setStyleName("close pull-right closeButton");
             close.addClickHandler(this);
@@ -97,7 +113,41 @@ public class TaskNotice extends Composite implements ClickHandler {
             this.redBorder = false;
         }
         mainPanel.add(lab);
+        mainPanel.add(hoursLeft);
         refresh();
+    }
+
+    private void setStatus() {
+        if (!deleteButtonDisabled && !status) {
+            final BasicAsyncCallback<Double> cb = new BasicAsyncCallback<Double>() {
+
+                    @Override
+                    protected void afterExecution(final Double result,
+                            final boolean operationFailed) {
+                        if (operationFailed) {
+                            return;
+                        }
+                        if ((result == null)) {
+                            return;
+                        }
+
+                        if (result < -40) {
+                            hoursLeft.setStyleName("statusCircle pull-right statusCircleOk");
+                        } else if (result < -16) {
+                            hoursLeft.setStyleName("statusCircle pull-right statusCircleFirstWarning");
+                        } else if (result < -8) {
+                            hoursLeft.setStyleName("statusCircle pull-right statusCircleSecondWarning");
+                        } else if (result <= 0) {
+                            hoursLeft.setStyleName("statusCircle pull-right statusCircleThirdWarning");
+                        } else if (result > 0) {
+                            hoursLeft.setStyleName("statusCircle pull-right statusCircleError");
+                        }
+                    }
+                };
+            List<WorkPackageDTO> wpList = new ArrayList<WorkPackageDTO>();
+            wpList.add(activity.getWorkPackage());
+            ProjectTrackerEntryPoint.getProjectService(false).getHoursSumForActivites(wpList, null, null, null, null, cb);
+        }
     }
 
     /**
@@ -231,6 +281,7 @@ public class TaskNotice extends Composite implements ClickHandler {
         mainPanel.setTitle(getTooltipTextFromActivity());
         lab.setTitle(getTooltipTextFromActivity());
         setColour();
+        setStatus();
     }
 
     /**

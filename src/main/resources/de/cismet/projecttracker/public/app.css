@@ -544,6 +544,42 @@ footer{
     margin-top: -5px !important;
 }
 
+.statusCircle {
+    font-size: 12px !important;
+/*    cursor: pointer !important;*/
+    margin-top: -13px !important;
+    border-radius: 10px;
+    width: 10px;
+    height: 10px;
+}
+
+.hoursInWorkpackage {
+    color: lightgray;
+    text-align: center;
+    width: 100%;
+    margin-right: 10%;
+}
+
+.statusCircleOk {
+    background-color: #11644DCC;
+}
+
+.statusCircleFirstWarning {
+    background-color: #A0B046CC;
+}
+
+.statusCircleSecondWarning {
+    background-color: #F2C94ECC;
+}
+
+.statusCircleThirdWarning {
+    background-color: #F78145CC;
+}
+
+.statusCircleError {
+    background-color: #F24E4ECC;
+}
+
 .lockedDay{
     /*transpareny */
     zoom: 1;
