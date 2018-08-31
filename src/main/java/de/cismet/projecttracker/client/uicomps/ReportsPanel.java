@@ -124,12 +124,12 @@ public class ReportsPanel extends Composite implements MenuListener,
      */
     private void resize(final int heigth) {
         int newHeight = heigth - 300;
-        if (newHeight < 150) {
-            newHeight = 150;
+        if (newHeight < 300) {
+            newHeight = 300;
         }
 
         contentPanel.getElement().getStyle().setProperty("maxHeight", newHeight + "px");
-        final int nh = newHeight - 140;
+        final int nh = newHeight - 235;
         resultsPanel.getElement().getStyle().setProperty("maxHeight", nh + "px");
     }
 
