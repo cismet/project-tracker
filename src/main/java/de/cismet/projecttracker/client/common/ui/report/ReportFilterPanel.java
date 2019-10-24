@@ -444,9 +444,11 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                         if (period != null && period.getTodate() != null) {
                             if ( oldProjectFilterCB.getValue() || DateHelper.isDateGreaterOrEqual(period.getTodate(), new Date()) ) {
                                 workpackages.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                                setTotalHours(tmp);
                             }
                         } else {
                             workpackages.addItem(extractWorkpackageName(tmp), String.valueOf(tmp.getId()));
+                            setTotalHours(tmp);
                         }
                     }
                 }
@@ -475,9 +477,11 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
                         if (period != null && period.getTodate() != null) {
                             if ( oldProjectFilterCB.getValue() || DateHelper.isDateGreaterOrEqual(period.getTodate(), new Date()) ) {
                                 workpackages.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
+                                setTotalHours(wp);
                             }
                         } else {
                             workpackages.addItem(extractWorkpackageName(wp), String.valueOf(wp.getId()));
+                            setTotalHours(wp);
                         }
                     }
                 }
@@ -494,6 +498,31 @@ public class ReportFilterPanel extends Composite implements ChangeHandler,
             workpackages.setSelectedIndex(0);
         }
     }
+    
+    private void setTotalHours(final WorkPackageDTO wp) {
+        final BasicAsyncCallback<Double> cb = new BasicAsyncCallback<Double>() {
+
+                @Override
+                protected void afterExecution(final Double result,
+                        final boolean operationFailed) {
+                    int index = -1;
+                    
+                    for (int i = 0; i < workpackages.getItemCount(); ++i) {
+                        if (workpackages.getValue(i).equals(String.valueOf(wp.getId()))) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    
+                    if (index != -1) {
+                        workpackages.setItemText(index, extractWorkpackageName(wp) + " (" + DateHelper.doubleToHours(result) + ")");
+                    }
+                }
+            };
+        List<WorkPackageDTO> wpList = new ArrayList<WorkPackageDTO>();
+        wpList.add(wp);
+        ProjectTrackerEntryPoint.getProjectService(false).getHoursSumForActivites(wpList, null, null, null, null, cb);
+    }    
 
     /**
      * DOCUMENT ME!
