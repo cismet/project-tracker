@@ -16,11 +16,8 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.StringTokenizer;
 
 import de.cismet.projecttracker.client.CalendarMessages;
-import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.WorkPackagePeriodDTO;
 
@@ -129,8 +126,11 @@ public class DateHelper {
      *
      * @return  DOCUMENT ME!
      */
-    public static String doubleToHours(final double ihours) {
-        double hours = Math.abs(ihours);
+    public static String doubleToHours(double ihours) {
+        boolean roundHours = Math.abs((ihours - ((int)ihours))) < 0.00001 
+                || Math.abs((ihours - ((int)ihours))) > 0.9999;
+        double correctedHours = ( roundHours ? Math.round(ihours) : ihours );
+        double hours = Math.abs(correctedHours);
         int minutes = (int)Math.round((hours - ((int)hours)) * 60);
 
         // vermeidet Angaben wie 7:60
@@ -139,7 +139,7 @@ public class DateHelper {
             minutes = 0;
         }
 
-        return ((ihours < 0.0) ? "-" : "") + (int)hours + ":" + IntToDoubleDigit(minutes);
+        return ((correctedHours < 0.0) ? "-" : "") + (int)hours + ":" + IntToDoubleDigit(minutes);
     }
 
     /**
