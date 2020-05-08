@@ -491,7 +491,7 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
     @Override
     public int compareTo(final WorkPackageDTO o) {
         if (isSameLevel(this, o)) {
-            return (int)Math.signum(id - o.id);
+            return compareByName(this, o);
         } else if (isSubworkPackage(this, o)) {
             return -1;
         } else if (isSubworkPackage(o, this)) {
@@ -511,13 +511,13 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
                 final WorkPackageDTO ob1 = ((parents1.size() > 0) ? parents1.get(parents1.size() - 1) : this);
                 final WorkPackageDTO ob2 = ((parents2.size() > 0) ? parents2.get(parents2.size() - 1) : o);
 
-                return compareById(ob1, ob2);
+                return compareByName(ob1, ob2);
             } else {
                 final int i2 = parents2.indexOf(parents1.get(i));
                 final WorkPackageDTO ob1 = getElementAfterIndex(parents1, i, this);
                 final WorkPackageDTO ob2 = getElementAfterIndex(parents2, i2, o);
 
-                return compareById(ob1, ob2);
+                return compareByName(ob1, ob2);
             }
         }
     }
@@ -551,6 +551,26 @@ public class WorkPackageDTO extends BasicDTO<WorkPackageDTO> implements Comparab
      */
     private static int compareById(final WorkPackageDTO o1, final WorkPackageDTO o2) {
         return (int)Math.signum(o1.id - o2.id);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o1  DOCUMENT ME!
+     * @param   o2  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static int compareByName(final WorkPackageDTO o1, final WorkPackageDTO o2) {
+        if (o1.getName() == null && o2.getName() != null) {
+            return 1;
+        } else if (o1.getName() != null && o2.getName() == null) {
+            return -1;
+        } else if (o1.getName() == null && o2.getName() == null) {
+            return 0;
+        } else {
+            return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+        }
     }
 
     /**
