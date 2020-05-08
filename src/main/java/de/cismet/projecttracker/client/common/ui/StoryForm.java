@@ -17,6 +17,7 @@ import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -98,6 +99,8 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     private List<ProjectDTO> projects;
     private boolean modification = false;
     private TaskNotice tn;
+    private final Storage storage = Storage.getLocalStorageIfSupported();
+    private String currentProject;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -242,6 +245,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     @Override
     public void onChange(final ChangeEvent event) {
         if (event.getSource() == project) {
+            if (storage != null && project != null && project.getSelectedItemText() != null) {
+                storage.setItem("activityProject", project.getSelectedItemText());
+            }
             initWorkpackage();
             setProjectHoursLeft();
         } else if (event.getSource() == workpackage) {
@@ -423,6 +429,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
      * DOCUMENT ME!
      */
     private void init() {
+        if (storage != null) {
+            currentProject = storage.getItem("activityProject");
+        }
         wpDateFilterCB.setValue(true);
         wpDateFilterCB.setTitle(
             " if selected, only WorkPackages which are in the current period of the project, are shown");
@@ -441,31 +450,51 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
 
                     @Override
                     protected void afterExecution(final ArrayList<ProjectDTO> result, final boolean operationFailed) {
+                        int index = 0;
+                        int selectedProjectIndex = 0;
+                        
                         for (final ProjectDTO tmp : result) {
                             final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
 
                             if (GUIHelper.canUserBillToProject(companyName, tmp)
                                         && ((period == null) || DateHelper.isDayInProjectPeriod(day, period))) {
                                 project.addItem(tmp.getName(), "" + tmp.getId());
+                                
+                                if (tmp.getName().equals(currentProject)) {
+                                    selectedProjectIndex = index;
+                                }
+                                
+                                ++index;
                             }
                         }
                         ProjectTrackerEntryPoint.getInstance().setProjects(result);
                         projects = result;
+                        project.setSelectedIndex(selectedProjectIndex);
                         initWorkpackage();
                     }
                 };
 
             ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
         } else {
+            int index = 0;
+            int selectedProjectIndex = 0;
+            
             for (final ProjectDTO tmp : result) {
                 final ProjectPeriodDTO period = tmp.determineMostRecentPeriod();
 
                 if (GUIHelper.canUserBillToProject(companyName, tmp)
                             && ((period == null) || DateHelper.isDayInProjectPeriod(day, period))) {
                     project.addItem(tmp.getName(), "" + tmp.getId());
+                    
+                    if (tmp.getName().equals(currentProject)) {
+                        selectedProjectIndex = index;
+                    }
+                    
+                    ++index;
                 }
             }
             projects = result;
+            project.setSelectedIndex(selectedProjectIndex);
             initWorkpackage();
         }
     }
