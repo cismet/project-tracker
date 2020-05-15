@@ -4505,6 +4505,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             tx = hibernateSession.beginTransaction();
 //            Criterion wpRestriction = Restrictions.in("workPackage.id", wpIds);
             final Criteria crit = hibernateSession.createCriteria(Activity.class).add((conjuction));
+            crit.addOrder(Order.asc("day"));
+
             result.addAll(dtoManager.clone(crit.list()));
             tx.commit();
         } catch (Exception ex) {
