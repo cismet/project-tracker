@@ -115,6 +115,8 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
 //        Widget root;
 //
 //        root = getBasicScreen();
+        final String dayValue = Window.Location.getParameter("day");
+       
         GWT.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 
                 @Override
@@ -150,6 +152,16 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
 
                     windowResize = Window.addResizeHandler(sheets);
                     resize = addResizeHandler(sheets);
+                    
+                    if (dayValue != null) {
+                        try {
+                            Long l = Long.parseLong(dayValue);
+                            Date d = new Date(l);
+                            sheets.refresh(d);
+                        } catch (NumberFormatException e) {
+                            //nothing to do
+                        }
+                    }
                 }
             });
     }

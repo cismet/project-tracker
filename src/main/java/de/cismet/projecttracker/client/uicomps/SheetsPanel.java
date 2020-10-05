@@ -295,6 +295,18 @@ public class SheetsPanel extends Composite implements ResizeHandler,
         refresh();
     }
 
+    public void refresh(Date d) {
+        if (d.getDay() != 1) {
+            d = DateHelper.getBeginOfWeek(d);
+        }
+        datePicker.setValue(d);
+        final Date lastDay = (Date)d.clone();
+        DateHelper.addDays(lastDay, 6);
+        weekDates.setText(" - Sun.: " + DateHelper.formatShortDate(lastDay) + "." + DateHelper.getYear(lastDay));
+        datePicker.setValue(d);
+        refresh();
+    }
+    
     /**
      * DOCUMENT ME!
      */
