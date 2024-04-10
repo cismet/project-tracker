@@ -11,8 +11,17 @@
  */
 package de.cismet.projecttracker.server;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.PropertyFilter;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import org.apache.log4j.Logger;
 
@@ -36,12 +45,12 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.BasicDTO;
 import de.cismet.projecttracker.client.exceptions.DataRetrievalException;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.exceptions.LoginFailedException;
@@ -58,6 +67,8 @@ import de.cismet.projecttracker.report.helper.CalendarHelper;
 import de.cismet.projecttracker.report.query.DBManager;
 
 import de.cismet.projecttracker.utilities.DTOManager;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
 
 /**
  * DOCUMENT ME!
@@ -143,8 +154,10 @@ public class Search extends BasicServlet {
         final String description = request.getParameter("description");
         final String dateFilter = request.getParameter("datefilter");
         final String details = request.getParameter("details");
+        final String fieldList = request.getParameter("fields");
         final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
-        final ServletOutputStream out = response.getOutputStream();
+        response.setCharacterEncoding("UTF-8");
+        final PrintWriter out = response.getWriter();
 
         try {
             final Object staff = checklogin(username, password, request.getSession(), dbManager);
@@ -175,6 +188,7 @@ public class Search extends BasicServlet {
                     if (pr == null) {
                         response.setStatus(400);
                         out.print("workpackage is not valid");
+                        logger.warn("Project is not valid " + project);
                         return;
                     }
                 }
@@ -193,6 +207,7 @@ public class Search extends BasicServlet {
 
                     if (wp == null) {
                         response.setStatus(400);
+                        logger.warn("Workpackage is not valid: " + workpackage);
                         out.print("workpackage is not valid");
                         return;
                     }
@@ -248,7 +263,13 @@ public class Search extends BasicServlet {
                 if ((details == null) || !details.equals("true")) {
                     out.print(totalTime);
                 } else {
+                    JsonFactory f = new JsonFactory();
                     final ObjectMapper mapper = new ObjectMapper();
+                    
+                    final SimpleModule regularModule = new SimpleModule("NOIOC", new Version(1, 0, 0, null, null, null));
+                    regularModule.addSerializer(new DTOSerializer(fieldList));
+                    mapper.registerModule(regularModule);
+                    
                     final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
                     final String json = writer.writeValueAsString(validActivities);
                     out.print(json);
@@ -459,6 +480,118 @@ public class Search extends BasicServlet {
         } catch (Throwable t) {
             logger.error("Error:", t);
             throw new DataRetrievalException(t.getMessage(), t);
+        }
+    }
+    
+    
+    public class DTOSerializer extends StdSerializer<BasicDTO> {
+        private final List<String> fieldList = new ArrayList<String>();
+        //~ Constructors -----------------------------------------------------------
+
+        /**
+         * Creates a new CidsAttributeJsonSerializer object.
+         */
+        public DTOSerializer(String fieldList) {
+            super(BasicDTO.class);
+            
+            if (fieldList != null) {
+                for (String s : fieldList.split(",")) {
+                    this.fieldList.add(s);
+                }
+            }
+        }
+
+        //~ Methods ----------------------------------------------------------------
+        @Override
+        public void serialize(final BasicDTO dto, final JsonGenerator _jg, final SerializerProvider sp) throws IOException,
+            JsonGenerationException {
+            serialize(dto, _jg, sp, "");
+        }
+        
+        public void serialize(final BasicDTO dto, final JsonGenerator _jg, final SerializerProvider sp, String object) throws IOException,
+            JsonGenerationException {
+            _jg.writeStartObject();
+
+            Method[] methods = dto.getClass().getMethods();
+
+            for (Method tmpMethod : methods) {
+                String name = tmpMethod.getName();
+                
+                if (name.startsWith("get") && !name.equals("getClass") && name.length() > 3) {
+                    Class[] parameter = tmpMethod.getParameterTypes();
+                    
+                    if (parameter.length == 0) {
+                        Class retType = tmpMethod.getReturnType();
+                        Object o = null;
+                        
+                        try {
+                            o = tmpMethod.invoke(dto, (Object[])null);
+                        } catch (Exception e) {
+                            //nothing to do
+                        }
+                        
+                        if (retType.isPrimitive()) {
+                            if (isFieldValid(o, object, name)) {
+                                _jg.writeObjectField(getAttributeName(name), o);
+                            }
+                        } else if (String.class.isAssignableFrom(retType)) {
+                            if (isFieldValid(o, object, name)) {
+                                _jg.writeObjectField(getAttributeName(name), (String)o);
+                            }
+                        } else if (BasicDTO.class.isAssignableFrom(retType)){
+                            if (isSubObjectValid(o, object, name)) {
+                                _jg.writeFieldName(getAttributeName(name));
+                                serialize((BasicDTO)o, _jg, sp, (object.equals("") ? "" : object + ".") + getAttributeName(name) );
+                            }
+                        } else if (retType.isArray() && o instanceof BasicDTO) {
+                            if (isSubObjectValid(o, object, name)) {
+                                _jg.writeFieldName(getAttributeName(name));
+                                _jg.writeStartArray();
+                                serialize((BasicDTO)o, _jg, sp, (object.equals("") ? "" : object + ".") + getAttributeName(name) );
+                                _jg.writeEndArray();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            _jg.writeEndObject();
+        }
+        
+        private boolean isFieldValid(Object value, String subObject, String methodName) {
+            return value != null && (fieldList.isEmpty() || fieldList.contains((subObject.equals("") ? "" : subObject + ".") + getAttributeName(methodName)));
+        }
+        
+        private boolean isSubObjectValid(Object value, String subObject, String methodName) {
+            return value != null && ( fieldList.isEmpty() || isValueThatStartsWithContained((subObject.equals("") ? "" : subObject + ".") + getAttributeName(methodName)) );
+        }
+        
+        private boolean isValueThatStartsWithContained(String val) {
+            for (String tmp : fieldList) {
+                if (tmp.startsWith(val)) {
+                    return true;
+                }
+            }
+        
+            return false;
+        }
+        
+        private String getAttributeName(String name) {
+            return name.substring(3, 4).toLowerCase() + name.substring(4);
+        }
+
+        @Override
+        protected PropertyFilter findPropertyFilter(SerializerProvider provider, Object filterId, Object valueToFilter) throws JsonMappingException {
+            return super.findPropertyFilter(provider, filterId, valueToFilter);
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        protected boolean isIntraObjectCacheEnabled() {
+            return false;
         }
     }
 }
