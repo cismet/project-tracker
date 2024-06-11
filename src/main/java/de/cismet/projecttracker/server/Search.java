@@ -50,6 +50,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.ActivityExtDTO;
 import de.cismet.projecttracker.client.dto.BasicDTO;
 import de.cismet.projecttracker.client.exceptions.DataRetrievalException;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
@@ -227,7 +228,9 @@ public class Search extends BasicServlet {
                     return;
                 }
 
-                final List<ActivityDTO> validActivities = new ArrayList<ActivityDTO>();
+                //Use the type ActivityExtDTO, because the default serializer does not support the date type.
+                //The ActivityExtDTO class will use a String as result for getDay
+                final List<ActivityExtDTO> validActivities = new ArrayList<ActivityExtDTO>();
                 double totalTime = 0.0;
                 final DTOManager dtoManager = new DTOManager();
 
@@ -242,7 +245,7 @@ public class Search extends BasicServlet {
 
                             if (CalendarHelper.isDateLessOrEqual(fromDate, d)
                                         && CalendarHelper.isDateLessOrEqual(d, tillDate)) {
-                                validActivities.add((ActivityDTO)dtoManager.clone(a));
+                                validActivities.add(new ActivityExtDTO((ActivityDTO)dtoManager.clone(a)));
                             }
                         }
                     } else {
@@ -252,11 +255,11 @@ public class Search extends BasicServlet {
                     }
                 } else {
                     for (final Activity a : activities) {
-                        validActivities.add((ActivityDTO)dtoManager.clone(a));
+                        validActivities.add(new ActivityExtDTO((ActivityDTO)dtoManager.clone(a)));
                     }
                 }
 
-                for (final ActivityDTO tmp : validActivities) {
+                for (final ActivityExtDTO tmp : validActivities) {
                     totalTime += tmp.getWorkinghours();
                 }
 

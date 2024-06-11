@@ -13,19 +13,7 @@
 
     </ui:style>
     <g:HTMLPanel>
-        <legend>Auto Pause</legend>
         <b:Form type="HORIZONTAL">
-            <b:ControlGroup>
-                <b:ControlLabel>Add Autopause</b:ControlLabel>
-                <b:Controls>
-                    <b:CheckBox ui:field="autoPauseCBO"> enable </b:CheckBox>
-                </b:Controls>
-                <b:ControlLabel>Pause Duration</b:ControlLabel>
-                <b:Controls>
-                    <b:TextBox ui:field="pauseDuration">Pause Duration: </b:TextBox>
-                </b:Controls>
-            </b:ControlGroup>
-            
             <b:Legend>Pause Lock Mode</b:Legend>
             
             <b:ControlGroup>

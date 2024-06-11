@@ -21,10 +21,8 @@ public class ProfileDTO extends BasicDTO<ProfileDTO> {
 
     //~ Instance fields --------------------------------------------------------
 
-    private boolean autoPauseEnabled;
     private boolean weekLockModeEnabled;
     private boolean dayLockModeEnabled;
-    private double autoPauseDuration;
     private double residualVacation;
 
     private long id;
@@ -46,37 +44,16 @@ public class ProfileDTO extends BasicDTO<ProfileDTO> {
      * @param  pauseDuration        DOCUMENT ME!
      * @param  residualVacation     DOCUMENT ME!
      */
-    public ProfileDTO(final boolean autoPauseEnabled,
-            final boolean weekLockModeEnabled,
+    public ProfileDTO(final boolean weekLockModeEnabled,
             final boolean dayLockModeEnabled,
-            final double pauseDuration,
             final double residualVacation) {
-        this.autoPauseEnabled = autoPauseEnabled;
         this.weekLockModeEnabled = weekLockModeEnabled;
         this.dayLockModeEnabled = dayLockModeEnabled;
-        this.autoPauseDuration = pauseDuration;
         this.residualVacation = residualVacation;
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public boolean getAutoPauseEnabled() {
-        return autoPauseEnabled;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  autoPauseEnabled  DOCUMENT ME!
-     */
-    public void setAutoPauseEnabled(final boolean autoPauseEnabled) {
-        this.autoPauseEnabled = autoPauseEnabled;
-    }
 
     /**
      * DOCUMENT ME!
@@ -119,24 +96,6 @@ public class ProfileDTO extends BasicDTO<ProfileDTO> {
      *
      * @return  DOCUMENT ME!
      */
-    public double getAutoPauseDuration() {
-        return autoPauseDuration;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  autoPauseDuration  DOCUMENT ME!
-     */
-    public void setAutoPauseDuration(final double autoPauseDuration) {
-        this.autoPauseDuration = autoPauseDuration;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     public double getResidualVacation() {
         return residualVacation;
     }
@@ -153,19 +112,15 @@ public class ProfileDTO extends BasicDTO<ProfileDTO> {
     @Override
     public ProfileDTO createCopy() {
         return new ProfileDTO(
-                autoPauseEnabled,
                 weekLockModeEnabled,
                 dayLockModeEnabled,
-                autoPauseDuration,
                 residualVacation);
     }
 
     @Override
     public void reset(final ProfileDTO obj) {
-        this.autoPauseEnabled = obj.autoPauseEnabled;
-        this.weekLockModeEnabled = obj.autoPauseEnabled;
+        this.weekLockModeEnabled = obj.weekLockModeEnabled;
         this.dayLockModeEnabled = obj.dayLockModeEnabled;
-        this.autoPauseDuration = obj.autoPauseDuration;
         this.residualVacation = obj.residualVacation;
     }
 }

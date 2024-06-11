@@ -30,7 +30,6 @@ import de.cismet.projecttracker.client.common.ui.listener.TaskNoticeListener;
 import de.cismet.projecttracker.client.common.ui.listener.TaskStoryListener;
 import de.cismet.projecttracker.client.dto.ActivityDTO;
 import de.cismet.projecttracker.client.dto.ContractDTO;
-import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.ProjectPeriodDTO;
 import de.cismet.projecttracker.client.dto.WorkPackageDTO;
@@ -51,8 +50,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String PAUSE_PROJECT = "Abwesenheit";
-    private static TaskStoryUiBinder uiBinder = GWT.create(TaskStoryUiBinder.class);
+    private static final TaskStoryUiBinder uiBinder = GWT.create(TaskStoryUiBinder.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -72,24 +70,24 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     FlowPanelWithSpacer sunday;
     @UiField
     AbsolutePanel boundaryPanel;
-    private FlowPanelWithSpacer[] daysOfWeek = new FlowPanelWithSpacer[7];
-    private HashMap<FlowPanelWithSpacer, List<TaskNotice>> taskMap =
+    private final FlowPanelWithSpacer[] daysOfWeek = new FlowPanelWithSpacer[7];
+    private final HashMap<FlowPanelWithSpacer, List<TaskNotice>> taskMap =
         new HashMap<FlowPanelWithSpacer, List<TaskNotice>>();
-    private HashMap<FlowPanelWithSpacer, PickupDragController> dragMap =
+    private final HashMap<FlowPanelWithSpacer, PickupDragController> dragMap =
         new HashMap<FlowPanelWithSpacer, PickupDragController>();
-    private HashMap<FlowPanelWithSpacer, TaskStoryController> taskStoryControllerMap =
+    private final HashMap<FlowPanelWithSpacer, TaskStoryController> taskStoryControllerMap =
         new HashMap<FlowPanelWithSpacer, TaskStoryController>();
     private Date firstDayOfWeek = new Date();
-    private PickupDragController mondayDragController;
-    private PickupDragController tuesdayDragController;
-    private PickupDragController wednesdayDragController;
-    private PickupDragController thursdayDragController;
-    private PickupDragController fridayDragController;
-    private PickupDragController saturdayDragController;
-    private PickupDragController sundayDragController;
+    private final PickupDragController mondayDragController;
+    private final PickupDragController tuesdayDragController;
+    private final PickupDragController wednesdayDragController;
+    private final PickupDragController thursdayDragController;
+    private final PickupDragController fridayDragController;
+    private final PickupDragController saturdayDragController;
+    private final PickupDragController sundayDragController;
     private LockPanel lockPanel;
-    private List<TaskStoryListener> listener = new ArrayList<TaskStoryListener>();
-    private Story story;
+    private final List<TaskStoryListener> listener = new ArrayList<TaskStoryListener>();
+    private final Story story;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -274,7 +272,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
                                                                 if (taskList.isEmpty()
                                                                             && (activity.getWorkPackage().getId()
                                                                                 != ActivityDTO.PAUSE_ID)) {
-                                                                    addPause(newDate);
                                                                 }
 
                                                                 final BasicAsyncCallback<Long> callback =
@@ -472,71 +469,6 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
         boundaryPanel.setHeight(height);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  day  DOCUMENT ME!
-     */
-    public void addPause(final Date day) {
-        final ProfileDTO profile = ProjectTrackerEntryPoint.getInstance().getLoggedInStaff().getProfile();
-        if ((profile == null) || profile.getAutoPauseEnabled()) {
-            final int wd = day.getDay();
-
-            if ((wd == 0) || (wd == 6)) {
-                // no auto pause on saturdays and sundays
-                return;
-            }
-
-            final WorkPackageDTO wp = getPauseWP();
-
-            if (wp != null) {
-                final ActivityDTO activity = new ActivityDTO();
-                activity.setDay(day);
-                activity.setKindofactivity(ActivityDTO.ACTIVITY);
-                activity.setWorkPackage(wp);
-                if (profile != null) {
-                    activity.setWorkinghours(profile.getAutoPauseDuration());
-                } else {
-                    activity.setWorkinghours(1.5);
-                }
-                activity.setStaff(ProjectTrackerEntryPoint.getInstance().getStaff());
-
-                final BasicAsyncCallback<Long> callback = new BasicAsyncCallback<Long>() {
-
-                        @Override
-                        protected void afterExecution(final Long result, final boolean operationFailed) {
-                            if (!operationFailed) {
-                                activity.setId(result);
-                                addTask(activity);
-                            }
-                        }
-                    };
-
-                ProjectTrackerEntryPoint.getProjectService(true).createActivity(activity, callback);
-            }
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private WorkPackageDTO getPauseWP() {
-        final List<ProjectDTO> projects = ProjectTrackerEntryPoint.getInstance().getProjects();
-
-        for (final ProjectDTO tmp : projects) {
-            if (tmp.getName().equals(PAUSE_PROJECT)) {
-                for (final WorkPackageDTO wp : tmp.getWorkPackages()) {
-                    if (wp.getId() == ActivityDTO.PAUSE_ID) {
-                        return wp;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
 
     /**
      * DOCUMENT ME!

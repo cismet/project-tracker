@@ -20,7 +20,6 @@ import com.github.gwtbootstrap.client.ui.TextBox;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -31,7 +30,6 @@ import com.google.gwt.user.client.ui.Widget;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import de.cismet.projecttracker.client.dto.ProfileDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
-import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 
 /**
@@ -40,24 +38,20 @@ import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
  * @author   dmeiers
  * @version  $Revision$, $Date$
  */
-public class AccountSettingsForm extends Composite implements ClickHandler, ValueChangeHandler<Boolean> {
+public class AccountSettingsForm extends Composite implements ClickHandler {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static AccountSettingsFormUiBinder uiBinder = GWT.create(AccountSettingsFormUiBinder.class);
+    private static final AccountSettingsFormUiBinder uiBinder = GWT.create(AccountSettingsFormUiBinder.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    @UiField
-    CheckBox autoPauseCBO;
     @UiField
     CheckBox weekLockCB;
     @UiField
     CheckBox dayLockCB;
     @UiField
     SubmitButton submitBtn;
-    @UiField
-    TextBox pauseDuration;
     @UiField
     Legend residualVacLegend;
     @UiField
@@ -78,12 +72,6 @@ public class AccountSettingsForm extends Composite implements ClickHandler, Valu
 
     //~ Methods ----------------------------------------------------------------
 
-    @UiHandler("autoPauseCBO")
-    @Override
-    public void onValueChange(final ValueChangeEvent<Boolean> event) {
-        pauseDuration.setEnabled(event.getValue());
-    }
-
     /**
      * DOCUMENT ME!
      */
@@ -98,11 +86,9 @@ public class AccountSettingsForm extends Composite implements ClickHandler, Valu
         if (p != null) {
             profile = p;
         } else {
-            profile = new ProfileDTO(false, true, true, 0, 0);
+            profile = new ProfileDTO(true, true, 0);
         }
 
-        autoPauseCBO.setValue(profile.getAutoPauseEnabled());
-        pauseDuration.setEnabled(profile.getAutoPauseEnabled());
         if (profile.getWeekLockModeEnabled()) {
             weekLockCB.setValue(true);
         } else {
@@ -114,7 +100,6 @@ public class AccountSettingsForm extends Composite implements ClickHandler, Valu
         } else {
             dayLockCB.setValue(false);
         }
-        pauseDuration.setText(DateHelper.doubleToHours(profile.getAutoPauseDuration()));
 
         residualVacation.setText("" + profile.getResidualVacation());
     }
@@ -127,10 +112,8 @@ public class AccountSettingsForm extends Composite implements ClickHandler, Valu
             return;
         }
         final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
-        profile.setAutoPauseEnabled(autoPauseCBO.getValue());
         profile.setWeekLockModeEnabled(weekLockCB.getValue());
         profile.setDayLockModeEnabled(dayLockCB.getValue());
-        profile.setAutoPauseDuration(DateHelper.hoursToDouble(pauseDuration.getText()));
         if (ProjectTrackerEntryPoint.getInstance().isAdmin()) {
             profile.setResidualVacation(Double.valueOf(residualVacation.getText()));
         }
