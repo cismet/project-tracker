@@ -106,6 +106,8 @@ import de.cismet.projecttracker.utilities.LanguageBundle;
 import de.cismet.projecttracker.utilities.Utilities;
 
 import de.cismet.web.timetracker.types.HoursOfWork;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 /**
  * DOCUMENT ME!
@@ -118,6 +120,7 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(ProjectServiceImpl.class);
+    private static final Properties PROJECT_URLS = new Properties();
     private static final String RECENT_ACTIVITIES_QUERY =
         "select max(id), workpackageid, description from activity where "
                 + "staffid = %1$s and kindofactivity = %2$s group by workpackageid, description having workpackageid <> 408 "
@@ -152,8 +155,22 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
     private static DTOManager dtoManager = new DTOManager();
     private static final GregorianCalendar accountBalanceDueDate = new GregorianCalendar(2012, 2, 1);
     private static String JSON_LOG_BASE_DIR;
+    private static Timer refreshConfigTimer;
 //    private static final int PAUSE_CHECKER_DAYS = 2;
 
+    
+    static {
+        refreshConfigTimer = new Timer(true);
+        
+        refreshConfigTimer.schedule(new TimerTask() {
+
+                @Override
+                public void run() {
+                    fetchProjectUrlConfig();
+                }
+            }, 60000, 60000);
+    }
+    
     //~ Methods ----------------------------------------------------------------
 
     @Override
@@ -192,6 +209,8 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             } catch (IOException e) {
                 logger.error("Cannot open and load json_log properties file.", e);
             }
+            
+            fetchProjectUrlConfig();
 
             final Properties developerConfig = new Properties();
             try {
@@ -206,6 +225,22 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             }
         }
     }
+    
+    /**
+     * Open a specific text file containing mail server parameters, and populate a corresponding Properties object.
+     */
+    private static void fetchProjectUrlConfig() {
+        synchronized (PROJECT_URLS) {
+            try {
+                InputStream input = new FileInputStream(ConfigurationManager.getInstance().getConfBaseDir()
+                                + System.getProperty("file.separator") + "projectUrl.properties");
+                PROJECT_URLS.load(input);
+            } catch (IOException e) {
+                logger.error("Cannot open and load the projectUrl server properties file.", e);
+            }
+        }
+    }
+    
 
     /**
      * {@inheritDoc}
@@ -4596,6 +4631,38 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         }
         
         return sum;
+    }
+
+    /**
+     * if one of the parameters is null this parameter doesnt gets taken into account for filtering.
+     *
+     * @param   workpackage  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    @Override
+    public HashMap<String, String> getProjectUrls() throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException {
+        synchronized (PROJECT_URLS) {
+            HashMap<String, String> map = new HashMap<String, String>();
+            
+            for (String key : PROJECT_URLS.stringPropertyNames()) {
+                map.put(key, PROJECT_URLS.getProperty(key));
+            }
+            
+            return map;
+        }
     }
 
     /**

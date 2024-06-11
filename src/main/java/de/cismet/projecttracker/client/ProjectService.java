@@ -47,6 +47,7 @@ import de.cismet.projecttracker.client.types.ActivityResponseType;
 import de.cismet.projecttracker.client.types.HolidayType;
 import de.cismet.projecttracker.client.types.ReportType;
 import de.cismet.projecttracker.client.types.TimePeriod;
+import java.util.HashMap;
 
 /**
  * This interface contains all server-side operations. See <a
@@ -834,6 +835,14 @@ public interface ProjectService extends RemoteService {
         DataRetrievalException,
         PermissionDenyException,
         NoSessionException;
+    
+    
+    public HashMap<String, String> getProjectUrls() throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException;
+    
+    
     /**
      * DOCUMENT ME!
      *

@@ -35,12 +35,14 @@ import de.cismet.projecttracker.client.common.ui.listener.ServerDataChangeListen
 import de.cismet.projecttracker.client.dto.ContractDTO;
 import de.cismet.projecttracker.client.dto.ProjectDTO;
 import de.cismet.projecttracker.client.dto.StaffDTO;
+import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.uicomps.SheetsPanel;
 import de.cismet.projecttracker.client.uicomps.TopPanel;
 import de.cismet.projecttracker.client.utilities.ChangeChecker;
+import java.util.HashMap;
 
 /**
  * This is the main class of the ProjectTracker and will be automatic instantiated by the Google Web Toolkit to start
@@ -76,6 +78,7 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
     private String activePanel = "Sheets";
     private SheetsPanel sheets = new SheetsPanel();
     private List<ProjectDTO> projects;
+    private HashMap<String, String> projectUrls;
     private HandlerRegistration windowResize;
     private HandlerRegistration resize;
 
@@ -225,6 +228,18 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
             };
 
         ProjectTrackerEntryPoint.getProjectService(true).getAllProjectsFull(callback);
+        
+        final BasicAsyncCallback<HashMap<String, String>> urlCallback = new BasicAsyncCallback<HashMap<String, String>>() {
+
+                @Override
+                protected void afterExecution(final HashMap<String, String> result, final boolean operationFailed) {
+                    if (!operationFailed) {
+                        projectUrls = result;
+                    }
+                }
+            };
+
+        ProjectTrackerEntryPoint.getProjectService(false).getProjectUrls(urlCallback);
         sheets.setLockComponents();
         sheets.refresh();
         topPanel.addMenuListener(sheets);
@@ -255,6 +270,27 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
 //            };
 
 //        ProjectTrackerEntryPoint.getProjectService(true).checkBeginOfDayActivityExists(getStaff(), callback);
+    }
+    
+    public String getProjectUrlByWP(final WorkPackageDTO workPackage) {
+        String resultUrl = null;
+        
+        if (workPackage != null && projectUrls != null) {
+            String projectName = workPackage.getProject().getName();
+            String wpName = workPackage.getName();
+
+            resultUrl = projectUrls.get(projectName + "->" + wpName);
+
+            if (resultUrl == null) {
+                resultUrl = projectUrls.get(projectName);
+            }
+        }
+
+        if (resultUrl != null && !resultUrl.endsWith("/")) {
+            resultUrl += "/";
+        }
+        
+        return resultUrl;
     }
 
     /**

@@ -14,7 +14,10 @@ package de.cismet.projecttracker.client.common.ui;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import java.util.ArrayList;
@@ -32,6 +35,8 @@ import de.cismet.projecttracker.client.dto.WorkPackageDTO;
 import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.listener.BasicRollbackCallback;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * DOCUMENT ME!
@@ -53,10 +58,10 @@ public class TaskNotice extends Composite implements ClickHandler {
 //    protected SpanElement hoursLeft;
     protected Label hoursLeft = new Label();
     protected ActivityDTO activity;
-    private FlowPanel mainPanel = new FlowPanel();
-    private Label close = new Label("x");
-    private List<TaskDeleteListener> listener = new ArrayList<TaskDeleteListener>();
-    private List<TaskNoticeListener> taskListener = new ArrayList<TaskNoticeListener>();
+    private final FlowPanel mainPanel = new FlowPanel();
+    private final Label close = new Label("x");
+    private final List<TaskDeleteListener> listener = new ArrayList<TaskDeleteListener>();
+    private final List<TaskNoticeListener> taskListener = new ArrayList<TaskNoticeListener>();
     private boolean deleteButtonDisabled;
     private boolean status;
     private boolean redBorder;
@@ -197,8 +202,34 @@ public class TaskNotice extends Composite implements ClickHandler {
             text.append(activity.getWorkPackage().getAbbreviation());
         }
 
+        String modifiedDesc = desc;
+        RegExp regExp = RegExp.compile("#(\\d+)", "g");
+        MatchResult matcher = regExp.exec(desc);
+        int lastIndex = 0;
+
+        while (matcher != null) {
+            for (int i = 0; i < matcher.getGroupCount(); i++) {
+                String groupStr = matcher.getGroup(i);
+                if (groupStr.startsWith("#")) {
+                    String url = ProjectTrackerEntryPoint.getInstance().getProjectUrlByWP(activity.getWorkPackage());
+                    
+                    if (url != null) {
+                        modifiedDesc = modifiedDesc.replace(groupStr, "<u><a href=\"" + url + groupStr.substring(1) + "\" target=\"_blank\">" + groupStr + "</a></u>");
+                    }
+                }
+                if ((desc.lastIndexOf(groupStr) + groupStr.length()) > lastIndex) {
+                    lastIndex = desc.lastIndexOf(groupStr) + groupStr.length();
+                }
+            }
+            
+            regExp.setLastIndex(lastIndex);
+            matcher = regExp.exec(desc);
+        }
+
+
         final double hours = Math.round(activity.getWorkinghours() * 100) / 100.0;
-        text.append("<br />").append(desc);
+        text.append("<br />").append(modifiedDesc);
+        
 
         if ((hours != 0.0) && (hours != -1.0) && !deleteButtonDisabled) {
             text.append("<br />").append(DateHelper.doubleToHours(hours)).append(" hours");
