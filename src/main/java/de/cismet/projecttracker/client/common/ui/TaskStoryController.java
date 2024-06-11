@@ -22,10 +22,7 @@ import java.util.List;
 
 import de.cismet.projecttracker.client.ImageConstants;
 import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
-import de.cismet.projecttracker.client.common.ui.event.TimeStoryEvent;
-import de.cismet.projecttracker.client.common.ui.listener.TimeStoryListener;
 import de.cismet.projecttracker.client.dto.StaffDTO;
-import de.cismet.projecttracker.client.helper.DateHelper;
 import de.cismet.projecttracker.client.listener.BasicAsyncCallback;
 import de.cismet.projecttracker.client.utilities.TaskFiller;
 
@@ -35,13 +32,13 @@ import de.cismet.projecttracker.client.utilities.TaskFiller;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class TaskStoryController extends Composite implements ClickHandler, TimeStoryListener, DoubleClickHandler {
+public class TaskStoryController extends Composite implements ClickHandler, DoubleClickHandler {
 
     //~ Instance fields --------------------------------------------------------
 
-    private FlowPanel mainPanel = new FlowPanel();
-    private Button add = new Button("<img src='" + ImageConstants.INSTANCE.plus().getURL() + "' />", this);
-    private Button fill = new Button("<img src='" + ImageConstants.INSTANCE.magicFiller().getURL() + "' />", this);
+    private final FlowPanel mainPanel = new FlowPanel();
+    private final Button add = new Button("<img src='" + ImageConstants.INSTANCE.plus().getURL() + "' />", this);
+    private final Button fill = new Button("<img src='" + ImageConstants.INSTANCE.magicFiller().getURL() + "' />", this);
     private Date day;
     private TaskStory taskStory;
     private Story story;
@@ -93,12 +90,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
      * @param  story  DOCUMENT ME!
      */
     public void setStory(final Story story) {
-        if (this.story != null) {
-            this.story.removeTimeStoryListener(this);
-        }
         this.story = story;
-        story.removeTimeStoryListener(this);
-        story.addTimeStoryListener(this);
     }
 
     @Override
@@ -126,9 +118,6 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
                     if (!operationFailed) {
                         if (!result) {
                             final List<TaskNotice> taskList = taskStory.getTasksForDay(day.getDay());
-                            if (taskList.isEmpty()) {
-                                taskStory.addPause(day);
-                            }
                             final DialogBox taskForm = new DialogBox();
                             taskForm.setWidget(new StoryForm(taskForm, taskStory, story, day));
                             taskForm.center();
@@ -140,26 +129,7 @@ public class TaskStoryController extends Composite implements ClickHandler, Time
     }
 
     @Override
-    public void timeNoticeCreated(final TimeStoryEvent e) {
-        if (DateHelper.isSameDay(e.getDay(), day)) {
-            final List<TaskNotice> taskList = taskStory.getTasksForDay(e.getDay().getDay());
-
-            if (taskList.isEmpty()) {
-                taskStory.addPause(e.getDay());
-            }
-        }
-    }
-
-    @Override
     public void onDoubleClick(final DoubleClickEvent event) {
         addTask();
-    }
-
-    @Override
-    public void timeNoticeChanged(final TimeStoryEvent e) {
-    }
-
-    @Override
-    public void timeNoticeDeleted(final TimeStoryEvent e) {
     }
 }
