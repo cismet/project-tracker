@@ -17,6 +17,8 @@ import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -101,6 +103,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     private TaskNotice tn;
     private final Storage storage = Storage.getLocalStorageIfSupported();
     private String currentProject;
+    private double totalHours = Double.MAX_VALUE;
+    private double totalHoursWithOutCurrent = Double.MAX_VALUE;
+    private double totalIssueHours = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -189,6 +194,9 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
     }
     
     private void setProjectHoursLeft() {
+        final List<WorkPackageDTO> wpList = new ArrayList<WorkPackageDTO>();
+        wpList.add(getSelectedWorkpackage());
+        
         final BasicAsyncCallback<Double> cb = new BasicAsyncCallback<Double>() {
 
                 @Override
@@ -203,13 +211,80 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
                     }
 
                     hoursLeft.setInnerText("(Total Hours: " + DateHelper.doubleToHours(result) + ")");
+                    totalHours = result;
+                    
+                    loadIssueTime(wpList);
                 }
             };
-        List<WorkPackageDTO> wpList = new ArrayList<WorkPackageDTO>();
-        wpList.add(getSelectedWorkpackage());
+        
         ProjectTrackerEntryPoint.getProjectService(false).getHoursSumForActivites(wpList, null, null, null, null, cb);
+        
+        if (tn != null && tn.getActivity() != null && tn.getActivity().getId() > 0) {
+            final BasicAsyncCallback<Double> cb1 = new BasicAsyncCallback<Double>() {
+
+                    @Override
+                    protected void afterExecution(final Double result,
+                            final boolean operationFailed) {
+                        hoursLeft.setInnerText("");
+                        if (operationFailed) {
+                            return;
+                        }
+                        if ((result == null)) {
+                            return;
+                        }
+
+                        totalHoursWithOutCurrent = result;
+                    }
+                };
+            ProjectTrackerEntryPoint.getProjectService(false).getHoursSumForActivites(wpList, null, null, null, null, tn.getActivity(), cb1);
+        }
+    }
+    
+    private void loadIssueTime(final List<WorkPackageDTO> wpList) {
+        if (description.getText().contains("#") && description.getText().lastIndexOf("#") == description.getText().indexOf("#")) {
+            String issueNumber = getIssue(description.getText());
+            
+            final BasicAsyncCallback<Double> cb1 = new BasicAsyncCallback<Double>() {
+
+                    @Override
+                    protected void afterExecution(final Double result,
+                            final boolean operationFailed) {
+                        hoursLeft.setInnerText("");
+                        if (operationFailed) {
+                            return;
+                        }
+                        if ((result == null)) {
+                            return;
+                        }
+
+                        hoursLeft.setInnerText("(Issue Hours: " + DateHelper.doubleToHours(result) + " Total Hours: " + DateHelper.doubleToHours(totalHours) + ")");
+                        totalIssueHours = result;
+                    }
+                };
+            ProjectTrackerEntryPoint.getProjectService(false).getHoursSumForActivites(wpList, null, null, null, issueNumber, null, true, cb1);
+        }
     }
 
+    private String getIssue(String desc) {
+        RegExp regExp = RegExp.compile("#(\\d+)", "g");
+        MatchResult matcher = regExp.exec(desc);
+        int lastIndex = 0;
+        String issueNumber = null;
+        
+        if (matcher != null) {
+            for (int i = 0; i < matcher.getGroupCount(); i++) {
+                String groupStr = matcher.getGroup(i);
+                
+                if (groupStr.startsWith("#")) {
+                    issueNumber = groupStr.substring(0);
+                    break;
+                }
+            }
+        }
+        
+        return issueNumber;
+    }
+    
     /**
      * DOCUMENT ME!
      */
@@ -366,6 +441,16 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
         
         String workpackageName = getSelectedWorkpackage().getName().trim().replaceAll("^\\d*_", "");
         String descriptionText = description.getText().trim().replaceAll("^\\d*_", "");
+        
+        double hoursForWP = (totalHoursWithOutCurrent != Double.MAX_VALUE ? totalHoursWithOutCurrent : totalHours);
+        
+        if (getSelectedWorkpackage().getName().startsWith("10_") && hoursForWP != Double.MAX_VALUE && hoursForWP < 0.0 && hoursForWP + workinghours > 0.01) {
+            boolean createTask = ProjectTrackerEntryPoint.outputBoxConfirm("If this is a new activity, the workpackage time will be positive. Do you still want to create this task?");
+            
+            if (!createTask) { 
+                return;
+            }
+        }
         
         if (similarity(workpackageName, descriptionText) > 0.5) {
             ProjectTrackerEntryPoint.outputBox("The description and the name of the workpackage are too similar.");

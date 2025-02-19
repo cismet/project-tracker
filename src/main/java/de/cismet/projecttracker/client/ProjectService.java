@@ -835,8 +835,65 @@ public interface ProjectService extends RemoteService {
         DataRetrievalException,
         PermissionDenyException,
         NoSessionException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   workpackages  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     * @param   activity   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    Double getHoursSumForActivites(List<WorkPackageDTO> workpackages,
+            List<StaffDTO> staff,
+            Date from,
+            Date til,
+            String description,
+            final ActivityDTO activity) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException;
     
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   workpackages  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     * @param   activity   DOCUMENT ME!
+     * @param   onlyIssues   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    Double getHoursSumForActivites(List<WorkPackageDTO> workpackages,
+            List<StaffDTO> staff,
+            Date from,
+            Date til,
+            String description,
+            final ActivityDTO activity,
+            final boolean onlyIssues) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException;
     
+   
     public HashMap<String, String> getProjectUrls() throws InvalidInputValuesException,
         DataRetrievalException,
         PermissionDenyException,
