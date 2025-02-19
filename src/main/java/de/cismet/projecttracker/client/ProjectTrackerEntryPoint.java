@@ -468,6 +468,15 @@ public class ProjectTrackerEntryPoint implements EntryPoint,
     /**
      * opens a popup and prints the given message.
      *
+     * @param  msg  the message, that should be printed
+     */
+    public static boolean outputBoxConfirm(final String msg) {
+        return Window.confirm(msg);
+    }
+
+    /**
+     * Calculates the md5 checksum of the given message.
+     *
      * @param   msg  the message, that should be printed
      *
      * @return  DOCUMENT ME!

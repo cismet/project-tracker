@@ -4578,6 +4578,68 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         DataRetrievalException,
         PermissionDenyException,
         NoSessionException {
+        return getHoursSumForActivites(workpackages, staff, from, til, description, null);
+    }
+
+    /**
+     * if one of the parameters is null this parameter doesnt gets taken into account for filtering.
+     *
+     * @param   workpackages  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     * @param   activity   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    @Override
+    public Double getHoursSumForActivites(final List<WorkPackageDTO> workpackages,
+            final List<StaffDTO> staff,
+            final Date from,
+            final Date til,
+            final String description,
+            final ActivityDTO activity) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException {
+        return getHoursSumForActivites(workpackages, staff, from, til, description, activity, false);
+    }
+
+
+    /**
+     * if one of the parameters is null this parameter doesnt gets taken into account for filtering.
+     *
+     * @param   workpackages  DOCUMENT ME!
+     * @param   staff         DOCUMENT ME!
+     * @param   from          DOCUMENT ME!
+     * @param   til           DOCUMENT ME!
+     * @param   description   DOCUMENT ME!
+     * @param   activity   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  InvalidInputValuesException  DOCUMENT ME!
+     * @throws  DataRetrievalException       DOCUMENT ME!
+     * @throws  PermissionDenyException      DOCUMENT ME!
+     * @throws  NoSessionException           DOCUMENT ME!
+     */
+    @Override
+    public Double getHoursSumForActivites(final List<WorkPackageDTO> workpackages,
+            final List<StaffDTO> staff,
+            final Date from,
+            final Date til,
+            final String description,
+            final ActivityDTO activity,
+            final boolean onlyIssues) throws InvalidInputValuesException,
+        DataRetrievalException,
+        PermissionDenyException,
+        NoSessionException {
         final ArrayList<ActivityDTO> result = new ArrayList<ActivityDTO>();
         final DBManagerWrapper dbManager = new DBManagerWrapper();
         Session hibernateSession = null;
@@ -4611,6 +4673,10 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
         if ((description != null) && !description.isEmpty()) {
             conjuction.add(Restrictions.ilike("description", description.trim(), MatchMode.ANYWHERE));
         }
+        
+        if (activity != null && activity.getId() > 0) {
+            conjuction.add(Restrictions.ne("id", activity.getId()));
+        }
 
         try {
             hibernateSession = dbManager.getSession();
@@ -4621,7 +4687,9 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             tx.commit();
 
             for (ActivityDTO a : result) {
-                sum += a.getWorkinghours();
+                if (!onlyIssues || (a.getDescription() != null && a.getDescription().contains("#") && a.getDescription().indexOf("#") == a.getDescription().lastIndexOf("#"))) {
+                    sum += a.getWorkinghours();
+                }
             }
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(ProjectServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
