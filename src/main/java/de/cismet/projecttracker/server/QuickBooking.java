@@ -434,6 +434,7 @@ public class QuickBooking extends BasicServlet {
      * @throws  LoginFailedException    DOCUMENT ME!
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
+    @Override
     public Staff checklogin(final String username,
             final String pasword,
             final HttpSession session,

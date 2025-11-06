@@ -4689,6 +4689,19 @@ public class ProjectServiceImpl extends RemoteServiceServlet implements ProjectS
             for (ActivityDTO a : result) {
                 if (!onlyIssues || (a.getDescription() != null && a.getDescription().contains("#") && a.getDescription().indexOf("#") == a.getDescription().lastIndexOf("#"))) {
                     sum += a.getWorkinghours();
+                } else if (onlyIssues && (a.getDescription() != null && a.getDescription().contains("#") && a.getDescription().indexOf("#") != a.getDescription().lastIndexOf("#"))) {
+                    String desc = a.getDescription();
+                    int matches = 0;
+                    
+                    for (int i = 0; i < desc.length(); ++i) {
+                        if (desc.charAt(i) == '#' && (i+1) < desc.length() && Character.isDigit(desc.charAt(i + 1))) {
+                            ++matches;
+                        }
+                    }
+                    
+                    if (matches > 0) {
+                        sum += a.getWorkinghours() / matches;
+                    }
                 }
             }
         } catch (Exception ex) {

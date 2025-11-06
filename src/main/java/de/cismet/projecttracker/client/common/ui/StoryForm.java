@@ -225,7 +225,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
                     @Override
                     protected void afterExecution(final Double result,
                             final boolean operationFailed) {
-                        hoursLeft.setInnerText("");
                         if (operationFailed) {
                             return;
                         }
@@ -249,7 +248,6 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
                     @Override
                     protected void afterExecution(final Double result,
                             final boolean operationFailed) {
-                        hoursLeft.setInnerText("");
                         if (operationFailed) {
                             return;
                         }
@@ -257,6 +255,7 @@ public class StoryForm extends Composite implements ChangeHandler, KeyUpHandler,
                             return;
                         }
 
+                        hoursLeft.setInnerText("");
                         hoursLeft.setInnerText("(Issue Hours: " + DateHelper.doubleToHours(result) + " Total Hours: " + DateHelper.doubleToHours(totalHours) + ")");
                         totalIssueHours = result;
                     }
