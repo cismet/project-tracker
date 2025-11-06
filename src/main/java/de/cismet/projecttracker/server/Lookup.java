@@ -16,26 +16,20 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import org.apache.log4j.Logger;
 
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.security.MessageDigest;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import de.cismet.projecttracker.client.exceptions.DataRetrievalException;
 import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
-import de.cismet.projecttracker.client.exceptions.LoginFailedException;
 import de.cismet.projecttracker.client.exceptions.NoSessionException;
 import de.cismet.projecttracker.client.exceptions.PermissionDenyException;
 
@@ -198,55 +192,6 @@ public class Lookup extends BasicServlet {
         } catch (Exception e) {
             logger.error("Error while retrieving workpackages");
             return new ArrayList();
-        }
-    }
-
-    /**
-     * Check the login data.
-     *
-     * @param   username   DOCUMENT ME!
-     * @param   pasword    DOCUMENT ME!
-     * @param   session    DOCUMENT ME!
-     * @param   dbManager  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  LoginFailedException    DOCUMENT ME!
-     * @throws  DataRetrievalException  DOCUMENT ME!
-     */
-    public Object checklogin(final String username,
-            final String pasword,
-            final HttpSession session,
-            final DBManager dbManager) throws LoginFailedException, DataRetrievalException {
-        try {
-            final Session hibernateSession = dbManager.getSession();
-
-            final MessageDigest md = MessageDigest.getInstance("SHA1");
-            md.update(pasword.getBytes());
-            final byte[] sha1 = md.digest();
-
-            final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
-                        .add(Restrictions.and(
-                                    Restrictions.eq("username", username),
-                                    Restrictions.eq("password", sha1)))
-                        .uniqueResult();
-
-            if (staff == null) {
-                final StaffExtern staffExtern = (StaffExtern)hibernateSession.createCriteria(StaffExtern.class)
-                            .add(Restrictions.and(
-                                        Restrictions.eq("username", username),
-                                        Restrictions.eq("password", sha1)))
-                            .uniqueResult();
-//                final StaffExtern staffExtern = (StaffExtern)hibernateSession.createCriteria(StaffExtern.class)
-//                            .add(Restrictions.eq("username", username))
-//                            .uniqueResult();
-
-                return staffExtern;
-            }
-            return staff;
-        } catch (Throwable t) {
-            logger.error("Error:", t);
-            throw new DataRetrievalException(t.getMessage(), t);
         }
     }
 }

@@ -40,6 +40,18 @@
         <servlet-name>Lookup</servlet-name>
         <servlet-class>de.cismet.projecttracker.server.Lookup</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>HoursOnClosedIssue</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.HoursOnClosedIssues</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HoursOnOpenIssue</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.HoursOnOpenIssues</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>OverviewWorkinghours</servlet-name>
+        <servlet-class>de.cismet.projecttracker.server.OverviewWorkinghours</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>DocumentDownload</servlet-name>
         <url-pattern>/ProjectTracker/DocumentDownload/*</url-pattern>
@@ -71,6 +83,18 @@
     <servlet-mapping>
         <servlet-name>Lookup</servlet-name>
         <url-pattern>/ProjectTracker/Lookup</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HoursOnClosedIssue</servlet-name>
+        <url-pattern>/ProjectTracker/HoursOnClosedIssues</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HoursOnOpenIssue</servlet-name>
+        <url-pattern>/ProjectTracker/HoursOnOpenIssues</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OverviewWorkinghours</servlet-name>
+        <url-pattern>/ProjectTracker/OverviewWorkinghours</url-pattern>
     </servlet-mapping>
     <filter>
         <filter-name>gwtCacheControlFilter</filter-name>
