@@ -24,11 +24,11 @@
                 <!--a class="close" href="">×</a-->
             </div>
             <div class="modal-body">
-                <div>Project:</div>
+                <div>Category</div>
                 <g:ListBox ui:field="project" styleName="{style.input-component}" />
                 <div>
-                    <div style="float:left">Workpackage:</div>
-                    <div style="float:right">only current Workpackages<g:SimpleCheckBox ui:field="wpDateFilterCB" styleName="wpFilterCB" /></div>
+                    <div style="float:left">Milestone:</div>
+                    <div style="float:right">only current Milestone<g:SimpleCheckBox ui:field="wpDateFilterCB" styleName="wpFilterCB" /></div>
                 </div>
                 <g:ListBox ui:field="workpackage" styleName="{style.input-component}" />
                 <div>Description:</div>

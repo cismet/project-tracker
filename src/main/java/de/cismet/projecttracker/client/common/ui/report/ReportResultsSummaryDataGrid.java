@@ -333,7 +333,7 @@ public class ReportResultsSummaryDataGrid extends FlowPanel {
             // workpackageheader.
             th = tr.startTH().colSpan(1);
             th.className("report-table-wpCol");
-            th.text("WorkPackage").endTH();
+            th.text("Milestone").endTH();
 
             // workinghours header
             th = tr.startTH().colSpan(1);
