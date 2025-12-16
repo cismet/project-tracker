@@ -8,7 +8,6 @@
 package de.cismet.projecttracker.utilities;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,6 +29,11 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import de.cismet.projecttracker.server.ConfigurationManager;
+import java.io.BufferedInputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
 /**
  * This class privides some static methods with basic functionality.
@@ -42,7 +46,7 @@ public class Utilities {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = Logger.getLogger(Utilities.class);
-    private static final String LOG4J_CONFIG_FILE = "WEB-INF/config/log4j.properties";
+    private static final String LOG4J_CONFIG_FILE = "WEB-INF/config/log4j.xml";
     private static final String ADMIN_MAIL_ADDRESS = "sabine.trier@cismet.de";
     private static Properties fMailServerConfig = new Properties();
     private static final Map<String, EMailContent> toSend = new Hashtable<String, EMailContent>();
@@ -91,7 +95,24 @@ public class Utilities {
      * @param  applicationPath  DOCUMENT ME!
      */
     public static void initLogger(final String applicationPath) {
-        PropertyConfigurator.configureAndWatch(applicationPath + LOG4J_CONFIG_FILE);
+        InputStream configStream = null;
+        
+        try {
+            configStream = new BufferedInputStream(new FileInputStream(applicationPath + LOG4J_CONFIG_FILE));
+            final ConfigurationSource source = new ConfigurationSource(configStream);
+            final LoggerContext context = (LoggerContext)LogManager.getContext(false);
+            context.start(new XmlConfiguration(context, source)); 
+        } catch (Exception e) {
+            System.out.println("Cannot configure logger");
+        } finally {
+            if (configStream != null) {
+                try {
+                    configStream.close();
+                } catch (Exception e) {
+                    //nothing to do
+                }
+            }
+        }
     }
 
     /**
@@ -104,15 +125,18 @@ public class Utilities {
     public static void sendEmail(final String address, final String subject, final String body) {
         fetchConfig();
         final Session session;
+        Properties props = (Properties)fMailServerConfig.clone();
+        final String user = fMailServerConfig.getProperty("mail.user");
+        final String pwd = fMailServerConfig.getProperty("mail.password");
 
-        if ((fMailServerConfig.get("mail.user") != null) && (fMailServerConfig.get("mail.password") != null)) {
-            session = Session.getDefaultInstance(fMailServerConfig, new Authenticator() {
+        if ((user != null) && (pwd != null)) {
+            session = Session.getDefaultInstance(props, new Authenticator() {
 
                         @Override
                         protected PasswordAuthentication getPasswordAuthentication() {
                             return new PasswordAuthentication(
-                                    fMailServerConfig.getProperty("mail.user"),
-                                    fMailServerConfig.getProperty("mail.password"));
+                                    user,
+                                    pwd);
                         }
                     });
         } else {
