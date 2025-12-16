@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class OverviewWorkinghours extends BasicServlet {
             "	join work_package wp on (a.workpackageid = wp.id)\n" +
             "	join project p on (wp.project = p.id)\n" +
             "	join cost_category cc on (wp.costcategoryid = cc.id)\n" +
-            "where a.\"day\" > '%1s-01-01'and s.firstname <> 'Auftrag und Korrektur'\n" +
+            "where a.\"day\" >= '%1s-01-01' and a.\"day\"::DATE <= '%2s'::DATE and s.firstname <> 'Auftrag und Korrektur'\n" +
             "	and wp.name not in ('Kinderkrankenschein', 'Sonderurlaub', 'krank', '*Freizeitausgleich', '*Pause', 'Freistellung', 'Elternzeit')\n" +
             "	and p.name not in ('Sonderurlaub', '*Freizeitausgleich', '*Pause', 'Krank', 'bitte prüfen', 'Abgleich Zeitkonto')\n" +
             "	and s.name not in ('Admin')\n" +
@@ -64,7 +65,6 @@ public class OverviewWorkinghours extends BasicServlet {
             "group by 1, 2, 3, 4, 5\n" +
             "having sum(case when (wp.name ilike 'Urlaub' or p.name ilike 'Urlaub') and a.workinghours = 0.0 then 8.0 else a.workinghours end)  > 1\n" +
             "order by 1, 2, 3, 4";
-    private final Map<Integer, String> issueMap = new HashMap<Integer, String>();
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -132,7 +132,8 @@ public class OverviewWorkinghours extends BasicServlet {
             throws ServletException, IOException {
         final String username = request.getParameter("username");
         final String password = request.getParameter("password");
-        String startYear = request.getParameter("year");
+        String startYear = request.getParameter("from");
+        String till = request.getParameter("till");
         final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
         response.setCharacterEncoding("UTF-8");
         final PrintWriter out = response.getWriter();
@@ -148,6 +149,12 @@ public class OverviewWorkinghours extends BasicServlet {
                 //invalid year, use 2020
                 startYear = "2020";
             }
+        }
+        
+        if (till == null) {
+            GregorianCalendar now = new GregorianCalendar();
+            
+            till = now.get(GregorianCalendar.YEAR) + "-" + (now.get(GregorianCalendar.MONTH) + 1) + "-" + now.get(GregorianCalendar.DAY_OF_MONTH);
         }
         
 
@@ -166,9 +173,9 @@ public class OverviewWorkinghours extends BasicServlet {
 
                 con = dbManager.getDatabaseConnection();
                 Statement statement = con.createStatement();
-                ResultSet rs = statement.executeQuery(String.format(QUERY, startYear));
+                ResultSet rs = statement.executeQuery(String.format(QUERY, startYear, till));
                 
-                out.println("\"jahr\",\"name\",\"firstname\",\"projekt\",\"fakturierbar\",\"stunden\"");
+                out.println("\"jahr\";\"name\",\"firstname\";\"projekt\";\"fakturierbar\";\"stunden\"");
                 
                 if (rs != null) {
                     while (rs.next()) {
@@ -180,7 +187,7 @@ public class OverviewWorkinghours extends BasicServlet {
                         Double hours = rs.getDouble(6);
                         
                         StringBuilder sb = new StringBuilder( (year != null ? year.toString() : "") );
-                        sb.append(",").append(name).append(",").append(firstName).append(",").append(project).append(",").append(fac).append(",").append(hours);
+                        sb.append(";").append(name).append(";").append(firstName).append(";").append(project).append(";").append(fac).append(";").append(hours);
                         
                         out.println(sb.toString());
                     }
