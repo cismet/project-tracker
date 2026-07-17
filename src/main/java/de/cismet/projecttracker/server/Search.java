@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.PropertyFilter;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 
 import org.apache.log4j.Logger;
 
@@ -180,6 +181,17 @@ public class Search extends BasicServlet {
                         out.print("user is not valid");
                         return;
                     }
+                    
+                    if (user != null && !username.equals(user)) {
+                        boolean isAdmin = (((Staff)staff).getPermissions() & ProjectTrackerEntryPoint.ADMIN_PERMISSION) == ProjectTrackerEntryPoint.ADMIN_PERMISSION;
+
+                        if (!isAdmin) {
+                            response.setStatus(403);
+                            logger.warn("invalid permission");
+                            out.print("forbidden");
+                            return;
+                        }
+                    }
                 }
 
                 if (project != null) {
@@ -188,7 +200,7 @@ public class Search extends BasicServlet {
 
                     if (pr == null) {
                         response.setStatus(400);
-                        out.print("workpackage is not valid");
+                        out.print("Project is not valid");
                         logger.warn("Project is not valid " + project);
                         return;
                     }

@@ -131,4 +131,18 @@ public class BasicServlet extends HttpServlet {
             throw new DataRetrievalException(t.getMessage(), t);
         }
     }
+    
+    protected Staff getStaff(final String username, final DBManager dbManager) throws LoginFailedException, DataRetrievalException {
+        try {
+            final Session hibernateSession = dbManager.getSession();
+
+
+            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
+
+            return staff;
+        } catch (Throwable t) {
+            logger.error("Error:", t);
+            throw new DataRetrievalException(t.getMessage(), t);
+        }
+    }
 }

@@ -11,6 +11,7 @@
  */
 package de.cismet.projecttracker.server;
 
+import de.cismet.projecttracker.client.ProjectTrackerEntryPoint;
 import org.apache.log4j.Logger;
 
 import org.hibernate.Criteria;
@@ -37,12 +38,26 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import de.cismet.projecttracker.client.dto.ActivityDTO;
+import de.cismet.projecttracker.client.dto.StaffDTO;
+import de.cismet.projecttracker.client.dto.WorkCategoryDTO;
 import de.cismet.projecttracker.client.exceptions.DataRetrievalException;
+import de.cismet.projecttracker.client.exceptions.InvalidInputValuesException;
 import de.cismet.projecttracker.client.exceptions.LoginFailedException;
+import de.cismet.projecttracker.client.exceptions.NoSessionException;
+import de.cismet.projecttracker.client.exceptions.PermissionDenyException;
 
 import de.cismet.projecttracker.report.db.entities.Activity;
+import de.cismet.projecttracker.report.db.entities.Project;
 import de.cismet.projecttracker.report.db.entities.Staff;
+import de.cismet.projecttracker.report.db.entities.WorkCategory;
+import de.cismet.projecttracker.report.db.entities.WorkPackage;
 import de.cismet.projecttracker.report.query.DBManager;
+import de.cismet.projecttracker.utilities.DBManagerWrapper;
+import java.util.ArrayList;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+import org.hibernate.criterion.Criterion;
 
 /**
  * DOCUMENT ME!
@@ -125,11 +140,40 @@ public class QuickBooking extends BasicServlet {
         final String username = request.getParameter("username");
         final String password = request.getParameter("password");
         final String operation = request.getParameter("operation");
+        String staffName = request.getParameter("staff");
         final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
         final ServletOutputStream out = response.getOutputStream();
+        
+        if (staffName == null) {
+            staffName = username;
+        }
 
         try {
-            final Staff staff = checklogin(username, password, request.getSession(), dbManager);
+            final Staff user = checklogin(username, password, request.getSession(), dbManager);
+            
+            if (user != null && !username.equals(staffName)) {
+                boolean isAdmin = (((Staff)user).getPermissions() & ProjectTrackerEntryPoint.ADMIN_PERMISSION) == ProjectTrackerEntryPoint.ADMIN_PERMISSION;
+                
+                if (!isAdmin) {
+                    response.setStatus(403);
+                    logger.warn("invalid permission");
+                    out.print("forbidden");
+                    return;
+                }
+            } else if (user == null) {
+                response.setStatus(403);
+                logger.warn("invalid username/password");
+                out.print("forbidden");
+                return;
+            }
+            
+            Staff staff = null;
+            
+            if (username.equals(staffName)) {
+                staff = user;
+            } else {
+                staff = getStaff(staffName, dbManager);
+            }
 
             if (staff != null) {
                 if (operation.equals("changeStatus")) {
@@ -167,6 +211,101 @@ public class QuickBooking extends BasicServlet {
                     } else {
                         response.setStatus(400);
                         out.print("von or bis parameter not found");
+                    }
+                } else if (operation.toLowerCase().equals("lock")) {
+                    final String day = request.getParameter("day");
+                    
+                    if (day != null) {
+                        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                        final Date dayDate = formatter.parse(day);
+
+                        addLock(dayDate, staff, dbManager, response);
+                    } else {
+                        response.setStatus(400);
+                        out.print("day parameter not found");
+                    }
+                } else if (operation.toLowerCase().equals("unlock")) {
+                    final String day = request.getParameter("day");
+                    
+                    if (day != null) {
+                        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                        final Date dayDate = formatter.parse(day);
+
+                        unlock(dayDate, staff, dbManager, response);
+                   } else {
+                        response.setStatus(400);
+                        out.print("day parameter not found");
+                    }
+                } else if (operation.toLowerCase().equals("addactivity")) {
+                    final String day = request.getParameter("day");
+                    final String workpackage = request.getParameter("workpackage");
+                    final String project = request.getParameter("project");
+                    final String workingHoursString = request.getParameter("workingHours");
+                    final String description = request.getParameter("description");
+                    Double workingHours = 0.0;
+                    final Session hibernateSession = dbManager.getSession();
+                    WorkPackage wp = null;
+                    Project pr = null;
+                    
+                    if (project != null) {
+                        pr = (Project)hibernateSession.createCriteria(Project.class).add(Restrictions.eq("name", project))
+                                    .uniqueResult();
+
+                        if (pr == null) {
+                            response.setStatus(400);
+                            out.print("Project is not valid");
+                            logger.warn("Project is not valid " + project);
+                            return;
+                        }
+                    }
+
+                    if (workpackage != null) {
+                        if (pr != null) {
+                            wp = (WorkPackage)hibernateSession.createCriteria(WorkPackage.class)
+                                        .add(Restrictions.eq("name", workpackage))
+                                        .add(Restrictions.eq("project", pr))
+                                        .uniqueResult();
+                        } else {
+                            wp = (WorkPackage)hibernateSession.createCriteria(WorkPackage.class)
+                                        .add(Restrictions.eq("name", workpackage))
+                                        .uniqueResult();
+                        }
+                    }
+                    
+                    if (wp == null) {
+                        response.setStatus(400);
+                        logger.warn("Workpackage is not valid: " + workpackage);
+                        out.print("workpackage is not valid");
+                        return;
+                    }
+                    
+                    if (workingHoursString != null) {
+                        try {
+                            workingHours = Double.parseDouble(workingHoursString);
+                        } catch (NumberFormatException e) {
+                            response.setStatus(400);
+                            logger.warn("working hours is not valid: " + workingHours);
+                            out.print("working hours is not valid");
+                            return;
+                        }
+                    }
+                    
+                    if (description == null || description.equals("")) {
+                        response.setStatus(400);
+                        logger.warn("description is not valid: " + workingHours);
+                        out.print("description is not valid");
+                        return;
+                    }
+                
+                    if (day != null) {
+//                        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                        final Date dayDate = formatter.parse(day);
+
+                        addActivity(staff, dayDate, wp, workingHours, description, dbManager, response);
+                    } else {
+                        response.setStatus(400);
+                        out.print("day parameter not found");
                     }
                 } else {
                     response.setStatus(400);
@@ -306,6 +445,49 @@ public class QuickBooking extends BasicServlet {
     }
 
     /**
+     * Adds a complete time slot.
+     *
+     * @param   staff      DOCUMENT ME!
+     * @param   from       DOCUMENT ME!
+     * @param   until      DOCUMENT ME!
+     * @param   dbManager  DOCUMENT ME!
+     * @param   response   DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private void addActivity(final Staff staff,
+            final Date day,
+            final WorkPackage workpackage,
+            final double workingHours,
+            final String description,
+            final DBManager dbManager,
+            final HttpServletResponse response) throws Exception {
+        final Activity activity = new Activity();
+        Serializable id = null;
+
+        try {
+            activity.setKindofactivity(ActivityDTO.ACTIVITY);
+            activity.setStaff(staff);
+            activity.setDay(day);
+            activity.setWorkCategory(new WorkCategory(WorkCategoryDTO.WORK));
+            activity.setWorkPackage(workpackage);
+            activity.setWorkinghours(workingHours);
+            activity.setDescription(description);
+
+            id = dbManager.createObject(activity);
+        } catch (Exception e) {
+            if (id != null) {
+                dbManager.deleteObject(id);
+            }
+
+            throw new Exception("the time slot has a conflict with an existing slot.");
+        }
+
+        refreshModification(staff, dbManager);
+        return;
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @param   dbManager  DOCUMENT ME!
@@ -390,6 +572,54 @@ public class QuickBooking extends BasicServlet {
             java.util.logging.Logger.getLogger(QuickBooking.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  staff      DOCUMENT ME!
+     * @param  dbManager  DOCUMENT ME!
+     * @param  response   DOCUMENT ME!
+     */
+    private void addLock(final Date day, final Staff staff, final DBManager dbManager, final HttpServletResponse response) {
+        final Activity act = new Activity();
+        act.setKindofactivity(ActivityDTO.LOCKED_DAY);
+        act.setStaff(staff);
+        act.setDay(day);
+
+        dbManager.createObject(act);
+        refreshModification(staff, dbManager);
+    }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  staff      DOCUMENT ME!
+     * @param  dbManager  DOCUMENT ME!
+     * @param  response   DOCUMENT ME!
+     */
+    private void unlock(final Date day, final Staff staff, final DBManager dbManager, final HttpServletResponse response) {
+        final GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(day);
+        cal.add(GregorianCalendar.DAY_OF_YEAR, 1);
+        day.setHours(0);
+        day.setMinutes(0);
+        day.setSeconds(0);
+        
+        final Criterion dateRestriction = Restrictions.and(Restrictions.ge("day", day),
+                Restrictions.lt("day", cal.getTime()));
+        final List lockActivities = dbManager.getSession()
+            .createCriteria(Activity.class)
+            .add(Restrictions.eq("staff", staff))
+            .add(Restrictions.eq("kindofactivity", ActivityDTO.LOCKED_DAY))
+            .add(dateRestriction)
+            .addOrder(Order.desc("day"))
+            .list();
+        
+        for (Object o : lockActivities) {
+            dbManager.deleteObject(o);
+        }
+    }
+
 
     /**
      * DOCUMENT ME!
@@ -445,7 +675,6 @@ public class QuickBooking extends BasicServlet {
             final MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(pasword.getBytes());
 
-//            Staff staff = (Staff) hibernateSession.createCriteria(Staff.class).add(Restrictions.eq("username", username)).uniqueResult();
             final Staff staff = (Staff)hibernateSession.createCriteria(Staff.class)
                         .add(Restrictions.and(
                                     Restrictions.eq("username", username),
