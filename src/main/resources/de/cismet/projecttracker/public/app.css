@@ -544,6 +544,13 @@ footer{
     margin-top: -5px !important;
 }
 
+.editButton {
+    font-size: 12px !important;
+    cursor: pointer !important;
+    margin-top: 0px !important;
+    margin-right: 4px !important;
+}
+
 .statusCircle {
     font-size: 12px !important;
 /*    cursor: pointer !important;*/
@@ -813,6 +820,11 @@ footer{
 .alert .close{
     right:0px;
     top:0px;
+}
+
+.edit{
+    right:0px;
+    top:2px;
 }
 
 .gravatar-image {

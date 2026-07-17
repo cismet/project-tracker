@@ -19,6 +19,7 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import de.cismet.projecttracker.client.ImageConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,12 +60,16 @@ public class TaskNotice extends Composite implements ClickHandler {
     protected Label hoursLeft = new Label();
     protected ActivityDTO activity;
     private final FlowPanel mainPanel = new FlowPanel();
+//    private final Label modify = new Label("m");
+    private Image modify = new Image(ImageConstants.INSTANCE.edit());;
     private final Label close = new Label("x");
     private final List<TaskDeleteListener> listener = new ArrayList<TaskDeleteListener>();
     private final List<TaskNoticeListener> taskListener = new ArrayList<TaskNoticeListener>();
     private boolean deleteButtonDisabled;
     private boolean status;
     private boolean redBorder;
+    private TaskStory taskStory = null;
+    private Story story = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,6 +80,17 @@ public class TaskNotice extends Composite implements ClickHandler {
      */
     public TaskNotice(final ActivityDTO activity) {
         this(activity, false);
+    }
+
+    /**
+     * Creates a new TaskNotice object.
+     *
+     * @param  activity  DOCUMENT ME!
+     */
+    public TaskNotice(final ActivityDTO activity, final Story story, final TaskStory taskStory) {
+        this(activity, false);
+        this.story = story;
+        this.taskStory = taskStory;
     }
 
     /**
@@ -113,6 +129,10 @@ public class TaskNotice extends Composite implements ClickHandler {
             close.setStyleName("close pull-right closeButton");
             close.addClickHandler(this);
             mainPanel.add(close);
+            modify.setSize("10px", "10px");
+            modify.setStyleName("edit pull-right editButton");
+            modify.addClickHandler(this);
+            mainPanel.add(modify);
             this.redBorder = true;
         } else {
             this.redBorder = false;
@@ -347,6 +367,24 @@ public class TaskNotice extends Composite implements ClickHandler {
                 };
             ProjectTrackerEntryPoint.getProjectService(true)
                     .isDayLocked(activity.getDay(), activity.getStaff(), callback);
+        } else if (event.getSource() == modify) {
+            final StaffDTO staff = ProjectTrackerEntryPoint.getInstance().getStaff();
+            final BasicAsyncCallback<Boolean> callback = new BasicAsyncCallback<Boolean>() {
+
+                    @Override
+                    protected void afterExecution(final Boolean result, final boolean operationFailed) {
+                        if (!operationFailed) {
+                            if (!result && taskStory != null && story != null) {
+                                final DialogBox taskForm = new DialogBox();
+                                final StoryForm form = new StoryForm(taskForm, taskStory, story, TaskNotice.this);
+                                taskForm.setWidget(form);
+                                taskForm.center();
+                            }
+                        }
+                    }
+                };
+            ProjectTrackerEntryPoint.getProjectService(true)
+                    .isDayLocked(activity.getDay(), activity.getStaff(), callback);
         }
     }
 
@@ -467,5 +505,6 @@ public class TaskNotice extends Composite implements ClickHandler {
      */
     public void setCloseButtonVisible(final boolean aFlag) {
         close.setVisible(aFlag);
+        modify.setVisible(aFlag);
     }
 }

@@ -336,7 +336,7 @@ public class TaskStory extends Composite implements TaskDeleteListener, DoubleCl
     public void addTask(final ActivityDTO activity, final FlowPanelWithSpacer columnPanel) {
         TaskNotice widget = null;
         if (activity.getKindofactivity() == ActivityDTO.ACTIVITY) {
-            widget = new TaskNotice(activity);
+            widget = new TaskNotice(activity, story, this);
         } else {
             widget = new HolidayTaskNotice(activity);
         }

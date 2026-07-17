@@ -134,6 +134,7 @@ public class OverviewWorkinghours extends BasicServlet {
         final String password = request.getParameter("password");
         String startYear = request.getParameter("from");
         String till = request.getParameter("till");
+        String sepChar = request.getParameter("sepChar");
         final DBManager dbManager = new DBManager(ConfigurationManager.getInstance().getConfBaseDir());
         response.setCharacterEncoding("UTF-8");
         final PrintWriter out = response.getWriter();
@@ -149,6 +150,10 @@ public class OverviewWorkinghours extends BasicServlet {
                 //invalid year, use 2020
                 startYear = "2020";
             }
+        }
+        
+        if (sepChar == null) {
+            sepChar = ",";
         }
         
         if (till == null) {
@@ -175,7 +180,7 @@ public class OverviewWorkinghours extends BasicServlet {
                 Statement statement = con.createStatement();
                 ResultSet rs = statement.executeQuery(String.format(QUERY, startYear, till));
                 
-                out.println("\"jahr\";\"name\",\"firstname\";\"projekt\";\"fakturierbar\";\"stunden\"");
+                out.println("\"jahr\"" + sepChar + "\"name\"" + sepChar + "\"firstname\"" + sepChar + "\"projekt\"" + sepChar + "\"fakturierbar\"" + sepChar + "\"stunden\"");
                 
                 if (rs != null) {
                     while (rs.next()) {
@@ -187,7 +192,7 @@ public class OverviewWorkinghours extends BasicServlet {
                         Double hours = rs.getDouble(6);
                         
                         StringBuilder sb = new StringBuilder( (year != null ? year.toString() : "") );
-                        sb.append(";").append(name).append(";").append(firstName).append(";").append(project).append(";").append(fac).append(";").append(hours);
+                        sb.append(sepChar).append(name).append(sepChar).append(firstName).append(sepChar).append(project).append(sepChar).append(fac).append(sepChar).append(hours);
                         
                         out.println(sb.toString());
                     }
